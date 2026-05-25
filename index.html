@@ -1544,28 +1544,35 @@ input, select, textarea {
   </div><!-- /page-forgot -->
 
   <!-- ======================================================
-       PAGE: SET NEW PASSWORD (after clicking reset email link)
+       PAGE: SET NEW PASSWORD (first-time invite OR password reset)
        ====================================================== -->
   <div id="page-reset-password" class="page-view">
     <div class="login-wrap">
       <div class="login-header">
-        <div class="login-logo">🔐</div>
-        <h2 class="login-title">Set New Password</h2>
-        <p class="login-subtitle">Choose a new password for your account.</p>
+        <div class="login-logo">&#x1F510;</div>
+        <h2 class="login-title" id="reset-page-title">Set Your Password</h2>
+        <p class="login-subtitle" id="reset-page-subtitle">Welcome! Please choose a password to activate your account.</p>
       </div>
       <div class="login-card">
         <div class="login-error" id="reset-error"></div>
         <div class="login-success" id="reset-success"></div>
+        <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.55;">
+          &#x1F512; Your password must be at least <strong>8 characters</strong>. You will use it every time you sign in.
+        </div>
         <div class="form-group">
           <label class="input-label">New Password</label>
-          <input type="password" class="input-field" id="reset-password" placeholder="At least 8 characters" autocomplete="new-password">
+          <input type="password" class="input-field" id="reset-password" placeholder="At least 8 characters" autocomplete="new-password" oninput="checkPasswordStrength(this.value)">
+          <div id="pw-strength-bar" style="margin-top:6px;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden;">
+            <div id="pw-strength-fill" style="height:100%;width:0%;border-radius:2px;transition:all 0.3s;"></div>
+          </div>
+          <div id="pw-strength-label" style="font-size:0.7rem;color:var(--text-muted);margin-top:3px;"></div>
         </div>
         <div class="form-group">
-          <label class="input-label">Confirm New Password</label>
-          <input type="password" class="input-field" id="reset-password-confirm" placeholder="Repeat password" autocomplete="new-password">
+          <label class="input-label">Confirm Password</label>
+          <input type="password" class="input-field" id="reset-password-confirm" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitNewPassword()">
         </div>
         <button class="btn btn-primary w-full" onclick="submitNewPassword()" id="reset-btn">
-          Update Password
+          Set Password &amp; Sign In &#x2192;
         </button>
       </div>
     </div>
@@ -2041,22 +2048,64 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // Check for existing session
+    // ── Parse the URL hash that Supabase appends to email links ──────────
+    // Supabase puts tokens in the URL hash like:
+    //   #access_token=...&type=recovery   (password reset)
+    //   #access_token=...&type=invite     (first-time invite)
+    //   #error=access_denied&...          (expired/invalid link)
+    const hash = window.location.hash;
+
+    if (hash) {
+      const params = new URLSearchParams(hash.replace(/^#/, ''));
+      const type   = params.get('type');
+      const error  = params.get('error');
+      const errorDesc = params.get('error_description') || '';
+
+      // Clean the ugly hash from the browser address bar immediately
+      window.history.replaceState(null, '', window.location.pathname);
+
+      if (error) {
+        // Link was expired or invalid — show login with a friendly message
+        showPage('vol-login');
+        const errEl = document.getElementById('vol-login-error');
+        if (errEl) {
+          if (errorDesc.toLowerCase().includes('expired')) {
+            errEl.textContent = 'Your link has expired. Please request a new one below.';
+          } else {
+            errEl.textContent = 'That link is no longer valid. Please sign in or request a new reset link.';
+          }
+          errEl.classList.add('visible');
+        }
+      } else if (type === 'recovery' || type === 'invite') {
+        // Valid reset or first-time invite link — let Supabase exchange the token,
+        // then onAuthStateChange fires PASSWORD_RECOVERY and we show the set-password page.
+        // getSession() below will pick up the token from the hash automatically.
+      }
+    }
+
+    // Check for existing session (also exchanges hash token if present)
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       await handleAuthSession(session);
     }
 
-    // Listen for auth changes — including password recovery event
+    // Listen for auth state changes
     sb.auth.onAuthStateChange(async (_event, session) => {
       if (_event === 'PASSWORD_RECOVERY') {
-        // User clicked reset link — show the set-password page
+        // User arrived via a valid reset or invite email link
         showPage('reset-password');
         return;
       }
-      if (session) {
-        await handleAuthSession(session);
-      } else {
+      if (_event === 'SIGNED_IN' && session) {
+        // Only redirect if we're sitting on a login/forgot/reset page
+        const activePage = document.querySelector('.page-view.active');
+        const onAuthPage = activePage && ['page-vol-login','page-forgot','page-reset-password']
+          .includes(activePage.id);
+        if (onAuthPage) {
+          await handleAuthSession(session);
+        }
+      }
+      if (_event === 'SIGNED_OUT') {
         clearAuthState();
       }
     });
@@ -2343,6 +2392,31 @@ async function sendPasswordReset() {
   }
 }
 
+function checkPasswordStrength(pw) {
+  const fill  = document.getElementById('pw-strength-fill');
+  const label = document.getElementById('pw-strength-label');
+  if (!fill || !label) return;
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const levels = [
+    { pct: '0%',   color: 'transparent', text: '' },
+    { pct: '25%',  color: 'var(--cf-coral)',  text: 'Weak' },
+    { pct: '50%',  color: 'var(--cf-orange)', text: 'Fair' },
+    { pct: '75%',  color: 'var(--cf-gold)',   text: 'Good' },
+    { pct: '90%',  color: 'var(--cf-teal)',   text: 'Strong' },
+    { pct: '100%', color: 'var(--cf-green)',  text: 'Excellent' },
+  ];
+  const lvl = levels[Math.min(score, 5)];
+  fill.style.width = lvl.pct;
+  fill.style.background = lvl.color;
+  label.textContent = lvl.text;
+  label.style.color = lvl.color;
+}
+
 async function submitNewPassword() {
   const pw1   = document.getElementById('reset-password').value;
   const pw2   = document.getElementById('reset-password-confirm').value;
@@ -2359,27 +2433,46 @@ async function submitNewPassword() {
     return;
   }
   if (pw1 !== pw2) {
-    errEl.textContent = 'Passwords do not match.';
+    errEl.textContent = 'Passwords do not match. Please re-enter them.';
     errEl.classList.add('visible');
     return;
   }
 
-  btn.textContent = 'Updating…';
+  btn.textContent = 'Setting password…';
   btn.disabled = true;
 
-  const { error } = await sb.auth.updateUser({ password: pw1 });
+  const { data, error } = await sb.auth.updateUser({ password: pw1 });
 
-  btn.textContent = 'Update Password';
+  btn.textContent = 'Set Password & Sign In →';
   btn.disabled = false;
 
   if (error) {
     errEl.textContent = error.message;
     errEl.classList.add('visible');
-  } else {
-    sucEl.textContent = '✅ Password updated! Signing you in…';
-    sucEl.classList.add('visible');
-    setTimeout(() => showPage('public'), 1500);
+    return;
   }
+
+  // Password set successfully — now fetch the profile and redirect properly
+  sucEl.textContent = '✅ Password set! Taking you to your dashboard…';
+  sucEl.classList.add('visible');
+
+  // Give Supabase a moment to settle the session, then load the user
+  setTimeout(async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await handleAuthSession(session);
+      if (currentRole === 'admin') {
+        showPage('admin');
+      } else if (currentRole === 'volunteer') {
+        showPage('volunteer');
+      } else {
+        showPage('public');
+      }
+    } else {
+      showPage('vol-login');
+      showToast('✅ Password set! Please sign in.', 'success');
+    }
+  }, 1200);
 }
 
 async function handleLogout() {
