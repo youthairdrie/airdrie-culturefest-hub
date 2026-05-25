@@ -1,0 +1,3495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airdrie CultureFest Hub</title>
+<meta name="description" content="Airdrie CultureFest — Community Event Hub for Visitors, Volunteers & Organizers">
+<meta name="theme-color" content="#0b1120">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CultureFest">
+
+<!-- ============================================================
+     AIRDRIE CULTUREFEST HUB
+     Single-file static HTML app
+     Requires: Supabase project (see setup notes at bottom)
+     Deploy: GitHub Pages / any static host
+     ============================================================ -->
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Supabase JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* ============================================================
+   CSS CUSTOM PROPERTIES — THEMING
+   ============================================================ */
+:root {
+  /* Core palette */
+  --bg-deep:      #0b1120;
+  --bg-mid:       #111827;
+  --bg-card:      #161f32;
+  --bg-card-alt:  #1a2540;
+  --card-border:  rgba(255,255,255,0.08);
+  --card-hover:   rgba(255,255,255,0.04);
+
+  /* Festival accent colours */
+  --cf-gold:      #f5a623;
+  --cf-coral:     #ff6b6b;
+  --cf-teal:      #00c9b1;
+  --cf-purple:    #a78bfa;
+  --cf-blue:      #38bdf8;
+  --cf-green:     #4ade80;
+  --cf-pink:      #f472b6;
+  --cf-orange:    #fb923c;
+
+  /* Gradient used across accent areas */
+  --cf-gradient:  linear-gradient(135deg, #f5a623 0%, #ff6b6b 40%, #a78bfa 100%);
+  --cf-grad2:     linear-gradient(135deg, #00c9b1 0%, #38bdf8 100%);
+  --cf-grad3:     linear-gradient(135deg, #f472b6 0%, #fb923c 100%);
+
+  /* Text */
+  --text-primary:  #f0f4ff;
+  --text-secondary:#a8b4cc;
+  --text-muted:    #637189;
+
+  /* Fonts */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  /* Radii & Shadows */
+  --radius-sm:  10px;
+  --radius-md:  16px;
+  --radius-lg:  22px;
+  --radius-xl:  30px;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.35);
+  --shadow-glow: 0 0 30px rgba(245,166,35,0.18);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: var(--font-body);
+  outline: none;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.hidden  { display: none !important; }
+.flex    { display: flex; }
+.flex-col{ flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.mt-8   { margin-top: 8px; }
+.mt-12  { margin-top: 12px; }
+.mt-16  { margin-top: 16px; }
+.mt-24  { margin-top: 24px; }
+.w-full { width: 100%; }
+.text-sm  { font-size: 0.83rem; }
+.text-xs  { font-size: 0.72rem; }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.font-bold { font-weight: 700; }
+.font-display { font-family: var(--font-display); }
+.rounded-full { border-radius: 9999px; }
+
+/* ============================================================
+   PILL BADGE
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.badge-gold    { background: rgba(245,166,35,0.18); color: var(--cf-gold); }
+.badge-coral   { background: rgba(255,107,107,0.18); color: var(--cf-coral); }
+.badge-teal    { background: rgba(0,201,177,0.18); color: var(--cf-teal); }
+.badge-purple  { background: rgba(167,139,250,0.18); color: var(--cf-purple); }
+.badge-blue    { background: rgba(56,189,248,0.18); color: var(--cf-blue); }
+.badge-green   { background: rgba(74,222,128,0.18); color: var(--cf-green); }
+.badge-pink    { background: rgba(244,114,182,0.18); color: var(--cf-pink); }
+.badge-orange  { background: rgba(251,146,60,0.18); color: var(--cf-orange); }
+.badge-now     { background: rgba(74,222,128,0.25); color: var(--cf-green); animation: pulse-badge 2s infinite; }
+.badge-next    { background: rgba(56,189,248,0.25); color: var(--cf-blue); }
+.badge-soon    { background: rgba(245,166,35,0.25); color: var(--cf-gold); }
+
+@keyframes pulse-badge {
+  0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+}
+
+/* ============================================================
+   CARD BASE
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.card-hover:hover {
+  background: var(--bg-card-alt);
+  border-color: rgba(255,255,255,0.13);
+  transform: translateY(-1px);
+  transition: all 0.2s;
+}
+
+/* ============================================================
+   BUTTON STYLES
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--cf-gradient);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(245,166,35,0.3);
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.07);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--card-border);
+}
+.btn-ghost:hover { border-color: var(--cf-gold); color: var(--cf-gold); }
+
+.btn-danger {
+  background: rgba(255,107,107,0.15);
+  color: var(--cf-coral);
+  border: 1px solid rgba(255,107,107,0.25);
+}
+.btn-danger:hover { background: rgba(255,107,107,0.25); }
+
+.btn-sm { padding: 6px 14px; font-size: 0.78rem; }
+.btn-lg { padding: 14px 28px; font-size: 1rem; font-weight: 700; }
+
+/* ============================================================
+   INPUT STYLES
+   ============================================================ */
+.input-field {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(--cf-gold); background: rgba(255,255,255,0.07); }
+.input-field::placeholder { color: var(--text-muted); }
+
+.input-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-group { margin-bottom: 14px; }
+
+/* ============================================================
+   APP SHELL — HEADER & LAYOUT
+   ============================================================ */
+#app-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(11,17,32,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 0 20px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-logo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: var(--cf-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+.header-logo .logo-icon {
+  font-size: 1.3rem;
+  -webkit-text-fill-color: initial;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--card-border);
+  border-radius: 9999px;
+  padding: 5px 12px 5px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--cf-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   NAVIGATION TABS (desktop sidebar becomes top tabs on mobile)
+   ============================================================ */
+#nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-tab {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+.nav-tab.active {
+  color: var(--cf-gold);
+  background: rgba(245,166,35,0.1);
+  border-color: rgba(245,166,35,0.25);
+}
+
+/* ============================================================
+   MAIN CONTENT AREA
+   ============================================================ */
+#main-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+}
+
+/* ============================================================
+   PAGE VIEWS (controlled by JS)
+   ============================================================ */
+.page-view { display: none; }
+.page-view.active { display: block; }
+
+/* ============================================================
+   PUBLIC HOME — HERO CARD
+   ============================================================ */
+.hero-card {
+  background: linear-gradient(135deg, #1a2540 0%, #1e1836 100%);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px 24px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-card::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: -40px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(167,139,250,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cf-gold);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+
+#hero-datetime {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+.search-bar-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.search-bar-wrap input {
+  padding-left: 44px;
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius-xl);
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* ============================================================
+   NAVIGATION PILLS
+   ============================================================ */
+.nav-pills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 480px) {
+  .nav-pills-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 700px) {
+  .nav-pills-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.nav-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
+}
+
+.nav-pill:hover, .nav-pill:active {
+  border-color: rgba(245,166,35,0.4);
+  background: rgba(245,166,35,0.06);
+  color: var(--cf-gold);
+  transform: translateY(-2px);
+}
+
+.nav-pill .pill-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.nav-pill.pill-stage     { --pill-color: var(--cf-gold); }
+.nav-pill.pill-grass     { --pill-color: var(--cf-green); }
+.nav-pill.pill-cultural  { --pill-color: var(--cf-purple); }
+.nav-pill.pill-kids      { --pill-color: var(--cf-pink); }
+.nav-pill.pill-booths    { --pill-color: var(--cf-teal); }
+.nav-pill.pill-food      { --pill-color: var(--cf-coral); }
+.nav-pill.pill-trucks    { --pill-color: var(--cf-orange); }
+.nav-pill.pill-announce  { --pill-color: var(--cf-blue); }
+
+/* ============================================================
+   ACCORDION SECTIONS
+   ============================================================ */
+.section-accordion {
+  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s;
+  scroll-margin-top: 72px;
+}
+
+.section-accordion.open {
+  border-color: rgba(255,255,255,0.12);
+}
+
+.accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  gap: 10px;
+  transition: background 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.accordion-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--section-color, var(--cf-gold));
+}
+
+.accordion-header:hover { background: rgba(255,255,255,0.03); }
+.section-accordion.open .accordion-header { background: rgba(255,255,255,0.025); }
+
+.accordion-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+}
+
+.accordion-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.accordion-chevron {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  transition: transform 0.25s;
+  flex-shrink: 0;
+}
+.section-accordion.open .accordion-chevron { transform: rotate(180deg); }
+
+.accordion-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.08);
+  border-radius: 9999px;
+  padding: 1px 8px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+.accordion-body {
+  display: none;
+  padding: 4px 18px 18px;
+  border-top: 1px solid var(--card-border);
+}
+.section-accordion.open .accordion-body { display: block; }
+
+/* ============================================================
+   SCHEDULE ITEMS
+   ============================================================ */
+.schedule-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: flex-start;
+}
+.schedule-item:last-child { border-bottom: none; }
+
+.schedule-time {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--cf-gold);
+  min-width: 70px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.schedule-info { flex: 1; }
+.schedule-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+.schedule-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.schedule-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   VENDOR / BOOTH CARDS
+   ============================================================ */
+.vendor-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (min-width: 500px) {
+  .vendor-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.vendor-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: all 0.2s;
+}
+.vendor-card:hover {
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.vendor-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 5px;
+}
+.vendor-category {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.vendor-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.vendor-location {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--cf-teal);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================================
+   ANNOUNCEMENTS
+   ============================================================ */
+.announcement-item {
+  background: rgba(56,189,248,0.05);
+  border: 1px solid rgba(56,189,248,0.15);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.announcement-item:last-child { margin-bottom: 0; }
+
+.announcement-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+  color: var(--cf-blue);
+}
+.announcement-body {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.announcement-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.empty-state p { font-size: 0.85rem; line-height: 1.55; }
+
+/* ============================================================
+   LOGIN SCREENS
+   ============================================================ */
+.login-wrap {
+  max-width: 400px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-logo {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+}
+.login-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+.login-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.login-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.login-divider::before, .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--card-border);
+}
+
+.login-error {
+  background: rgba(255,107,107,0.12);
+  border: 1px solid rgba(255,107,107,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--cf-coral);
+  margin-bottom: 14px;
+  display: none;
+}
+.login-error.visible { display: block; }
+
+.login-success {
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--cf-green);
+  margin-bottom: 14px;
+  display: none;
+}
+.login-success.visible { display: block; }
+
+/* ============================================================
+   VOLUNTEER DASHBOARD
+   ============================================================ */
+.volunteer-header-card {
+  background: linear-gradient(135deg, #1a2d4a 0%, #1d2a3d 100%);
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 24px rgba(56,189,248,0.08);
+}
+
+.vol-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.vol-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(56,189,248,0.15);
+  border: 1px solid rgba(56,189,248,0.25);
+  color: var(--cf-blue);
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.shift-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.shift-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+  color: var(--cf-gold);
+}
+.shift-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.checklist-item:last-child { border-bottom: none; }
+
+.checklist-cb {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--card-border);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: all 0.15s;
+  position: relative;
+}
+.checklist-cb:checked {
+  background: var(--cf-green);
+  border-color: var(--cf-green);
+}
+.checklist-cb:checked::after {
+  content: '✓';
+  position: absolute;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+}
+
+.checklist-label {
+  font-size: 0.88rem;
+  flex: 1;
+}
+.checklist-cb:checked + .checklist-label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+.admin-header-card {
+  background: linear-gradient(135deg, #2a1f3d 0%, #1e2a1e 100%);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  margin-bottom: 18px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+@media (min-width: 500px) {
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 700px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px 14px;
+  text-align: center;
+}
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: var(--cf-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Admin tabs */
+.admin-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  padding: 7px 14px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.admin-tab:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.15); }
+.admin-tab.active {
+  background: rgba(167,139,250,0.12);
+  border-color: rgba(167,139,250,0.35);
+  color: var(--cf-purple);
+}
+
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
+
+/* Admin Tables */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--card-border);
+  margin-bottom: 16px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.data-table th {
+  background: rgba(255,255,255,0.04);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--card-border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Form row in admin */
+.admin-form {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.admin-form h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--cf-purple);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 500px) {
+  .form-row-2 { grid-template-columns: repeat(2, 1fr); }
+  .form-row-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ============================================================
+   PARTICIPANT TRACKER
+   ============================================================ */
+.tracker-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+.tracker-gate-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+}
+.tracker-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tracker-count {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--cf-gold);
+  min-width: 50px;
+  text-align: center;
+}
+.tracker-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.tracker-add { background: rgba(74,222,128,0.15); color: var(--cf-green); border: 1px solid rgba(74,222,128,0.3); }
+.tracker-add:hover { background: rgba(74,222,128,0.25); }
+.tracker-sub { background: rgba(255,107,107,0.1); color: var(--cf-coral); border: 1px solid rgba(255,107,107,0.2); }
+.tracker-sub:hover { background: rgba(255,107,107,0.2); }
+.tracker-total-card {
+  background: linear-gradient(135deg, rgba(245,166,35,0.1), rgba(255,107,107,0.1));
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.tracker-total-num {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  background: var(--cf-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tracker-total-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   MODAL (admin add/edit only)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  display: none;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.modal-close {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-close:hover { color: var(--cf-coral); border-color: rgba(255,107,107,0.3); }
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  animation: toast-in 0.3s ease;
+  max-width: 300px;
+}
+
+@keyframes toast-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.toast-success { border-left: 4px solid var(--cf-green); }
+.toast-error   { border-left: 4px solid var(--cf-coral); }
+.toast-info    { border-left: 4px solid var(--cf-blue); }
+
+/* ============================================================
+   LOADING SPINNER
+   ============================================================ */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: var(--cf-gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.spinner-lg { width: 36px; height: 36px; border-width: 3px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   RESPONSIVE HELPERS
+   ============================================================ */
+@media (max-width: 440px) {
+  .hero-title { font-size: 1.55rem; }
+  #nav-tabs .nav-tab { display: none; }
+  #nav-tabs .nav-tab.active { display: block; }
+}
+
+/* Fade in animation for sections */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-view.active { animation: fade-up 0.3s ease; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     APP HEADER
+     ============================================================ -->
+<header id="app-header">
+  <div class="header-logo">
+    <span class="logo-icon">🌍</span>
+    <span>Airdrie CultureFest</span>
+  </div>
+
+  <div class="header-right">
+    <!-- Navigation tabs (desktop; mobile uses pills) -->
+    <nav id="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('public')">🏠 Home</button>
+      <button class="nav-tab" id="vol-tab" onclick="handleVolTab()">🙌 Volunteer</button>
+      <button class="nav-tab" id="admin-tab" onclick="handleAdminTab()">⚙️ Admin</button>
+    </nav>
+
+    <!-- User chip (shown when logged in) -->
+    <div class="user-chip hidden" id="user-chip">
+      <div class="user-avatar" id="user-avatar-initials">?</div>
+      <span id="user-chip-name">User</span>
+    </div>
+
+    <!-- Logout (shown when logged in) -->
+    <button class="btn btn-ghost btn-sm hidden" id="logout-btn" onclick="handleLogout()">Sign Out</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main id="main-content">
+
+  <!-- ======================================================
+       PAGE: PUBLIC HOME
+       ====================================================== -->
+  <div id="page-public" class="page-view active">
+
+    <!-- Hero Card -->
+    <div class="hero-card">
+      <div class="hero-eyebrow">
+        <span>🌟</span> Airdrie CultureFest 2025
+      </div>
+      <h1 class="hero-title">Today at<br>CultureFest 🎉</h1>
+      <p class="hero-subtitle">Explore performances, food, culture &amp; community — all in one place.</p>
+      <div id="hero-datetime">
+        <span>📅</span>
+        <span id="datetime-text">Loading date...</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-now">🔴 Live Event</span>
+        <span class="badge badge-green">Free Entry</span>
+        <span class="badge badge-purple">20+ Cultures</span>
+        <span class="badge badge-blue">Family Friendly</span>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="input-field" id="public-search"
+             placeholder="Search performers, food, booths..."
+             oninput="handlePublicSearch(this.value)">
+    </div>
+
+    <!-- Navigation Pills -->
+    <div class="nav-pills-grid">
+      <button class="nav-pill pill-stage" onclick="scrollToSection('sec-stage')">
+        <span class="pill-icon">🎤</span>Stage Performances
+      </button>
+      <button class="nav-pill pill-grass" onclick="scrollToSection('sec-grass')">
+        <span class="pill-icon">🌿</span>Grass Demos
+      </button>
+      <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-cultural-act')">
+        <span class="pill-icon">🎭</span>Cultural Activities
+      </button>
+      <button class="nav-pill pill-kids" onclick="scrollToSection('sec-kids')">
+        <span class="pill-icon">🎈</span>Kids Zone
+      </button>
+      <button class="nav-pill pill-booths" onclick="scrollToSection('sec-booths')">
+        <span class="pill-icon">🏮</span>Cultural Booths
+      </button>
+      <button class="nav-pill pill-food" onclick="scrollToSection('sec-food')">
+        <span class="pill-icon">🍽️</span>Food Vendors
+      </button>
+      <button class="nav-pill pill-trucks" onclick="scrollToSection('sec-trucks')">
+        <span class="pill-icon">🚚</span>Food Trucks
+      </button>
+      <button class="nav-pill pill-announce" onclick="scrollToSection('sec-announce')">
+        <span class="pill-icon">📢</span>Announcements
+      </button>
+    </div>
+
+    <!-- ===================== ACCORDION SECTIONS ===================== -->
+
+    <!-- Stage Performance Schedule -->
+    <div class="section-accordion" id="sec-stage" style="--section-color: var(--cf-gold)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-stage')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🎤</span>
+          <span>Stage Performance Schedule</span>
+          <span class="accordion-count" id="count-stage">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-stage">
+        <div class="loading-state"><div class="spinner"></div> Loading schedule...</div>
+      </div>
+    </div>
+
+    <!-- Grass Performances -->
+    <div class="section-accordion" id="sec-grass" style="--section-color: var(--cf-green)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-grass')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🌿</span>
+          <span>Grass Performances &amp; Demonstrations</span>
+          <span class="accordion-count" id="count-grass">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-grass">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Cultural Activities -->
+    <div class="section-accordion" id="sec-cultural-act" style="--section-color: var(--cf-purple)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-cultural-act')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🎭</span>
+          <span>Cultural Activities</span>
+          <span class="accordion-count" id="count-cultural-act">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-cultural-act">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Kids Zone -->
+    <div class="section-accordion" id="sec-kids" style="--section-color: var(--cf-pink)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-kids')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🎈</span>
+          <span>Kids Zone Activities</span>
+          <span class="accordion-count" id="count-kids">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-kids">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Cultural Booths -->
+    <div class="section-accordion" id="sec-booths" style="--section-color: var(--cf-teal)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-booths')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🏮</span>
+          <span>Cultural Booths</span>
+          <span class="accordion-count" id="count-booths">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-booths">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Food Vendors -->
+    <div class="section-accordion" id="sec-food" style="--section-color: var(--cf-coral)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-food')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🍽️</span>
+          <span>Food Vendors</span>
+          <span class="accordion-count" id="count-food">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-food">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Food Trucks -->
+    <div class="section-accordion" id="sec-trucks" style="--section-color: var(--cf-orange)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-trucks')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🚚</span>
+          <span>Food Trucks</span>
+          <span class="accordion-count" id="count-trucks">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-trucks">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Public Announcements -->
+    <div class="section-accordion" id="sec-announce" style="--section-color: var(--cf-blue)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-announce')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">📢</span>
+          <span>Public Announcements</span>
+          <span class="accordion-count" id="count-announce">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-announce">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+  </div><!-- /page-public -->
+
+
+  <!-- ======================================================
+       PAGE: VOLUNTEER LOGIN
+       ====================================================== -->
+  <div id="page-vol-login" class="page-view">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-logo">🙌</div>
+        <h2 class="login-title">Volunteer Login</h2>
+        <p class="login-subtitle">Sign in to access your volunteer dashboard, shifts, and checklists.</p>
+      </div>
+      <div class="login-card">
+        <div class="login-error" id="vol-login-error"></div>
+        <div class="login-success" id="vol-login-success"></div>
+        <div class="form-group">
+          <label class="input-label">Email Address</label>
+          <input type="email" class="input-field" id="vol-email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Password</label>
+          <input type="password" class="input-field" id="vol-password" placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter')volLogin()">
+        </div>
+        <button class="btn btn-primary w-full" onclick="volLogin()" id="vol-login-btn">
+          Sign In →
+        </button>
+        <div class="login-divider">or</div>
+        <p style="font-size:0.78rem;color:var(--text-muted);text-align:center;line-height:1.6">
+          Don't have an account? Contact your coordinator to get set up.<br>
+          <a onclick="showPage('public')" style="color:var(--cf-blue);cursor:pointer;">← Back to Public Site</a>
+        </p>
+      </div>
+    </div>
+  </div><!-- /page-vol-login -->
+
+
+  <!-- ======================================================
+       PAGE: VOLUNTEER DASHBOARD
+       ====================================================== -->
+  <div id="page-volunteer" class="page-view">
+
+    <div class="volunteer-header-card">
+      <div class="vol-name" id="vol-display-name">👋 Welcome, Volunteer!</div>
+      <div class="vol-role-badge" id="vol-role-display">🙌 Volunteer</div>
+      <p style="font-size:0.83rem;color:var(--text-secondary)">
+        Thank you for being part of CultureFest! Here's everything you need for today.
+      </p>
+    </div>
+
+    <!-- Volunteer sections tabs -->
+    <div class="admin-tabs" style="margin-bottom:18px;">
+      <button class="admin-tab active" onclick="switchVolTab('shifts')">My Shifts</button>
+      <button class="admin-tab" onclick="switchVolTab('checklist')">Checklist</button>
+      <button class="admin-tab" onclick="switchVolTab('contacts')">Contacts</button>
+      <button class="admin-tab" onclick="switchVolTab('vol-announce')">Announcements</button>
+    </div>
+
+    <!-- Shifts -->
+    <div id="vol-panel-shifts" class="admin-panel active">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-gold)">Your Assigned Shifts</h3>
+      <div id="vol-shifts-list">
+        <div class="loading-state"><div class="spinner"></div> Loading shifts...</div>
+      </div>
+    </div>
+
+    <!-- Checklist -->
+    <div id="vol-panel-checklist" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-teal)">Volunteer Checklist</h3>
+      <div class="card" id="vol-checklist-list">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Contacts -->
+    <div id="vol-panel-contacts" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-purple)">Coordinator Contacts</h3>
+      <div id="vol-contacts-list">
+        <!-- Populated via JS / Supabase admin_settings or hardcoded -->
+        <div class="card">
+          <div class="vendor-name">🎪 Event Coordinator</div>
+          <div class="text-sm text-muted mt-8" id="coord-name-1">Loading...</div>
+          <div class="text-sm text-muted" id="coord-phone-1"></div>
+        </div>
+        <div class="card mt-12">
+          <div class="vendor-name">🙌 Volunteer Lead</div>
+          <div class="text-sm text-muted mt-8" id="coord-name-2">Loading...</div>
+          <div class="text-sm text-muted" id="coord-phone-2"></div>
+        </div>
+      </div>
+      <div class="card mt-12" style="background:rgba(56,189,248,0.06);border-color:rgba(56,189,248,0.15)">
+        <div style="font-size:0.82rem;color:var(--text-secondary);line-height:1.65" id="vol-instructions">
+          Loading event-day instructions...
+        </div>
+      </div>
+    </div>
+
+    <!-- Volunteer Announcements -->
+    <div id="vol-panel-vol-announce" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-blue)">Volunteer Announcements</h3>
+      <div id="vol-announcements-list">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+  </div><!-- /page-volunteer -->
+
+
+  <!-- ======================================================
+       PAGE: ADMIN LOGIN
+       ====================================================== -->
+  <div id="page-admin-login" class="page-view">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-logo">⚙️</div>
+        <h2 class="login-title">Admin Login</h2>
+        <p class="login-subtitle">Organizer and admin access only.</p>
+      </div>
+      <div class="login-card">
+        <div class="login-error" id="admin-login-error"></div>
+        <div class="form-group">
+          <label class="input-label">Email Address</label>
+          <input type="email" class="input-field" id="admin-email" placeholder="admin@culturefest.ca">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Password</label>
+          <input type="password" class="input-field" id="admin-password" placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter')adminLogin()">
+        </div>
+        <button class="btn btn-primary w-full" onclick="adminLogin()" id="admin-login-btn">
+          Sign In →
+        </button>
+        <div style="text-align:center;margin-top:14px">
+          <a onclick="showPage('public')" style="font-size:0.78rem;color:var(--cf-blue);cursor:pointer;">← Back to Public Site</a>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-admin-login -->
+
+
+  <!-- ======================================================
+       PAGE: ADMIN DASHBOARD
+       ====================================================== -->
+  <div id="page-admin" class="page-view">
+
+    <div class="admin-header-card">
+      <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;margin-bottom:4px;">
+        ⚙️ Admin Dashboard
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">
+        Logged in as <span id="admin-display-email" style="color:var(--cf-purple)">admin</span>
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-secondary)">
+        Manage all public content, volunteers, schedule, and event data.
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-volunteers">–</div>
+        <div class="stat-label">Volunteers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-performers">–</div>
+        <div class="stat-label">Performers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-booths">–</div>
+        <div class="stat-label">Booths</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-vendors">–</div>
+        <div class="stat-label">Food Vendors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-participants">–</div>
+        <div class="stat-label">Attendees</div>
+      </div>
+    </div>
+
+    <!-- Admin Section Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('overview')">📊 Overview</button>
+      <button class="admin-tab" onclick="switchAdminTab('schedule')">🎤 Schedule</button>
+      <button class="admin-tab" onclick="switchAdminTab('booths-admin')">🏮 Booths</button>
+      <button class="admin-tab" onclick="switchAdminTab('food-admin')">🍽️ Food</button>
+      <button class="admin-tab" onclick="switchAdminTab('volunteers-admin')">🙌 Volunteers</button>
+      <button class="admin-tab" onclick="switchAdminTab('announcements-admin')">📢 Announcements</button>
+      <button class="admin-tab" onclick="switchAdminTab('tracker')">🚪 Attendance</button>
+    </div>
+
+    <!-- OVERVIEW PANEL -->
+    <div id="admin-panel-overview" class="admin-panel active">
+      <div class="card" style="margin-bottom:14px;">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:12px;color:var(--cf-gold)">
+          Quick Actions
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+          <button class="btn btn-secondary" onclick="switchAdminTab('schedule')">＋ Add Performance</button>
+          <button class="btn btn-secondary" onclick="switchAdminTab('booths-admin')">＋ Add Booth</button>
+          <button class="btn btn-secondary" onclick="switchAdminTab('food-admin')">＋ Add Food Vendor</button>
+          <button class="btn btn-secondary" onclick="switchAdminTab('announcements-admin')">📢 Post Announcement</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;margin-bottom:10px;color:var(--cf-blue)">
+          Export Data
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('stage_schedule','schedule')">⬇ Schedule CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('cultural_booths','booths')">⬇ Booths CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('food_vendors','food_vendors')">⬇ Food Vendors CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTableCSV('volunteer_profiles','volunteers')">⬇ Volunteers CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE PANEL -->
+    <div id="admin-panel-schedule" class="admin-panel">
+      <div class="admin-form">
+        <h4>＋ Add / Edit Schedule Item</h4>
+        <input type="hidden" id="sched-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Performer / Group Name</label>
+            <input type="text" class="input-field" id="sched-name" placeholder="e.g. Airdrie Bhangra Collective">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Cultural Category</label>
+            <input type="text" class="input-field" id="sched-category" placeholder="e.g. Punjabi / South Asian">
+          </div>
+        </div>
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label class="input-label">Start Time</label>
+            <input type="time" class="input-field" id="sched-start">
+          </div>
+          <div class="form-group">
+            <label class="input-label">End Time</label>
+            <input type="time" class="input-field" id="sched-end">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Stage / Location</label>
+            <input type="text" class="input-field" id="sched-stage" placeholder="Main Stage">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Section</label>
+          <select class="input-field" id="sched-section">
+            <option value="stage">Stage Performance</option>
+            <option value="grass">Grass Performance / Demo</option>
+            <option value="cultural">Cultural Activity</option>
+            <option value="kids">Kids Zone</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Description (optional)</label>
+          <textarea class="input-field" id="sched-desc" rows="2" placeholder="Brief description..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="adminSaveSchedule()">Save Performance</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearScheduleForm()">Clear</button>
+        </div>
+        <div id="sched-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="admin-schedule-table">
+          <thead>
+            <tr>
+              <th>Time</th><th>Performer</th><th>Category</th><th>Stage</th><th>Section</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-schedule-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOOTHS PANEL -->
+    <div id="admin-panel-booths-admin" class="admin-panel">
+      <div class="admin-form">
+        <h4>＋ Add / Edit Cultural Booth</h4>
+        <input type="hidden" id="booth-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Booth Name</label>
+            <input type="text" class="input-field" id="booth-name" placeholder="e.g. Filipino Cultural Society">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Cultural Background</label>
+            <input type="text" class="input-field" id="booth-culture" placeholder="e.g. Filipino">
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Booth Number / Location</label>
+            <input type="text" class="input-field" id="booth-location" placeholder="e.g. B-12">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Category</label>
+            <input type="text" class="input-field" id="booth-category" placeholder="e.g. Arts & Crafts">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Description</label>
+          <textarea class="input-field" id="booth-desc" rows="2" placeholder="What visitors will experience at this booth..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="adminSaveBooth()">Save Booth</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearBoothForm()">Clear</button>
+        </div>
+        <div id="booth-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Culture</th><th>Location</th><th>Category</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admin-booths-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FOOD PANEL -->
+    <div id="admin-panel-food-admin" class="admin-panel">
+      <div class="admin-form">
+        <h4>＋ Add / Edit Food Vendor or Truck</h4>
+        <input type="hidden" id="food-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Name</label>
+            <input type="text" class="input-field" id="food-name" placeholder="e.g. Mango Spice Kitchen">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Type</label>
+            <select class="input-field" id="food-type">
+              <option value="vendor">Food Vendor (Table/Tent)</option>
+              <option value="truck">Food Truck</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Cultural / Cuisine Category</label>
+            <input type="text" class="input-field" id="food-category" placeholder="e.g. Indian Street Food">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Booth / Location</label>
+            <input type="text" class="input-field" id="food-location" placeholder="e.g. F-05 / Food Row">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Description / Menu Highlights</label>
+          <textarea class="input-field" id="food-desc" rows="2" placeholder="What they're serving..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="adminSaveFood()">Save Vendor</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearFoodForm()">Clear</button>
+        </div>
+        <div id="food-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Cuisine</th><th>Location</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admin-food-tbody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VOLUNTEERS PANEL -->
+    <div id="admin-panel-volunteers-admin" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-blue)">Volunteer Roster</h3>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Zone</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admin-vol-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="admin-form" style="margin-top:16px;">
+        <h4>＋ Add Volunteer</h4>
+        <input type="hidden" id="vol-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Full Name</label>
+            <input type="text" class="input-field" id="vol-name-field" placeholder="Jane Smith">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Email</label>
+            <input type="email" class="input-field" id="vol-email-field" placeholder="jane@example.com">
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Role</label>
+            <input type="text" class="input-field" id="vol-role-field" placeholder="e.g. Gate Greeter">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Zone / Area</label>
+            <input type="text" class="input-field" id="vol-zone-field" placeholder="e.g. Main Entrance">
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Shift Start</label>
+            <input type="time" class="input-field" id="vol-shift-start">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Shift End</label>
+            <input type="time" class="input-field" id="vol-shift-end">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="adminSaveVolunteer()">Save Volunteer</button>
+        <div id="vol-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS PANEL -->
+    <div id="admin-panel-announcements-admin" class="admin-panel">
+      <div class="admin-form">
+        <h4>＋ Post Announcement</h4>
+        <input type="hidden" id="ann-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Title</label>
+            <input type="text" class="input-field" id="ann-title" placeholder="e.g. Stage delay at 3 PM">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Audience</label>
+            <select class="input-field" id="ann-audience">
+              <option value="public">Public (visible to everyone)</option>
+              <option value="volunteer">Volunteers only</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Message</label>
+          <textarea class="input-field" id="ann-body" rows="3" placeholder="Write your announcement here..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="adminSaveAnnouncement()">Post Announcement</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearAnnouncementForm()">Clear</button>
+        </div>
+        <div id="ann-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Title</th><th>Audience</th><th>Posted</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admin-ann-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE TRACKER PANEL -->
+    <div id="admin-panel-tracker" class="admin-panel">
+      <div class="tracker-total-card">
+        <div class="tracker-total-num" id="tracker-grand-total">0</div>
+        <div class="tracker-total-label">Total Attendees Counted</div>
+      </div>
+      <div id="tracker-gates-list">
+        <!-- Gates populated dynamically -->
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="addTrackerGate()">＋ Add Entry Point</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetTrackerConfirm()">Reset All Counts</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyTrackerData()">Copy Summary</button>
+      </div>
+    </div>
+
+  </div><!-- /page-admin -->
+
+</main><!-- /main-content -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ============================================================
+   SUPABASE CONFIGURATION
+   ============================================================
+   IMPORTANT: Replace the values below with your actual Supabase
+   project URL and anon (public) key before deploying.
+   Get these from: Supabase Dashboard → Settings → API
+   ============================================================ */
+const SUPABASE_URL  = 'https://evdxzhydpdjupwvppukj.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2ZHh6aHlkcGRqdXB3dnBwdWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTU0OTIsImV4cCI6MjA5NTI5MTQ5Mn0.I2CBtbEoydRwSOFQriGcy1_0jphG_01K0a29NlxxyMk';
+
+let sb = null;
+let currentUser = null;
+let currentRole = null; // 'volunteer' | 'admin' | null
+
+// Tracker state (local, not persisted — use Supabase for real persistence)
+let trackerGates = [
+  { id: 1, name: 'Main Entrance (North)', count: 0 },
+  { id: 2, name: 'East Gate',             count: 0 },
+  { id: 3, name: 'Parking Lot Entry',     count: 0 },
+];
+let trackerNextId = 4;
+
+/* ============================================================
+   INITIALISATION
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', async () => {
+  initDateTime();
+  renderTrackerGates();
+
+  // Attempt to initialise Supabase
+  if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+    showToast('⚙️ Supabase not configured — loading demo data', 'info');
+    loadDemoData();
+    return;
+  }
+
+  try {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Check for existing session
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      await handleAuthSession(session);
+    }
+
+    // Listen for auth changes
+    sb.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        await handleAuthSession(session);
+      } else {
+        clearAuthState();
+      }
+    });
+
+    // Load all public data
+    await loadPublicData();
+  } catch (err) {
+    console.error('Supabase init error:', err);
+    showToast('⚠️ Database connection failed — loading demo data', 'error');
+    loadDemoData();
+  }
+});
+
+/* ============================================================
+   DATE / TIME
+   ============================================================ */
+function initDateTime() {
+  updateDateTime();
+  setInterval(updateDateTime, 60000); // update every minute
+}
+
+function updateDateTime() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
+  const el = document.getElementById('datetime-text');
+  if (el) {
+    el.textContent = now.toLocaleDateString('en-CA', opts) +
+      ' · ' + now.toLocaleTimeString('en-CA', timeOpts);
+  }
+}
+
+/* ============================================================
+   PAGE NAVIGATION
+   ============================================================ */
+function showPage(page) {
+  document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+
+  // Update nav tab highlights
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if (page === 'public')    document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
+  if (page === 'volunteer') document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
+  if (page === 'admin')     document.querySelector('.nav-tab:nth-child(3)').classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleVolTab() {
+  if (currentRole === 'volunteer' || currentRole === 'admin') {
+    showPage('volunteer');
+  } else {
+    showPage('vol-login');
+  }
+}
+
+function handleAdminTab() {
+  if (currentRole === 'admin') {
+    showPage('admin');
+  } else {
+    showPage('admin-login');
+  }
+}
+
+/* ============================================================
+   ACCORDION SECTIONS
+   ============================================================ */
+function toggleAccordion(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+function openAccordion(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+
+function scrollToSection(id) {
+  openAccordion(id);
+  const el = document.getElementById(id);
+  if (el) {
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+}
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+function handlePublicSearch(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    // restore all items
+    document.querySelectorAll('.schedule-item, .vendor-card, .announcement-item').forEach(el => {
+      el.style.display = '';
+    });
+    return;
+  }
+  document.querySelectorAll('.schedule-item, .vendor-card, .announcement-item').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.style.display = text.includes(q) ? '' : 'none';
+  });
+  // Open all sections so results are visible
+  document.querySelectorAll('.section-accordion').forEach(acc => acc.classList.add('open'));
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
+async function handleAuthSession(session) {
+  currentUser = session.user;
+
+  // Look up profile to get role
+  if (sb) {
+    const { data: profile } = await sb
+      .from('volunteer_profiles')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (profile) {
+      currentRole = profile.role || 'volunteer';
+      setAuthUI(profile.full_name || session.user.email, currentRole);
+      loadVolunteerData(profile);
+    } else {
+      currentRole = null;
+    }
+
+    // Check admin_profiles table too
+    if (currentRole !== 'admin') {
+      const { data: adminProfile } = await sb
+        .from('volunteer_profiles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .single();
+      if (adminProfile) {
+        currentRole = 'admin';
+        setAuthUI(session.user.email, 'admin');
+        loadAdminData();
+      }
+    }
+  }
+}
+
+function setAuthUI(name, role) {
+  const chip = document.getElementById('user-chip');
+  const logoutBtn = document.getElementById('logout-btn');
+  const initials = document.getElementById('user-avatar-initials');
+  const chipName = document.getElementById('user-chip-name');
+
+  chip.classList.remove('hidden');
+  logoutBtn.classList.remove('hidden');
+
+  const parts = name.split(' ');
+  const ini = parts.map(p => p[0]).join('').toUpperCase().slice(0, 2);
+  initials.textContent = ini || '?';
+  chipName.textContent = name;
+
+  document.getElementById('admin-display-email').textContent = name;
+}
+
+function clearAuthState() {
+  currentUser = null;
+  currentRole = null;
+  document.getElementById('user-chip').classList.add('hidden');
+  document.getElementById('logout-btn').classList.add('hidden');
+  showPage('public');
+}
+
+async function volLogin() {
+  const email    = document.getElementById('vol-email').value.trim();
+  const password = document.getElementById('vol-password').value;
+  const errEl    = document.getElementById('vol-login-error');
+  const btn      = document.getElementById('vol-login-btn');
+
+  errEl.classList.remove('visible');
+
+  if (!email || !password) {
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  if (!sb) {
+    // Demo mode
+    setTimeout(() => {
+      currentRole = 'volunteer';
+      setAuthUI('Demo Volunteer', 'volunteer');
+      loadDemoVolunteerData();
+      showPage('volunteer');
+      showToast('✅ Signed in (demo mode)', 'success');
+      btn.textContent = 'Sign In →';
+      btn.disabled = false;
+    }, 800);
+    return;
+  }
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  btn.textContent = 'Sign In →';
+  btn.disabled = false;
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.classList.add('visible');
+  } else {
+    showPage('volunteer');
+    showToast('✅ Welcome back!', 'success');
+  }
+}
+
+async function adminLogin() {
+  const email    = document.getElementById('admin-email').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const errEl    = document.getElementById('admin-login-error');
+  const btn      = document.getElementById('admin-login-btn');
+
+  errEl.classList.remove('visible');
+
+  if (!email || !password) {
+    errEl.textContent = 'Please enter your credentials.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  if (!sb) {
+    // Demo admin
+    setTimeout(() => {
+      currentRole = 'admin';
+      setAuthUI(email, 'admin');
+      loadDemoAdminData();
+      showPage('admin');
+      showToast('✅ Admin access granted (demo)', 'success');
+      btn.textContent = 'Sign In →';
+      btn.disabled = false;
+    }, 800);
+    return;
+  }
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.classList.add('visible');
+    btn.textContent = 'Sign In →';
+    btn.disabled = false;
+    return;
+  }
+
+  // Verify admin role
+  const { data: profile } = await sb
+    .from('volunteer_profiles')
+    .select('role')
+    .eq('user_id', data.user.id)
+    .single();
+
+  btn.textContent = 'Sign In →';
+  btn.disabled = false;
+
+  if (!profile || profile.role !== 'admin') {
+    await sb.auth.signOut();
+    errEl.textContent = 'Access denied. This account does not have admin privileges.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  currentRole = 'admin';
+  setAuthUI(email, 'admin');
+  await loadAdminData();
+  showPage('admin');
+  showToast('✅ Welcome, admin!', 'success');
+}
+
+async function handleLogout() {
+  if (sb) await sb.auth.signOut();
+  clearAuthState();
+  showToast('👋 Signed out', 'info');
+}
+
+/* ============================================================
+   PUBLIC DATA LOADING
+   ============================================================ */
+async function loadPublicData() {
+  if (!sb) return;
+  await Promise.all([
+    loadStageSchedule(),
+    loadGrassPerformances(),
+    loadCulturalActivities(),
+    loadKidsZone(),
+    loadCulturalBooths(),
+    loadFoodVendors(),
+    loadFoodTrucks(),
+    loadPublicAnnouncements(),
+  ]);
+}
+
+async function loadStageSchedule() {
+  const { data, error } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .eq('section', 'stage')
+    .eq('is_published', true)
+    .order('start_time');
+
+  const body = document.getElementById('body-stage');
+  const count = document.getElementById('count-stage');
+
+  if (error || !data) { body.innerHTML = renderEmpty('No stage performances scheduled yet.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
+}
+
+async function loadGrassPerformances() {
+  const { data, error } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .eq('section', 'grass')
+    .eq('is_published', true)
+    .order('start_time');
+
+  const body  = document.getElementById('body-grass');
+  const count = document.getElementById('count-grass');
+  if (error || !data) { body.innerHTML = renderEmpty('No grass performances listed yet.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No grass performances listed yet.');
+}
+
+async function loadCulturalActivities() {
+  const { data, error } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .eq('section', 'cultural')
+    .eq('is_published', true)
+    .order('start_time');
+
+  const body  = document.getElementById('body-cultural-act');
+  const count = document.getElementById('count-cultural-act');
+  if (error || !data) { body.innerHTML = renderEmpty('No cultural activities listed yet.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No cultural activities listed yet.');
+}
+
+async function loadKidsZone() {
+  const { data, error } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .eq('section', 'kids')
+    .eq('is_published', true)
+    .order('start_time');
+
+  const body  = document.getElementById('body-kids');
+  const count = document.getElementById('count-kids');
+  if (error || !data) { body.innerHTML = renderEmpty('Kids Zone activities coming soon!'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('Kids Zone activities coming soon!');
+}
+
+async function loadCulturalBooths() {
+  const { data, error } = await sb
+    .from('cultural_booths')
+    .select('*')
+    .eq('is_published', true)
+    .order('location');
+
+  const body  = document.getElementById('body-booths');
+  const count = document.getElementById('count-booths');
+  if (error || !data) { body.innerHTML = renderEmpty('Booth listings coming soon.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length
+    ? `<div class="vendor-grid">${data.map(renderBoothCard).join('')}</div>`
+    : renderEmpty('Booth listings coming soon.');
+}
+
+async function loadFoodVendors() {
+  const { data, error } = await sb
+    .from('food_vendors')
+    .select('*')
+    .eq('vendor_type', 'vendor')
+    .eq('is_published', true)
+    .order('name');
+
+  const body  = document.getElementById('body-food');
+  const count = document.getElementById('count-food');
+  if (error || !data) { body.innerHTML = renderEmpty('Food vendor listings coming soon.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length
+    ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
+    : renderEmpty('Food vendor listings coming soon.');
+}
+
+async function loadFoodTrucks() {
+  const { data, error } = await sb
+    .from('food_vendors')
+    .select('*')
+    .eq('vendor_type', 'truck')
+    .eq('is_published', true)
+    .order('name');
+
+  const body  = document.getElementById('body-trucks');
+  const count = document.getElementById('count-trucks');
+  if (error || !data) { body.innerHTML = renderEmpty('Food truck listings coming soon.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length
+    ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
+    : renderEmpty('Food truck listings coming soon.');
+}
+
+async function loadPublicAnnouncements() {
+  const { data, error } = await sb
+    .from('announcements')
+    .select('*')
+    .eq('audience', 'public')
+    .eq('is_published', true)
+    .order('created_at', { ascending: false });
+
+  const body  = document.getElementById('body-announce');
+  const count = document.getElementById('count-announce');
+  if (error || !data) { body.innerHTML = renderEmpty('No announcements yet.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderAnnouncement).join('') : renderEmpty('No announcements yet.');
+}
+
+/* ============================================================
+   RENDERERS — PUBLIC
+   ============================================================ */
+function renderScheduleItem(item) {
+  const start = item.start_time ? item.start_time.slice(0,5) : '–';
+  const end   = item.end_time   ? item.end_time.slice(0,5)   : '';
+  const timeStr = end ? `${formatTime(start)} – ${formatTime(end)}` : formatTime(start);
+  const status = getScheduleStatus(item.start_time, item.end_time);
+  return `
+    <div class="schedule-item">
+      <div class="schedule-time">${timeStr}</div>
+      <div class="schedule-info">
+        <div class="schedule-name">${escHtml(item.name || 'Untitled')}</div>
+        <div class="schedule-meta">
+          ${item.cultural_category ? `<span class="badge badge-purple">${escHtml(item.cultural_category)}</span>` : ''}
+          ${item.stage_location    ? `<span style="color:var(--text-muted);font-size:0.75rem">📍 ${escHtml(item.stage_location)}</span>` : ''}
+          ${status ? `<span class="badge ${status.cls}">${status.label}</span>` : ''}
+        </div>
+        ${item.description ? `<div class="schedule-desc">${escHtml(item.description)}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderBoothCard(booth) {
+  return `
+    <div class="vendor-card">
+      <div class="vendor-name">${escHtml(booth.name || 'Booth')}</div>
+      <div class="vendor-category">${escHtml(booth.cultural_background || booth.category || '')}</div>
+      <div class="vendor-desc">${escHtml(booth.description || '')}</div>
+      ${booth.location ? `<div class="vendor-location">📍 ${escHtml(booth.location)}</div>` : ''}
+    </div>`;
+}
+
+function renderVendorCard(vendor) {
+  const icon = vendor.vendor_type === 'truck' ? '🚚' : '🍽️';
+  return `
+    <div class="vendor-card">
+      <div class="vendor-name">${icon} ${escHtml(vendor.name || 'Vendor')}</div>
+      <div class="vendor-category">${escHtml(vendor.cuisine_category || vendor.category || '')}</div>
+      <div class="vendor-desc">${escHtml(vendor.description || '')}</div>
+      ${vendor.location ? `<div class="vendor-location">📍 ${escHtml(vendor.location)}</div>` : ''}
+    </div>`;
+}
+
+function renderAnnouncement(ann) {
+  const time = ann.created_at ? new Date(ann.created_at).toLocaleString('en-CA', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : '';
+  return `
+    <div class="announcement-item">
+      <div class="announcement-title">📢 ${escHtml(ann.title || 'Announcement')}</div>
+      <div class="announcement-body">${escHtml(ann.body || ann.message || '')}</div>
+      ${time ? `<div class="announcement-time">${time}</div>` : ''}
+    </div>`;
+}
+
+function renderEmpty(msg) {
+  return `<div class="empty-state"><div class="empty-icon">🌐</div><p>${escHtml(msg)}</p></div>`;
+}
+
+/* ============================================================
+   SCHEDULE STATUS HELPERS
+   ============================================================ */
+function getScheduleStatus(start, end) {
+  if (!start) return null;
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const s = new Date(`${today}T${start}`);
+  const e = end ? new Date(`${today}T${end}`) : null;
+  const diffStart = (s - now) / 60000; // minutes until start
+
+  if (e && now >= s && now <= e) return { cls: 'badge-now',  label: '🟢 Now' };
+  if (diffStart >= 0 && diffStart <= 15) return { cls: 'badge-soon', label: '⚡ Starting Soon' };
+  if (diffStart > 15 && diffStart <= 60) return { cls: 'badge-next', label: '⏱ Next' };
+  return null;
+}
+
+function formatTime(t) {
+  if (!t) return '–';
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hr   = h % 12 || 12;
+  return `${hr}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+/* ============================================================
+   VOLUNTEER DASHBOARD DATA
+   ============================================================ */
+async function loadVolunteerData(profile) {
+  if (!sb || !profile) return;
+
+  document.getElementById('vol-display-name').textContent = `👋 Welcome, ${profile.full_name || 'Volunteer'}!`;
+  document.getElementById('vol-role-display').textContent = `🙌 ${profile.role_title || profile.zone || 'Volunteer'}`;
+
+  // Shifts
+  const { data: shifts } = await sb
+    .from('volunteer_assignments')
+    .select('*')
+    .eq('volunteer_id', profile.id);
+
+  const shiftsList = document.getElementById('vol-shifts-list');
+  if (shifts && shifts.length) {
+    shiftsList.innerHTML = shifts.map(s => `
+      <div class="shift-card">
+        <div class="shift-title">${escHtml(s.role_title || 'Volunteer Shift')}</div>
+        <div class="shift-meta">
+          📍 ${escHtml(s.zone || '–')} &nbsp;·&nbsp;
+          🕐 ${s.shift_start ? formatTime(s.shift_start.slice(0,5)) : '–'} – ${s.shift_end ? formatTime(s.shift_end.slice(0,5)) : '–'}
+        </div>
+        ${s.notes ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">${escHtml(s.notes)}</div>` : ''}
+      </div>`).join('');
+  } else {
+    shiftsList.innerHTML = renderEmpty('No shifts assigned yet. Check with your coordinator.');
+  }
+
+  // Volunteer announcements
+  const { data: anns } = await sb
+    .from('announcements')
+    .select('*')
+    .in('audience', ['volunteer', 'public'])
+    .eq('is_published', true)
+    .order('created_at', { ascending: false });
+
+  const annList = document.getElementById('vol-announcements-list');
+  if (anns && anns.length) {
+    annList.innerHTML = anns.map(renderAnnouncement).join('');
+  } else {
+    annList.innerHTML = renderEmpty('No announcements yet.');
+  }
+
+  // Contacts / Settings
+  const { data: settings } = await sb
+    .from('admin_settings')
+    .select('*');
+
+  if (settings) {
+    const byKey = {};
+    settings.forEach(s => { byKey[s.setting_key] = s.setting_value; });
+
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+    setEl('coord-name-1',  byKey['coordinator_name'] || 'See your coordinator');
+    setEl('coord-phone-1', byKey['coordinator_phone'] || '');
+    setEl('coord-name-2',  byKey['volunteer_lead_name'] || '–');
+    setEl('coord-phone-2', byKey['volunteer_lead_phone'] || '');
+    setEl('vol-instructions', byKey['volunteer_instructions'] || 'Please report to the volunteer tent upon arrival.');
+  }
+
+  // Checklist
+  loadVolChecklist();
+}
+
+function loadVolChecklist() {
+  const defaultTasks = [
+    'Report to volunteer check-in tent on arrival',
+    'Pick up your volunteer lanyard and name tag',
+    'Review your assigned zone map',
+    'Introduce yourself to your zone captain',
+    'Know the location of the first aid tent',
+    'Know the location of the lost and found table',
+    'Check in with coordinator at midday',
+    'Complete end-of-shift debrief',
+  ];
+
+  const saved = JSON.parse(localStorage.getItem('cf_vol_checklist') || '{}');
+  const html  = defaultTasks.map((task, i) => `
+    <div class="checklist-item">
+      <input type="checkbox" class="checklist-cb" id="check-${i}"
+             ${saved[i] ? 'checked' : ''}
+             onchange="saveChecklist(${i}, this.checked)">
+      <label class="checklist-label" for="check-${i}">${escHtml(task)}</label>
+    </div>`).join('');
+
+  document.getElementById('vol-checklist-list').innerHTML = html;
+}
+
+function saveChecklist(idx, val) {
+  const saved = JSON.parse(localStorage.getItem('cf_vol_checklist') || '{}');
+  saved[idx] = val;
+  localStorage.setItem('cf_vol_checklist', JSON.stringify(saved));
+}
+
+function switchVolTab(tab) {
+  document.querySelectorAll('#page-volunteer .admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-volunteer .admin-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('vol-panel-' + tab).classList.add('active');
+}
+
+/* ============================================================
+   ADMIN DASHBOARD DATA
+   ============================================================ */
+async function loadAdminData() {
+  if (!sb) return;
+  await Promise.all([
+    loadAdminStats(),
+    loadAdminScheduleTable(),
+    loadAdminBoothsTable(),
+    loadAdminFoodTable(),
+    loadAdminVolunteersTable(),
+    loadAdminAnnouncementsTable(),
+  ]);
+}
+
+async function loadAdminStats() {
+  const tables = ['volunteer_profiles', 'stage_schedule', 'cultural_booths', 'food_vendors'];
+  const counts = await Promise.all(tables.map(t =>
+    sb.from(t).select('*', { count: 'exact', head: true })
+  ));
+  const [vols, perfs, booths, food] = counts.map(r => r.count || 0);
+
+  document.getElementById('stat-volunteers').textContent  = vols;
+  document.getElementById('stat-performers').textContent  = perfs;
+  document.getElementById('stat-booths').textContent      = booths;
+  document.getElementById('stat-vendors').textContent     = food;
+  updateTrackerTotal();
+}
+
+async function loadAdminScheduleTable() {
+  const { data } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .order('start_time');
+
+  const tbody = document.getElementById('admin-schedule-tbody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No schedule items yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${r.start_time ? formatTime(r.start_time.slice(0,5)) : '–'}</td>
+      <td>${escHtml(r.name || '–')}</td>
+      <td>${escHtml(r.cultural_category || '–')}</td>
+      <td>${escHtml(r.stage_location || '–')}</td>
+      <td><span class="badge badge-purple">${escHtml(r.section || '–')}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="adminEditSchedule(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('stage_schedule','${r.id}',loadAdminScheduleTable)">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadAdminBoothsTable() {
+  const { data } = await sb.from('cultural_booths').select('*').order('location');
+  const tbody = document.getElementById('admin-booths-tbody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No booths yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((r, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${escHtml(r.name || '–')}</td>
+      <td>${escHtml(r.cultural_background || '–')}</td>
+      <td>${escHtml(r.location || '–')}</td>
+      <td>${escHtml(r.category || '–')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="adminEditBooth(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('cultural_booths','${r.id}',loadAdminBoothsTable)">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadAdminFoodTable() {
+  const { data } = await sb.from('food_vendors').select('*').order('name');
+  const tbody = document.getElementById('admin-food-tbody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No vendors yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${escHtml(r.name || '–')}</td>
+      <td><span class="badge ${r.vendor_type==='truck'?'badge-orange':'badge-coral'}">${r.vendor_type==='truck'?'🚚 Truck':'🍽️ Vendor'}</span></td>
+      <td>${escHtml(r.cuisine_category || '–')}</td>
+      <td>${escHtml(r.location || '–')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-sm" onclick="adminEditFood(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('food_vendors','${r.id}',loadAdminFoodTable)">Del</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadAdminVolunteersTable() {
+  const { data } = await sb.from('volunteer_profiles').select('*').order('full_name');
+  const tbody = document.getElementById('admin-vol-tbody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No volunteers yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${escHtml(r.full_name || '–')}</td>
+      <td style="font-size:0.78rem;color:var(--text-muted)">${escHtml(r.email || '–')}</td>
+      <td>${escHtml(r.role_title || '–')}</td>
+      <td>${escHtml(r.zone || '–')}</td>
+      <td><span class="badge ${r.role==='admin'?'badge-purple':'badge-teal'}">${r.role || 'volunteer'}</span></td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('volunteer_profiles','${r.id}',loadAdminVolunteersTable)">Remove</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function loadAdminAnnouncementsTable() {
+  const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
+  const tbody = document.getElementById('admin-ann-tbody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">No announcements yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const time = r.created_at ? new Date(r.created_at).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '–';
+    return `
+    <tr>
+      <td>${escHtml(r.title || '–')}</td>
+      <td><span class="badge ${r.audience==='volunteer'?'badge-blue':'badge-gold'}">${r.audience || 'public'}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-muted)">${time}</td>
+      <td>
+        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('announcements','${r.id}',loadAdminAnnouncementsTable)">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   ADMIN SAVE ACTIONS
+   ============================================================ */
+async function adminSaveSchedule() {
+  const id   = document.getElementById('sched-edit-id').value;
+  const row  = {
+    name:             document.getElementById('sched-name').value.trim(),
+    cultural_category:document.getElementById('sched-category').value.trim(),
+    start_time:       document.getElementById('sched-start').value || null,
+    end_time:         document.getElementById('sched-end').value || null,
+    stage_location:   document.getElementById('sched-stage').value.trim(),
+    section:          document.getElementById('sched-section').value,
+    description:      document.getElementById('sched-desc').value.trim(),
+    is_published:     true,
+  };
+
+  if (!row.name) { showFeedback('sched-feedback', 'Name is required.', false); return; }
+
+  if (!sb) { showFeedback('sched-feedback', '✅ Saved (demo — configure Supabase to persist)', true); clearScheduleForm(); return; }
+
+  const { error } = id
+    ? await sb.from('stage_schedule').update(row).eq('id', id)
+    : await sb.from('stage_schedule').insert(row);
+
+  if (error) { showFeedback('sched-feedback', error.message, false); }
+  else { showFeedback('sched-feedback', '✅ Saved!', true); clearScheduleForm(); await loadAdminScheduleTable(); await loadAdminStats(); }
+}
+
+async function adminSaveBooth() {
+  const id  = document.getElementById('booth-edit-id').value;
+  const row = {
+    name:               document.getElementById('booth-name').value.trim(),
+    cultural_background:document.getElementById('booth-culture').value.trim(),
+    location:           document.getElementById('booth-location').value.trim(),
+    category:           document.getElementById('booth-category').value.trim(),
+    description:        document.getElementById('booth-desc').value.trim(),
+    is_published:       true,
+  };
+  if (!row.name) { showFeedback('booth-feedback', 'Name is required.', false); return; }
+  if (!sb) { showFeedback('booth-feedback', '✅ Saved (demo)', true); clearBoothForm(); return; }
+
+  const { error } = id
+    ? await sb.from('cultural_booths').update(row).eq('id', id)
+    : await sb.from('cultural_booths').insert(row);
+
+  if (error) showFeedback('booth-feedback', error.message, false);
+  else { showFeedback('booth-feedback', '✅ Saved!', true); clearBoothForm(); await loadAdminBoothsTable(); await loadAdminStats(); }
+}
+
+async function adminSaveFood() {
+  const id  = document.getElementById('food-edit-id').value;
+  const row = {
+    name:            document.getElementById('food-name').value.trim(),
+    vendor_type:     document.getElementById('food-type').value,
+    cuisine_category:document.getElementById('food-category').value.trim(),
+    location:        document.getElementById('food-location').value.trim(),
+    description:     document.getElementById('food-desc').value.trim(),
+    is_published:    true,
+  };
+  if (!row.name) { showFeedback('food-feedback', 'Name is required.', false); return; }
+  if (!sb) { showFeedback('food-feedback', '✅ Saved (demo)', true); clearFoodForm(); return; }
+
+  const { error } = id
+    ? await sb.from('food_vendors').update(row).eq('id', id)
+    : await sb.from('food_vendors').insert(row);
+
+  if (error) showFeedback('food-feedback', error.message, false);
+  else { showFeedback('food-feedback', '✅ Saved!', true); clearFoodForm(); await loadAdminFoodTable(); await loadAdminStats(); }
+}
+
+async function adminSaveVolunteer() {
+  const id  = document.getElementById('vol-edit-id').value;
+  const row = {
+    full_name:  document.getElementById('vol-name-field').value.trim(),
+    email:      document.getElementById('vol-email-field').value.trim(),
+    role_title: document.getElementById('vol-role-field').value.trim(),
+    zone:       document.getElementById('vol-zone-field').value.trim(),
+    shift_start:document.getElementById('vol-shift-start').value || null,
+    shift_end:  document.getElementById('vol-shift-end').value || null,
+    role:       'volunteer',
+  };
+  if (!row.full_name) { showFeedback('vol-feedback', 'Name is required.', false); return; }
+  if (!sb) { showFeedback('vol-feedback', '✅ Saved (demo)', true); return; }
+
+  const { error } = id
+    ? await sb.from('volunteer_profiles').update(row).eq('id', id)
+    : await sb.from('volunteer_profiles').insert(row);
+
+  if (error) showFeedback('vol-feedback', error.message, false);
+  else { showFeedback('vol-feedback', '✅ Saved!', true); await loadAdminVolunteersTable(); await loadAdminStats(); }
+}
+
+async function adminSaveAnnouncement() {
+  const id  = document.getElementById('ann-edit-id').value;
+  const row = {
+    title:       document.getElementById('ann-title').value.trim(),
+    audience:    document.getElementById('ann-audience').value,
+    body:        document.getElementById('ann-body').value.trim(),
+    is_published:true,
+  };
+  if (!row.title || !row.body) { showFeedback('ann-feedback', 'Title and message are required.', false); return; }
+  if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
+
+  const { error } = id
+    ? await sb.from('announcements').update(row).eq('id', id)
+    : await sb.from('announcements').insert(row);
+
+  if (error) showFeedback('ann-feedback', error.message, false);
+  else { showFeedback('ann-feedback', '✅ Posted!', true); clearAnnouncementForm(); await loadAdminAnnouncementsTable(); }
+}
+
+async function adminDeleteRow(table, id, reloadFn) {
+  if (!confirm('Delete this item?')) return;
+  if (!sb) { showToast('Demo mode — cannot delete', 'info'); return; }
+  const { error } = await sb.from(table).delete().eq('id', id);
+  if (error) showToast('Error: ' + error.message, 'error');
+  else { showToast('Deleted', 'success'); await reloadFn(); }
+}
+
+function adminEditSchedule(r) {
+  document.getElementById('sched-edit-id').value  = r.id;
+  document.getElementById('sched-name').value      = r.name || '';
+  document.getElementById('sched-category').value  = r.cultural_category || '';
+  document.getElementById('sched-start').value     = r.start_time ? r.start_time.slice(0,5) : '';
+  document.getElementById('sched-end').value       = r.end_time   ? r.end_time.slice(0,5)   : '';
+  document.getElementById('sched-stage').value     = r.stage_location || '';
+  document.getElementById('sched-section').value   = r.section || 'stage';
+  document.getElementById('sched-desc').value      = r.description || '';
+  switchAdminTab('schedule');
+  document.getElementById('sched-name').focus();
+}
+
+function adminEditBooth(r) {
+  document.getElementById('booth-edit-id').value    = r.id;
+  document.getElementById('booth-name').value       = r.name || '';
+  document.getElementById('booth-culture').value    = r.cultural_background || '';
+  document.getElementById('booth-location').value   = r.location || '';
+  document.getElementById('booth-category').value   = r.category || '';
+  document.getElementById('booth-desc').value       = r.description || '';
+  switchAdminTab('booths-admin');
+}
+
+function adminEditFood(r) {
+  document.getElementById('food-edit-id').value     = r.id;
+  document.getElementById('food-name').value        = r.name || '';
+  document.getElementById('food-type').value        = r.vendor_type || 'vendor';
+  document.getElementById('food-category').value    = r.cuisine_category || '';
+  document.getElementById('food-location').value    = r.location || '';
+  document.getElementById('food-desc').value        = r.description || '';
+  switchAdminTab('food-admin');
+}
+
+function clearScheduleForm() {
+  ['sched-edit-id','sched-name','sched-category','sched-start','sched-end','sched-stage','sched-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('sched-section').value = 'stage';
+  document.getElementById('sched-feedback').textContent = '';
+}
+function clearBoothForm() {
+  ['booth-edit-id','booth-name','booth-culture','booth-location','booth-category','booth-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('booth-feedback').textContent = '';
+}
+function clearFoodForm() {
+  ['food-edit-id','food-name','food-category','food-location','food-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('food-type').value = 'vendor';
+  document.getElementById('food-feedback').textContent = '';
+}
+function clearAnnouncementForm() {
+  ['ann-edit-id','ann-title','ann-body'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('ann-feedback').textContent = '';
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('#page-admin .admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#page-admin .admin-panel').forEach(p => p.classList.remove('active'));
+  // Activate correct tab button
+  document.querySelectorAll('#page-admin .admin-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(tab.replace('-admin','').replace('-',' '))) t.classList.add('active');
+  });
+  const panel = document.getElementById('admin-panel-' + tab);
+  if (panel) panel.classList.add('active');
+}
+
+/* ============================================================
+   ATTENDANCE TRACKER
+   ============================================================ */
+function renderTrackerGates() {
+  const container = document.getElementById('tracker-gates-list');
+  if (!container) return;
+  container.innerHTML = trackerGates.map(gate => `
+    <div class="tracker-card" id="gate-card-${gate.id}">
+      <div class="tracker-gate-name">🚪 ${escHtml(gate.name)}</div>
+      <div class="tracker-controls">
+        <button class="tracker-btn tracker-sub" onclick="trackerAdjust(${gate.id}, -1)">−</button>
+        <div class="tracker-count" id="gate-count-${gate.id}">${gate.count}</div>
+        <button class="tracker-btn tracker-add" onclick="trackerAdjust(${gate.id}, 1)">+</button>
+        <div style="flex:1;font-size:0.75rem;color:var(--text-muted);padding-left:4px;">counted at<br>this gate</div>
+      </div>
+    </div>`).join('');
+  updateTrackerTotal();
+}
+
+function trackerAdjust(id, delta) {
+  const gate = trackerGates.find(g => g.id === id);
+  if (!gate) return;
+  gate.count = Math.max(0, gate.count + delta);
+  const el = document.getElementById('gate-count-' + id);
+  if (el) el.textContent = gate.count;
+  updateTrackerTotal();
+  saveTrackerToLocalStorage();
+}
+
+function updateTrackerTotal() {
+  const total = trackerGates.reduce((s, g) => s + g.count, 0);
+  const el = document.getElementById('tracker-grand-total');
+  if (el) el.textContent = total.toLocaleString();
+  const statEl = document.getElementById('stat-participants');
+  if (statEl) statEl.textContent = total.toLocaleString();
+}
+
+function addTrackerGate() {
+  const name = prompt('Entry point name (e.g. "West Gate"):');
+  if (!name) return;
+  trackerGates.push({ id: trackerNextId++, name: name.trim(), count: 0 });
+  renderTrackerGates();
+  saveTrackerToLocalStorage();
+}
+
+function resetTrackerConfirm() {
+  if (!confirm('Reset all attendance counts to 0?')) return;
+  trackerGates.forEach(g => g.count = 0);
+  renderTrackerGates();
+  saveTrackerToLocalStorage();
+}
+
+function copyTrackerData() {
+  const total = trackerGates.reduce((s, g) => s + g.count, 0);
+  const lines = trackerGates.map(g => `${g.name}: ${g.count}`);
+  lines.push(`\nTOTAL: ${total}`);
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => showToast('✅ Copied to clipboard!', 'success'))
+    .catch(() => showToast('Could not copy — check permissions', 'error'));
+}
+
+function saveTrackerToLocalStorage() {
+  localStorage.setItem('cf_tracker', JSON.stringify(trackerGates));
+}
+
+function loadTrackerFromLocalStorage() {
+  const saved = localStorage.getItem('cf_tracker');
+  if (saved) {
+    try {
+      trackerGates = JSON.parse(saved);
+      trackerNextId = Math.max(...trackerGates.map(g => g.id)) + 1;
+    } catch(e) {}
+  }
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+async function exportTableCSV(table, filename) {
+  if (!sb) { showToast('Configure Supabase to export data', 'info'); return; }
+  const { data, error } = await sb.from(table).select('*');
+  if (error || !data || !data.length) { showToast('No data to export', 'error'); return; }
+
+  const keys = Object.keys(data[0]);
+  const csvRows = [keys.join(',')];
+  data.forEach(row => {
+    csvRows.push(keys.map(k => JSON.stringify(row[k] ?? '')).join(','));
+  });
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`⬇ Downloading ${filename}.csv`, 'success');
+}
+
+/* ============================================================
+   DEMO DATA (when Supabase not configured)
+   ============================================================ */
+function loadDemoData() {
+  // Stage Schedule
+  const now = new Date();
+  const hhmm = t => `${String(now.getHours() + t).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  const stageItems = [
+    { name: 'Airdrie Bhangra Collective', cultural_category: 'Punjabi / South Asian', start_time: hhmm(-1), end_time: hhmm(0), stage_location: 'Main Stage', section: 'stage', description: 'High-energy traditional Bhangra dancing and live dhol drumming.' },
+    { name: 'Mariachi Fiesta Airdrie',    cultural_category: 'Mexican',               start_time: hhmm(1),  end_time: hhmm(2), stage_location: 'Main Stage', section: 'stage', description: 'Celebrating the rich musical heritage of Mexico.' },
+    { name: 'Dragon Dance Troupe',         cultural_category: 'Chinese',               start_time: hhmm(2),  end_time: hhmm(3), stage_location: 'Main Stage', section: 'stage', description: 'Traditional Chinese Dragon Dance with live percussion.' },
+    { name: 'Celtic Step Dancers',         cultural_category: 'Irish / Celtic',        start_time: hhmm(3),  end_time: hhmm(4), stage_location: 'Main Stage', section: 'stage', description: 'Skilled step dancers performing traditional Irish jigs and reels.' },
+  ];
+
+  const grassItems = [
+    { name: 'Capoeira Demo — Grupo Axé',   cultural_category: 'Brazilian', start_time: hhmm(0), end_time: hhmm(1), stage_location: 'Grass Area A', section: 'grass', description: 'Interactive capoeira demonstration — try it yourself!' },
+    { name: 'Hoop Dance Demonstration',    cultural_category: 'Indigenous', start_time: hhmm(2), end_time: hhmm(3), stage_location: 'Grass Area B', section: 'grass', description: 'Traditional Indigenous hoop dancing — a storytelling tradition.' },
+  ];
+
+  const culturalItems = [
+    { name: 'Henna Art Workshop',     cultural_category: 'South Asian / Middle Eastern', start_time: '10:00', end_time: '16:00', stage_location: 'Activity Tent A', section: 'cultural', description: 'Get beautiful henna art applied by skilled artists.' },
+    { name: 'Origami Corner',         cultural_category: 'Japanese',                     start_time: '10:00', end_time: '15:00', stage_location: 'Activity Tent B', section: 'cultural', description: 'Learn the ancient art of paper folding.' },
+    { name: 'Traditional Weaving',    cultural_category: 'West African',                 start_time: '11:00', end_time: '14:00', stage_location: 'Activity Tent C', section: 'cultural', description: 'Watch and participate in West African kente cloth weaving.' },
+  ];
+
+  const kidsItems = [
+    { name: 'World Flag Face Painting', cultural_category: 'All Cultures', start_time: '10:00', end_time: '17:00', stage_location: 'Kids Zone', section: 'kids', description: 'Get your face painted with flags from around the world!' },
+    { name: 'Global Storytime',          cultural_category: 'All Cultures', start_time: '11:00', end_time: '11:30', stage_location: 'Kids Zone Tent', section: 'kids', description: 'Stories from around the world read aloud for little ones.' },
+    { name: 'International Craft Corner',cultural_category: 'All Cultures', start_time: '10:00', end_time: '16:00', stage_location: 'Kids Zone Tent', section: 'kids', description: 'Create crafts inspired by different countries and cultures.' },
+  ];
+
+  const booths = [
+    { name: 'Filipino Cultural Society of Airdrie', cultural_background: 'Filipino', location: 'B-01', category: 'Arts & Culture', description: 'Traditional costumes, crafts, and Filipino cultural displays.' },
+    { name: 'Airdrie Indo-Canadian Association',    cultural_background: 'Indian',   location: 'B-02', category: 'Culture & Food Samples', description: 'Showcasing the diversity of Indian culture, art, and traditions.' },
+    { name: 'Korean Heritage Collective',            cultural_background: 'Korean',   location: 'B-03', category: 'Arts & Crafts',    description: 'Traditional Korean arts, calligraphy, and cultural displays.' },
+    { name: 'Somali Community of Airdrie',           cultural_background: 'Somali',   location: 'B-04', category: 'Culture & Community', description: 'Celebrating Somali culture, textiles, and community stories.' },
+    { name: 'Ukrainian Dance & Culture',             cultural_background: 'Ukrainian',location: 'B-05', category: 'Performing Arts',  description: 'Traditional embroidery, Pysanka egg art, and dance info.' },
+    { name: 'Indigenous Arts & Crafts',              cultural_background: 'Indigenous', location: 'B-06', category: 'Traditional Arts', description: 'Beadwork, dreamcatchers, and Indigenous art by local artists.' },
+  ];
+
+  const vendors = [
+    { name: 'Spice of Mumbai',       vendor_type: 'vendor', cuisine_category: 'Indian Street Food', location: 'F-01', description: 'Samosas, chaat, butter chicken wraps, and mango lassi.' },
+    { name: 'El Sabor Mexicano',     vendor_type: 'vendor', cuisine_category: 'Mexican',            location: 'F-02', description: 'Tacos, elotes, churros, and horchata.' },
+    { name: 'Sushi & Maki Express',  vendor_type: 'vendor', cuisine_category: 'Japanese',           location: 'F-03', description: 'Fresh-made rolls, edamame, and miso soup.' },
+    { name: 'The Pierogies Lady',    vendor_type: 'vendor', cuisine_category: 'Ukrainian/Polish',   location: 'F-04', description: 'Handmade pierogies with traditional fillings and toppings.' },
+  ];
+
+  const trucks = [
+    { name: 'Flames of Ethiopia',  vendor_type: 'truck', cuisine_category: 'Ethiopian',    location: 'Truck Row T-01', description: 'Injera, lentil stews, and authentic Ethiopian platters.' },
+    { name: 'Mango Spice Kitchen', vendor_type: 'truck', cuisine_category: 'South Asian Fusion', location: 'Truck Row T-02', description: 'Indo-Canadian fusion: butter chicken poutine, naan wraps.' },
+    { name: 'Pacific Rim Eats',    vendor_type: 'truck', cuisine_category: 'Pan-Asian',    location: 'Truck Row T-03', description: 'Bao buns, ramen cups, and bubble tea.' },
+  ];
+
+  const announcements = [
+    { title: 'Welcome to Airdrie CultureFest 2025!', audience: 'public', body: 'We are thrilled to welcome you to our annual celebration of culture, food, and community. Please be respectful of all cultures and enjoy the experience!' },
+    { title: 'Main Stage Starts at 11 AM',            audience: 'public', body: 'The main stage opening ceremony begins at 11 AM. All are welcome to gather in front of the stage for the official welcome and performances.' },
+    { title: 'Lost & Found at Info Tent',             audience: 'public', body: 'Lost something? Our Lost & Found is located at the Information Tent near the main entrance. Staff are there to help.' },
+  ];
+
+  // Render
+  setCount('count-stage', stageItems.length);
+  document.getElementById('body-stage').innerHTML = stageItems.map(renderScheduleItem).join('');
+
+  setCount('count-grass', grassItems.length);
+  document.getElementById('body-grass').innerHTML = grassItems.map(renderScheduleItem).join('');
+
+  setCount('count-cultural-act', culturalItems.length);
+  document.getElementById('body-cultural-act').innerHTML = culturalItems.map(renderScheduleItem).join('');
+
+  setCount('count-kids', kidsItems.length);
+  document.getElementById('body-kids').innerHTML = kidsItems.map(renderScheduleItem).join('');
+
+  setCount('count-booths', booths.length);
+  document.getElementById('body-booths').innerHTML = `<div class="vendor-grid">${booths.map(renderBoothCard).join('')}</div>`;
+
+  setCount('count-food', vendors.length);
+  document.getElementById('body-food').innerHTML = `<div class="vendor-grid">${vendors.map(renderVendorCard).join('')}</div>`;
+
+  setCount('count-trucks', trucks.length);
+  document.getElementById('body-trucks').innerHTML = `<div class="vendor-grid">${trucks.map(renderVendorCard).join('')}</div>`;
+
+  setCount('count-announce', announcements.length);
+  document.getElementById('body-announce').innerHTML = announcements.map(renderAnnouncement).join('');
+
+  // Load tracker from localStorage
+  loadTrackerFromLocalStorage();
+  renderTrackerGates();
+}
+
+function setCount(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function loadDemoVolunteerData() {
+  document.getElementById('vol-display-name').textContent = '👋 Welcome, Demo Volunteer!';
+  document.getElementById('vol-role-display').textContent = '🙌 Gate Greeter — Main Entrance';
+
+  document.getElementById('vol-shifts-list').innerHTML = `
+    <div class="shift-card">
+      <div class="shift-title">Gate Greeter</div>
+      <div class="shift-meta">📍 Main Entrance (North) &nbsp;·&nbsp; 🕐 9:00 AM – 1:00 PM</div>
+    </div>
+    <div class="shift-card">
+      <div class="shift-title">Float Support</div>
+      <div class="shift-meta">📍 Cultural Booths Area &nbsp;·&nbsp; 🕐 2:00 PM – 5:00 PM</div>
+    </div>`;
+
+  document.getElementById('vol-announcements-list').innerHTML = `
+    <div class="announcement-item">
+      <div class="announcement-title">📢 Volunteer Briefing at 8:30 AM</div>
+      <div class="announcement-body">All volunteers please meet at the Volunteer Tent (near main entrance) at 8:30 AM sharp for a briefing and lanyard pickup.</div>
+    </div>
+    <div class="announcement-item">
+      <div class="announcement-title">📢 Volunteer Lunch at 12:30 PM</div>
+      <div class="announcement-body">Complimentary volunteer lunch will be served at the Volunteer Tent at 12:30 PM. Please bring your volunteer badge.</div>
+    </div>`;
+
+  document.getElementById('coord-name-1').textContent  = 'Sarah Johnson — Event Coordinator';
+  document.getElementById('coord-phone-1').textContent = '📱 403-555-0101';
+  document.getElementById('coord-name-2').textContent  = 'Marcus Lee — Volunteer Lead';
+  document.getElementById('coord-phone-2').textContent = '📱 403-555-0202';
+  document.getElementById('vol-instructions').textContent = '✅ Report to the volunteer tent on arrival. Wear your lanyard at all times. If you see an issue, radio your zone captain or call the coordinator. Thank you for making CultureFest possible!';
+
+  loadVolChecklist();
+}
+
+function loadDemoAdminData() {
+  document.getElementById('stat-volunteers').textContent  = '24';
+  document.getElementById('stat-performers').textContent  = '9';
+  document.getElementById('stat-booths').textContent      = '6';
+  document.getElementById('stat-vendors').textContent     = '7';
+  updateTrackerTotal();
+}
+
+/* ============================================================
+   UI HELPERS
+   ============================================================ */
+function showFeedback(id, msg, success) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = success ? 'var(--cf-green)' : 'var(--cf-coral)';
+  setTimeout(() => { if (el) el.textContent = ''; }, 4000);
+}
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 3500);
+}
+
+function escHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+
+<!-- ============================================================
+  ██████╗  ██╗   ██╗ ██████╗  ██╗      ██╗  ██████╗
+  ██╔══██╗ ██║   ██║ ██╔══██╗ ██║      ██║ ██╔════╝
+  ██████╔╝ ██║   ██║ ██████╔╝ ██║      ██║ ██║
+  ██╔═══╝  ██║   ██║ ██╔══██╗ ██║      ██║ ██║
+  ██║      ╚██████╔╝ ██████╔╝ ███████╗ ██║ ╚██████╗
+  ╚═╝       ╚═════╝  ╚═════╝  ╚══════╝ ╚═╝  ╚═════╝
+
+  SUPABASE SETUP — READ BEFORE DEPLOYING
+  ============================================================
+
+  1. Create a free project at https://supabase.com
+  2. Go to Settings → API and copy:
+     - Project URL  → replace SUPABASE_URL in the script above
+     - anon key     → replace SUPABASE_ANON in the script above
+  3. Run the SQL scripts below in the Supabase SQL Editor
+  4. Create your first admin user in Authentication → Users
+  5. Run the admin role script below
+
+  ============================================================
+  SQL SETUP SCRIPT (run in Supabase SQL Editor)
+  ============================================================
+
+  -- ENABLE UUID EXTENSION
+  create extension if not exists "uuid-ossp";
+
+  -- VOLUNTEER PROFILES (also stores admin profiles)
+  create table volunteer_profiles (
+    id            uuid primary key default uuid_generate_v4(),
+    user_id       uuid references auth.users(id) on delete cascade,
+    full_name     text not null,
+    email         text,
+    role          text default 'volunteer' check (role in ('volunteer','admin')),
+    role_title    text,
+    zone          text,
+    shift_start   time,
+    shift_end     time,
+    phone         text,
+    notes         text,
+    created_at    timestamptz default now()
+  );
+
+  -- VOLUNTEER ASSIGNMENTS (shifts)
+  create table volunteer_assignments (
+    id            uuid primary key default uuid_generate_v4(),
+    volunteer_id  uuid references volunteer_profiles(id) on delete cascade,
+    role_title    text,
+    zone          text,
+    shift_start   time,
+    shift_end     time,
+    notes         text,
+    created_at    timestamptz default now()
+  );
+
+  -- STAGE SCHEDULE (covers all performance types via 'section' column)
+  create table stage_schedule (
+    id               uuid primary key default uuid_generate_v4(),
+    name             text not null,
+    cultural_category text,
+    start_time       time,
+    end_time         time,
+    stage_location   text,
+    section          text default 'stage' check (section in ('stage','grass','cultural','kids')),
+    description      text,
+    is_published     boolean default true,
+    created_at       timestamptz default now()
+  );
+
+  -- CULTURAL BOOTHS
+  create table cultural_booths (
+    id                   uuid primary key default uuid_generate_v4(),
+    name                 text not null,
+    cultural_background  text,
+    category             text,
+    location             text,
+    description          text,
+    image_url            text,
+    is_published         boolean default true,
+    created_at           timestamptz default now()
+  );
+
+  -- FOOD VENDORS & TRUCKS (unified table, differentiated by vendor_type)
+  create table food_vendors (
+    id               uuid primary key default uuid_generate_v4(),
+    name             text not null,
+    vendor_type      text default 'vendor' check (vendor_type in ('vendor','truck')),
+    cuisine_category text,
+    location         text,
+    description      text,
+    image_url        text,
+    is_published     boolean default true,
+    created_at       timestamptz default now()
+  );
+
+  -- ANNOUNCEMENTS
+  create table announcements (
+    id           uuid primary key default uuid_generate_v4(),
+    title        text not null,
+    body         text not null,
+    audience     text default 'public' check (audience in ('public','volunteer')),
+    is_published boolean default true,
+    created_at   timestamptz default now()
+  );
+
+  -- ADMIN SETTINGS (key-value store for coordinator contacts, instructions)
+  create table admin_settings (
+    id            uuid primary key default uuid_generate_v4(),
+    setting_key   text unique not null,
+    setting_value text,
+    updated_at    timestamptz default now()
+  );
+
+  -- Seed default settings
+  insert into admin_settings (setting_key, setting_value) values
+    ('coordinator_name',        'Sarah Johnson'),
+    ('coordinator_phone',       '403-555-0101'),
+    ('volunteer_lead_name',     'Marcus Lee'),
+    ('volunteer_lead_phone',    '403-555-0202'),
+    ('volunteer_instructions',  'Report to the volunteer tent on arrival. Wear your lanyard at all times. Thank you for making CultureFest possible!');
+
+  ============================================================
+  ROW LEVEL SECURITY (run after creating tables)
+  ============================================================
+
+  -- Enable RLS on all tables
+  alter table volunteer_profiles    enable row level security;
+  alter table volunteer_assignments enable row level security;
+  alter table stage_schedule        enable row level security;
+  alter table cultural_booths       enable row level security;
+  alter table food_vendors          enable row level security;
+  alter table announcements         enable row level security;
+  alter table admin_settings        enable row level security;
+
+  -- PUBLIC: read published schedule, booths, food, public announcements
+  create policy "Public read schedule"   on stage_schedule   for select using (is_published = true);
+  create policy "Public read booths"     on cultural_booths  for select using (is_published = true);
+  create policy "Public read food"       on food_vendors     for select using (is_published = true);
+  create policy "Public read pub ann"    on announcements    for select using (is_published = true and audience = 'public');
+
+  -- VOLUNTEERS: read their own profile and assignments; read all announcements
+  create policy "Volunteers read own profile"    on volunteer_profiles    for select using (auth.uid() = user_id);
+  create policy "Volunteers read own shifts"     on volunteer_assignments for select
+    using (volunteer_id in (select id from volunteer_profiles where user_id = auth.uid()));
+  create policy "Volunteers read all ann"        on announcements         for select
+    using (is_published = true and auth.role() = 'authenticated');
+  create policy "Volunteers read settings"       on admin_settings        for select using (auth.role() = 'authenticated');
+
+  -- ADMINS: full access (identified by role = 'admin' in volunteer_profiles)
+  create policy "Admins full schedule"   on stage_schedule        for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins full booths"     on cultural_booths       for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins full food"       on food_vendors          for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins full ann"        on announcements         for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins manage profiles" on volunteer_profiles    for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins manage shifts"   on volunteer_assignments for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+  create policy "Admins manage settings" on admin_settings        for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+
+  ============================================================
+  CREATE YOUR FIRST ADMIN
+  ============================================================
+
+  1. Go to Supabase → Authentication → Users → Invite User
+     Enter the admin's email address.
+
+  2. They will receive an email to set their password.
+
+  3. Once registered, find their user ID in Authentication → Users.
+
+  4. Run this SQL (replace the UUID and email):
+
+     insert into volunteer_profiles (user_id, full_name, email, role, role_title)
+     values (
+       'PASTE-USER-UUID-HERE',
+       'Admin Name',
+       'admin@example.com',
+       'admin',
+       'Event Administrator'
+     );
+
+  ============================================================
+  SEED EXAMPLE DATA (optional — adds demo content)
+  ============================================================
+
+  insert into stage_schedule (name, cultural_category, start_time, end_time, stage_location, section, description) values
+    ('Airdrie Bhangra Collective', 'Punjabi / South Asian', '11:00', '11:45', 'Main Stage', 'stage', 'High-energy traditional Bhangra with live dhol drumming'),
+    ('Mariachi Fiesta Airdrie',    'Mexican',               '12:00', '12:45', 'Main Stage', 'stage', 'Traditional Mexican folk music and costumes'),
+    ('Capoeira Demo',              'Brazilian',             '13:00', '13:30', 'Grass Area A', 'grass', 'Interactive Brazilian martial art demonstration'),
+    ('Henna Art Workshop',         'South Asian',           '10:00', '16:00', 'Activity Tent', 'cultural', 'Get beautiful henna art applied by skilled artists'),
+    ('Face Painting — World Flags','All Cultures',          '10:00', '17:00', 'Kids Zone', 'kids', 'Get your face painted with your favourite flag');
+
+  insert into cultural_booths (name, cultural_background, category, location, description) values
+    ('Filipino Cultural Society', 'Filipino',  'Arts & Culture',  'B-01', 'Traditional costumes, crafts, and cultural displays'),
+    ('Korean Heritage Collective','Korean',    'Arts & Crafts',   'B-02', 'Calligraphy, traditional clothing, and cultural demos'),
+    ('Indigenous Arts & Crafts',  'Indigenous','Traditional Arts', 'B-03', 'Beadwork, dreamcatchers, and Indigenous storytelling');
+
+  insert into food_vendors (name, vendor_type, cuisine_category, location, description) values
+    ('Spice of Mumbai',      'vendor', 'Indian Street Food',  'F-01', 'Samosas, chaat, butter chicken wraps'),
+    ('El Sabor Mexicano',    'vendor', 'Mexican',             'F-02', 'Tacos, elotes, churros, and horchata'),
+    ('Flames of Ethiopia',   'truck',  'Ethiopian',           'T-01', 'Injera, lentil stews, and authentic Ethiopian platters'),
+    ('Mango Spice Kitchen',  'truck',  'South Asian Fusion',  'T-02', 'Butter chicken poutine, naan wraps, and chai');
+
+  insert into announcements (title, body, audience) values
+    ('Welcome to CultureFest 2025!', 'We are thrilled to welcome you to our annual celebration of culture, food, and community!', 'public'),
+    ('Main Stage Opens at 11 AM', 'Join us at the main stage for the official opening ceremony and first performances.', 'public'),
+    ('Volunteer Briefing at 8:30 AM', 'All volunteers please meet at the Volunteer Tent at 8:30 AM for briefing and lanyard pickup.', 'volunteer');
+
+  ============================================================
+  GITHUB PAGES DEPLOYMENT
+  ============================================================
+
+  1. Create a new repository on GitHub (e.g. airdrie-culturefest-hub)
+
+  2. Add your HTML file:
+     - Rename it to index.html
+     - git init → git add . → git commit -m "Initial commit"
+     - git remote add origin https://github.com/YOUR_USERNAME/REPO.git
+     - git push -u origin main
+
+  3. Enable GitHub Pages:
+     - Go to repo Settings → Pages
+     - Source: Deploy from branch → main → / (root)
+     - Click Save
+
+  4. Your site will be live at:
+     https://YOUR_USERNAME.github.io/airdrie-culturefest-hub/
+
+  5. IMPORTANT — Supabase CORS:
+     - Go to Supabase → Settings → API → CORS Allowed Origins
+     - Add: https://YOUR_USERNAME.github.io
+
+  ============================================================
+  FUTURE IMPROVEMENTS
+  ============================================================
+
+  - Real-time updates via Supabase subscriptions (supabase.channel)
+  - Push notifications for schedule changes
+  - QR code generator for booth / food truck locations
+  - Offline mode with Service Worker caching
+  - Multi-day event support (date column in schedule table)
+  - Sponsor display section
+  - Photo gallery / social wall
+  - Volunteer shift sign-up / self-registration
+  - Bilingual / multilingual support
+  - SMS alerts for volunteers via Twilio
+  - Analytics dashboard (page views, section traffic)
+  - Print-friendly schedule view
+
+  ============================================================ -->
+</body>
+</html>
