@@ -1281,8 +1281,9 @@ input, select, textarea {
     <!-- Navigation tabs (desktop; mobile uses pills) -->
     <nav id="nav-tabs">
       <button class="nav-tab active" onclick="showPage('public')">🏠 Home</button>
-      <button class="nav-tab" id="vol-tab" onclick="handleVolTab()">🙌 Volunteer</button>
-      <button class="nav-tab" id="admin-tab" onclick="handleAdminTab()">⚙️ Admin</button>
+      <button class="nav-tab hidden" id="vol-tab" onclick="showPage('volunteer')">🙌 Volunteer</button>
+      <button class="nav-tab hidden" id="admin-tab" onclick="showPage('admin')">⚙️ Admin</button>
+      <button class="nav-tab" id="login-tab" onclick="showPage('vol-login')">🔑 Sign In</button>
     </nav>
 
     <!-- User chip (shown when logged in) -->
@@ -1323,14 +1324,6 @@ input, select, textarea {
         <span class="badge badge-purple">20+ Cultures</span>
         <span class="badge badge-blue">Family Friendly</span>
       </div>
-    </div>
-
-    <!-- Search -->
-    <div class="search-bar-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" class="input-field" id="public-search"
-             placeholder="Search performers, food, booths..."
-             oninput="handlePublicSearch(this.value)">
     </div>
 
     <!-- Navigation Pills -->
@@ -1487,38 +1480,96 @@ input, select, textarea {
 
 
   <!-- ======================================================
-       PAGE: VOLUNTEER LOGIN
+       PAGE: UNIFIED LOGIN (volunteers + admins)
        ====================================================== -->
   <div id="page-vol-login" class="page-view">
     <div class="login-wrap">
       <div class="login-header">
-        <div class="login-logo">🙌</div>
-        <h2 class="login-title">Volunteer Login</h2>
-        <p class="login-subtitle">Sign in to access your volunteer dashboard, shifts, and checklists.</p>
+        <div class="login-logo">🌍</div>
+        <h2 class="login-title">Sign In</h2>
+        <p class="login-subtitle">Volunteers and admins sign in here to access your dashboard.</p>
       </div>
       <div class="login-card">
         <div class="login-error" id="vol-login-error"></div>
         <div class="login-success" id="vol-login-success"></div>
         <div class="form-group">
           <label class="input-label">Email Address</label>
-          <input type="email" class="input-field" id="vol-email" placeholder="your@email.com">
+          <input type="email" class="input-field" id="vol-email" placeholder="your@email.com" autocomplete="email">
         </div>
         <div class="form-group">
           <label class="input-label">Password</label>
           <input type="password" class="input-field" id="vol-password" placeholder="••••••••"
-                 onkeydown="if(event.key==='Enter')volLogin()">
+                 onkeydown="if(event.key==='Enter')unifiedLogin()" autocomplete="current-password">
         </div>
-        <button class="btn btn-primary w-full" onclick="volLogin()" id="vol-login-btn">
+        <button class="btn btn-primary w-full" onclick="unifiedLogin()" id="vol-login-btn">
           Sign In →
         </button>
-        <div class="login-divider">or</div>
-        <p style="font-size:0.78rem;color:var(--text-muted);text-align:center;line-height:1.6">
-          Don't have an account? Contact your coordinator to get set up.<br>
-          <a onclick="showPage('public')" style="color:var(--cf-blue);cursor:pointer;">← Back to Public Site</a>
-        </p>
+        <div style="text-align:center;margin-top:16px;">
+          <a onclick="showForgotPassword()" style="font-size:0.82rem;color:var(--cf-blue);cursor:pointer;">
+            Forgot your password? Reset it here
+          </a>
+        </div>
+        <div style="text-align:center;margin-top:10px;">
+          <a onclick="showPage('public')" style="font-size:0.78rem;color:var(--text-muted);cursor:pointer;">← Back to Public Site</a>
+        </div>
       </div>
     </div>
-  </div><!-- /page-vol-login -->
+  </div><!-- /page-login -->
+
+  <!-- ======================================================
+       PAGE: FORGOT PASSWORD
+       ====================================================== -->
+  <div id="page-forgot" class="page-view">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-logo">🔑</div>
+        <h2 class="login-title">Reset Password</h2>
+        <p class="login-subtitle">Enter your email and we'll send you a reset link.</p>
+      </div>
+      <div class="login-card">
+        <div class="login-error" id="forgot-error"></div>
+        <div class="login-success" id="forgot-success"></div>
+        <div class="form-group">
+          <label class="input-label">Email Address</label>
+          <input type="email" class="input-field" id="forgot-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <button class="btn btn-primary w-full" onclick="sendPasswordReset()" id="forgot-btn">
+          Send Reset Link
+        </button>
+        <div style="text-align:center;margin-top:14px;">
+          <a onclick="showPage('vol-login')" style="font-size:0.78rem;color:var(--text-muted);cursor:pointer;">← Back to Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page-forgot -->
+
+  <!-- ======================================================
+       PAGE: SET NEW PASSWORD (after clicking reset email link)
+       ====================================================== -->
+  <div id="page-reset-password" class="page-view">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-logo">🔐</div>
+        <h2 class="login-title">Set New Password</h2>
+        <p class="login-subtitle">Choose a new password for your account.</p>
+      </div>
+      <div class="login-card">
+        <div class="login-error" id="reset-error"></div>
+        <div class="login-success" id="reset-success"></div>
+        <div class="form-group">
+          <label class="input-label">New Password</label>
+          <input type="password" class="input-field" id="reset-password" placeholder="At least 8 characters" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Confirm New Password</label>
+          <input type="password" class="input-field" id="reset-password-confirm" placeholder="Repeat password" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary w-full" onclick="submitNewPassword()" id="reset-btn">
+          Update Password
+        </button>
+      </div>
+    </div>
+  </div><!-- /page-reset-password -->
 
 
   <!-- ======================================================
@@ -1592,36 +1643,7 @@ input, select, textarea {
   </div><!-- /page-volunteer -->
 
 
-  <!-- ======================================================
-       PAGE: ADMIN LOGIN
-       ====================================================== -->
-  <div id="page-admin-login" class="page-view">
-    <div class="login-wrap">
-      <div class="login-header">
-        <div class="login-logo">⚙️</div>
-        <h2 class="login-title">Admin Login</h2>
-        <p class="login-subtitle">Organizer and admin access only.</p>
-      </div>
-      <div class="login-card">
-        <div class="login-error" id="admin-login-error"></div>
-        <div class="form-group">
-          <label class="input-label">Email Address</label>
-          <input type="email" class="input-field" id="admin-email" placeholder="admin@culturefest.ca">
-        </div>
-        <div class="form-group">
-          <label class="input-label">Password</label>
-          <input type="password" class="input-field" id="admin-password" placeholder="••••••••"
-                 onkeydown="if(event.key==='Enter')adminLogin()">
-        </div>
-        <button class="btn btn-primary w-full" onclick="adminLogin()" id="admin-login-btn">
-          Sign In →
-        </button>
-        <div style="text-align:center;margin-top:14px">
-          <a onclick="showPage('public')" style="font-size:0.78rem;color:var(--cf-blue);cursor:pointer;">← Back to Public Site</a>
-        </div>
-      </div>
-    </div>
-  </div><!-- /page-admin-login -->
+
 
 
   <!-- ======================================================
@@ -1986,8 +2008,8 @@ input, select, textarea {
    project URL and anon (public) key before deploying.
    Get these from: Supabase Dashboard → Settings → API
    ============================================================ */
-const SUPABASE_URL  = 'https://evdxzhydpdjupwvppukj.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2ZHh6aHlkcGRqdXB3dnBwdWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTU0OTIsImV4cCI6MjA5NTI5MTQ5Mn0.I2CBtbEoydRwSOFQriGcy1_0jphG_01K0a29NlxxyMk';
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON = 'YOUR_ANON_PUBLIC_KEY';
 
 let sb = null;
 let currentUser = null;
@@ -2007,6 +2029,7 @@ let trackerNextId = 4;
 document.addEventListener('DOMContentLoaded', async () => {
   initDateTime();
   renderTrackerGates();
+  updateNavTabs();
 
   // Attempt to initialise Supabase
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
@@ -2024,8 +2047,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       await handleAuthSession(session);
     }
 
-    // Listen for auth changes
+    // Listen for auth changes — including password recovery event
     sb.auth.onAuthStateChange(async (_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        // User clicked reset link — show the set-password page
+        showPage('reset-password');
+        return;
+      }
       if (session) {
         await handleAuthSession(session);
       } else {
@@ -2071,26 +2099,28 @@ function showPage(page) {
 
   // Update nav tab highlights
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  if (page === 'public')    document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
-  if (page === 'volunteer') document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
-  if (page === 'admin')     document.querySelector('.nav-tab:nth-child(3)').classList.add('active');
+  const tabMap = { 'public': '#nav-tabs .nav-tab:first-child', 'volunteer': '#vol-tab', 'admin': '#admin-tab', 'vol-login': '#login-tab', 'forgot': '#login-tab', 'reset-password': '#login-tab' };
+  const sel = tabMap[page];
+  if (sel) { const el = document.querySelector(sel); if (el) el.classList.add('active'); }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function handleVolTab() {
+function updateNavTabs() {
+  const volTab   = document.getElementById('vol-tab');
+  const adminTab = document.getElementById('admin-tab');
+  const loginTab = document.getElementById('login-tab');
   if (currentRole === 'volunteer' || currentRole === 'admin') {
-    showPage('volunteer');
+    volTab.classList.remove('hidden');
+    loginTab.classList.add('hidden');
   } else {
-    showPage('vol-login');
+    volTab.classList.add('hidden');
+    loginTab.classList.remove('hidden');
   }
-}
-
-function handleAdminTab() {
   if (currentRole === 'admin') {
-    showPage('admin');
+    adminTab.classList.remove('hidden');
   } else {
-    showPage('admin-login');
+    adminTab.classList.add('hidden');
   }
 }
 
@@ -2155,24 +2185,13 @@ async function handleAuthSession(session) {
     if (profile) {
       currentRole = profile.role || 'volunteer';
       setAuthUI(profile.full_name || session.user.email, currentRole);
-      loadVolunteerData(profile);
+      await loadVolunteerData(profile);
+      if (currentRole === 'admin') {
+        await loadAdminData();
+      }
     } else {
       currentRole = null;
-    }
-
-    // Check admin_profiles table too
-    if (currentRole !== 'admin') {
-      const { data: adminProfile } = await sb
-        .from('volunteer_profiles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .eq('role', 'admin')
-        .single();
-      if (adminProfile) {
-        currentRole = 'admin';
-        setAuthUI(session.user.email, 'admin');
-        loadAdminData();
-      }
+      updateNavTabs();
     }
   }
 }
@@ -2191,7 +2210,10 @@ function setAuthUI(name, role) {
   initials.textContent = ini || '?';
   chipName.textContent = name;
 
-  document.getElementById('admin-display-email').textContent = name;
+  const adminEl = document.getElementById('admin-display-email');
+  if (adminEl) adminEl.textContent = name;
+
+  updateNavTabs();
 }
 
 function clearAuthState() {
@@ -2199,10 +2221,11 @@ function clearAuthState() {
   currentRole = null;
   document.getElementById('user-chip').classList.add('hidden');
   document.getElementById('logout-btn').classList.add('hidden');
+  updateNavTabs();
   showPage('public');
 }
 
-async function volLogin() {
+async function unifiedLogin() {
   const email    = document.getElementById('vol-email').value.trim();
   const password = document.getElementById('vol-password').value;
   const errEl    = document.getElementById('vol-login-error');
@@ -2220,7 +2243,7 @@ async function volLogin() {
   btn.disabled = true;
 
   if (!sb) {
-    // Demo mode
+    // Demo mode — simulate volunteer login
     setTimeout(() => {
       currentRole = 'volunteer';
       setAuthUI('Demo Volunteer', 'volunteer');
@@ -2233,83 +2256,130 @@ async function volLogin() {
     return;
   }
 
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
   btn.textContent = 'Sign In →';
+  btn.disabled = false;
+
+  if (error) {
+    errEl.textContent = 'Incorrect email or password. Please try again.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  // Fetch profile to determine role
+  const { data: profile } = await sb
+    .from('volunteer_profiles')
+    .select('*')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (!profile) {
+    errEl.textContent = 'Your account has not been set up yet. Please contact your coordinator.';
+    errEl.classList.add('visible');
+    await sb.auth.signOut();
+    return;
+  }
+
+  currentRole = profile.role || 'volunteer';
+  setAuthUI(profile.full_name || email, currentRole);
+
+  if (currentRole === 'admin') {
+    await loadAdminData();
+    await loadVolunteerData(profile);
+    showPage('admin');
+    showToast('✅ Welcome, admin!', 'success');
+  } else {
+    await loadVolunteerData(profile);
+    showPage('volunteer');
+    showToast('✅ Welcome back, ' + (profile.full_name || 'Volunteer') + '!', 'success');
+  }
+}
+
+function showForgotPassword() {
+  document.getElementById('forgot-email').value = document.getElementById('vol-email').value || '';
+  document.getElementById('forgot-error').classList.remove('visible');
+  document.getElementById('forgot-success').classList.remove('visible');
+  showPage('forgot');
+}
+
+async function sendPasswordReset() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const errEl = document.getElementById('forgot-error');
+  const sucEl = document.getElementById('forgot-success');
+  const btn   = document.getElementById('forgot-btn');
+
+  errEl.classList.remove('visible');
+  sucEl.classList.remove('visible');
+
+  if (!email) {
+    errEl.textContent = 'Please enter your email address.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  if (!sb) {
+    sucEl.textContent = 'Reset link sent! (demo mode — no email actually sent)';
+    sucEl.classList.add('visible');
+    return;
+  }
+
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname + '?reset=true'
+  });
+
+  btn.textContent = 'Send Reset Link';
   btn.disabled = false;
 
   if (error) {
     errEl.textContent = error.message;
     errEl.classList.add('visible');
   } else {
-    showPage('volunteer');
-    showToast('✅ Welcome back!', 'success');
+    sucEl.textContent = '✅ Reset link sent! Check your email inbox (and spam folder).';
+    sucEl.classList.add('visible');
   }
 }
 
-async function adminLogin() {
-  const email    = document.getElementById('admin-email').value.trim();
-  const password = document.getElementById('admin-password').value;
-  const errEl    = document.getElementById('admin-login-error');
-  const btn      = document.getElementById('admin-login-btn');
+async function submitNewPassword() {
+  const pw1   = document.getElementById('reset-password').value;
+  const pw2   = document.getElementById('reset-password-confirm').value;
+  const errEl = document.getElementById('reset-error');
+  const sucEl = document.getElementById('reset-success');
+  const btn   = document.getElementById('reset-btn');
 
   errEl.classList.remove('visible');
+  sucEl.classList.remove('visible');
 
-  if (!email || !password) {
-    errEl.textContent = 'Please enter your credentials.';
+  if (!pw1 || pw1.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.classList.add('visible');
+    return;
+  }
+  if (pw1 !== pw2) {
+    errEl.textContent = 'Passwords do not match.';
     errEl.classList.add('visible');
     return;
   }
 
-  btn.textContent = 'Signing in…';
+  btn.textContent = 'Updating…';
   btn.disabled = true;
 
-  if (!sb) {
-    // Demo admin
-    setTimeout(() => {
-      currentRole = 'admin';
-      setAuthUI(email, 'admin');
-      loadDemoAdminData();
-      showPage('admin');
-      showToast('✅ Admin access granted (demo)', 'success');
-      btn.textContent = 'Sign In →';
-      btn.disabled = false;
-    }, 800);
-    return;
-  }
+  const { error } = await sb.auth.updateUser({ password: pw1 });
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.textContent = 'Update Password';
+  btn.disabled = false;
 
   if (error) {
     errEl.textContent = error.message;
     errEl.classList.add('visible');
-    btn.textContent = 'Sign In →';
-    btn.disabled = false;
-    return;
+  } else {
+    sucEl.textContent = '✅ Password updated! Signing you in…';
+    sucEl.classList.add('visible');
+    setTimeout(() => showPage('public'), 1500);
   }
-
-  // Verify admin role
-  const { data: profile } = await sb
-    .from('volunteer_profiles')
-    .select('role')
-    .eq('user_id', data.user.id)
-    .single();
-
-  btn.textContent = 'Sign In →';
-  btn.disabled = false;
-
-  if (!profile || profile.role !== 'admin') {
-    await sb.auth.signOut();
-    errEl.textContent = 'Access denied. This account does not have admin privileges.';
-    errEl.classList.add('visible');
-    return;
-  }
-
-  currentRole = 'admin';
-  setAuthUI(email, 'admin');
-  await loadAdminData();
-  showPage('admin');
-  showToast('✅ Welcome, admin!', 'success');
 }
 
 async function handleLogout() {
@@ -2643,7 +2713,7 @@ function saveChecklist(idx, val) {
 function switchVolTab(tab) {
   document.querySelectorAll('#page-volunteer .admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('#page-volunteer .admin-panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
+  // tab already handled by loop above
   document.getElementById('vol-panel-' + tab).classList.add('active');
 }
 
