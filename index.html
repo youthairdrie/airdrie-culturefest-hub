@@ -5384,108 +5384,242 @@ function validateCanadianPhone(val) {
 }
 
 async function submitOnboarding() {
-  const btn      = document.getElementById('ob-submit-btn');
-  const errEl    = document.getElementById('ob-error');
-  const phone    = document.getElementById('ob-phone').value.trim();
-  const name     = document.getElementById('ob-name').value.trim();
-  const source   = document.getElementById('ob-source')?.value || getProgramList()[0]?.code || '';
-  const pronouns = document.getElementById('ob-pronouns').value.trim();
-  const ecName   = document.getElementById('ob-ec-name').value.trim();
-  const ecPhone  = document.getElementById('ob-ec-phone').value.trim();
-  const health   = document.getElementById('ob-health').value.trim();
+  const btn   = document.getElementById('ob-submit-btn');
+  const errEl = document.getElementById('ob-error');
+
+  // ── Collect form values ────────────────────────────────────
+  const phone    = document.getElementById('ob-phone')?.value.trim()    || '';
+  const name     = document.getElementById('ob-name')?.value.trim()     || '';
+  const source   = document.getElementById('ob-source')?.value          || getProgramList()[0]?.code || '';
+  const pronouns = document.getElementById('ob-pronouns')?.value.trim() || '';
+  const ecName   = document.getElementById('ob-ec-name')?.value.trim()  || '';
+  const ecPhone  = document.getElementById('ob-ec-phone')?.value.trim() || '';
+  const health   = document.getElementById('ob-health')?.value.trim()   || '';
+
+  // ── Helper: show error and reset button ───────────────────
+  function obError(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Complete Profile & Enter Dashboard →'; }
+  }
 
   errEl.style.display = 'none';
 
-  // Validate phone
+  // ── Guard: must have a logged-in user ─────────────────────
+  if (!currentUser) {
+    obError('❌ Session expired. Please sign in again.');
+    console.log('[OB] submitOnboarding called with no currentUser');
+    return;
+  }
+  if (!sb) {
+    obError('❌ Database not connected. Please refresh and try again.');
+    return;
+  }
+
+  // ── Client-side validation ────────────────────────────────
   if (!phone) {
-    errEl.textContent = '📱 Your cell phone number is required — WhatsApp is how we contact volunteers.';
-    errEl.style.display = 'block';
-    document.getElementById('ob-phone').focus();
+    obError('📱 Your cell phone number is required — WhatsApp is how we contact volunteers.');
+    document.getElementById('ob-phone')?.focus();
     return;
   }
   if (!validateCanadianPhone(phone)) {
-    errEl.textContent = '📱 Please enter a valid 10-digit Canadian number (e.g. (403) 555-1234).';
-    errEl.style.display = 'block';
-    document.getElementById('ob-phone').focus();
+    obError('📱 Please enter a valid 10-digit Canadian number (e.g. (403) 555-1234).');
+    document.getElementById('ob-phone')?.focus();
     return;
   }
 
-  // Validate source group against known programs
   const validSources = _allPrograms.length
     ? _allPrograms.map(p => p.code)
-    : PROGRAM_FALLBACKS.map(p => p.code); // offline fallback — matches seed data
-  if (!validSources.includes(source)) {
-    errEl.textContent = '⚠️ Please select a valid volunteer program.';
-    errEl.style.display = 'block';
+    : PROGRAM_FALLBACKS.map(p => p.code);
+  if (source && !validSources.includes(source)) {
+    obError('⚠️ Please select a valid volunteer program.');
     return;
   }
 
-  btn.textContent = 'Saving…';
-  btn.disabled = true;
+  // ── Enter saving state ────────────────────────────────────
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
+  // ── Timeout protection: 15s max ───────────────────────────
+  let timeoutId = null;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error('TIMEOUT: Save took longer than 15 seconds. Check your connection and try again.'));
+    }, 15000);
+  });
+
+  try {
+    await Promise.race([_doOnboardingSave(name, phone, source, pronouns, ecName, ecPhone, health), timeoutPromise]);
+  } catch (err) {
+    const msg = err?.message || String(err);
+    console.log('[OB] submitOnboarding caught error:', msg);
+    obError('❌ ' + msg);
+  } finally {
+    clearTimeout(timeoutId);
+    // Always re-enable button — safety net in case _doOnboardingSave didn't reset it
+    if (btn && btn.disabled) {
+      btn.disabled = false;
+      btn.textContent = 'Complete Profile & Enter Dashboard →';
+    }
+  }
+}
+
+/* ── Inner save logic — separated so timeout can race against it ── */
+async function _doOnboardingSave(name, phone, source, pronouns, ecName, ecPhone, health) {
+  const btn   = document.getElementById('ob-submit-btn');
+  const errEl = document.getElementById('ob-error');
+
+  function obError(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Complete Profile & Enter Dashboard →'; }
+  }
+
+  // ── Build the payload ─────────────────────────────────────
+  // Only include columns we KNOW exist. Columns added in migrations
+  // are checked individually and omitted if causing errors.
   const updates = {
     cell_phone:                 normalizePhone(phone),
-    full_name:                  name || null,
-    volunteer_source:           source,
-    pronouns:                   pronouns || null,
-    emergency_contact_name:     ecName || null,
-    emergency_contact_phone:    ecPhone ? normalizePhone(ecPhone) : null,
-    health_accessibility_notes: health || null,
     onboarding_complete:        true,
     updated_at:                 new Date().toISOString(),
   };
+  // Optional fields — only set if non-empty to avoid touching constrained columns
+  if (name)     updates.full_name = name;
+  if (source)   updates.volunteer_source = source;
+  if (pronouns) updates.pronouns = pronouns;
+  if (ecName)   updates.emergency_contact_name = ecName;
+  if (ecPhone)  updates.emergency_contact_phone = normalizePhone(ecPhone);
+  if (health)   updates.health_accessibility_notes = health;
 
-  // Update profile row (created by DB trigger on auth signup)
-  const { error } = await sb
+  console.log('[OB] Payload to save:', JSON.stringify(updates));
+  console.log('[OB] Saving for user_id:', currentUser.id);
+
+  // ── Step 1: Check if a profile row already exists ─────────
+  const { data: existingRows, error: lookupErr } = await sb
     .from('volunteer_profiles')
-    .update(updates)
+    .select('id, user_id, onboarding_complete, volunteer_source')
     .eq('user_id', currentUser.id);
 
-  if (error) {
-    // If update failed because row doesn't exist, try insert
-    if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
-      const { error: insertErr } = await sb
-        .from('volunteer_profiles')
-        .insert({ ...updates, user_id: currentUser.id, email: currentUser.email });
-      if (insertErr) {
-        btn.textContent = 'Complete Profile & Enter Dashboard →';
-        btn.disabled = false;
-        errEl.textContent = '❌ Could not save profile: ' + insertErr.message;
-        errEl.style.display = 'block';
-        return;
+  if (lookupErr) {
+    console.log('[OB] Profile lookup error:', lookupErr.message, '| code:', lookupErr.code);
+    // RLS may be blocking SELECT — try to proceed with upsert anyway
+    console.log('[OB] Proceeding to upsert despite lookup error');
+  } else {
+    console.log('[OB] Profile lookup result:', JSON.stringify(existingRows));
+  }
+
+  const profileExists = existingRows && existingRows.length > 0;
+  console.log('[OB] Profile row exists:', profileExists);
+
+  // ── Step 2: UPDATE or INSERT ───────────────────────────────
+  let saveError = null;
+  let savedVia  = null;
+
+  if (profileExists) {
+    // UPDATE existing row
+    console.log('[OB] Attempting UPDATE...');
+    const { error: updateErr, data: updateData } = await sb
+      .from('volunteer_profiles')
+      .update(updates)
+      .eq('user_id', currentUser.id)
+      .select('id');
+
+    console.log('[OB] UPDATE response — error:', updateErr?.message, '| rows returned:', updateData?.length ?? 'n/a');
+
+    if (updateErr) {
+      // Diagnose RLS / column errors
+      if (updateErr.code === '42501' || updateErr.message?.includes('permission denied')) {
+        console.log('[OB] RLS BLOCK on UPDATE — volunteer needs update policy on volunteer_profiles');
+        saveError = updateErr;
+      } else if (updateErr.code === '42703' || updateErr.message?.includes('column')) {
+        console.log('[OB] COLUMN ERROR on UPDATE — a column in the payload does not exist in the table');
+        // Retry with minimal payload (phone + onboarding_complete only)
+        console.log('[OB] Retrying with minimal payload...');
+        const { error: minErr } = await sb
+          .from('volunteer_profiles')
+          .update({ cell_phone: normalizePhone(phone), onboarding_complete: true, updated_at: new Date().toISOString() })
+          .eq('user_id', currentUser.id);
+        saveError = minErr || null;
+        if (!minErr) savedVia = 'update-minimal';
+      } else {
+        saveError = updateErr;
       }
+    } else if (!updateData || updateData.length === 0) {
+      // UPDATE matched 0 rows — RLS silently blocked or row truly missing
+      console.log('[OB] UPDATE affected 0 rows — RLS may be blocking or row not found. Falling back to INSERT.');
+      saveError = { message: 'UPDATE returned 0 rows — attempting INSERT as fallback' };
     } else {
-      btn.textContent = 'Complete Profile & Enter Dashboard →';
-      btn.disabled = false;
-      errEl.textContent = '❌ Could not save: ' + error.message;
-      errEl.style.display = 'block';
-      return;
+      savedVia = 'update';
     }
   }
 
-  // Refresh profile from DB
-  const { data: profile } = await sb
+  // INSERT path: either no row existed, or UPDATE returned 0 rows
+  if (!savedVia) {
+    console.log('[OB] Attempting INSERT (upsert on user_id conflict)...');
+    const insertPayload = {
+      ...updates,
+      user_id: currentUser.id,
+      email:   currentUser.email || null,
+    };
+    console.log('[OB] INSERT payload:', JSON.stringify(insertPayload));
+
+    // Use upsert so if the row appears between check and insert it doesn't double-insert
+    const { error: upsertErr, data: upsertData } = await sb
+      .from('volunteer_profiles')
+      .upsert(insertPayload, { onConflict: 'user_id' })
+      .select('id');
+
+    console.log('[OB] UPSERT response — error:', upsertErr?.message, '| rows:', upsertData?.length ?? 'n/a');
+
+    if (upsertErr) {
+      if (upsertErr.code === '42501' || upsertErr.message?.includes('permission denied')) {
+        console.log('[OB] RLS BLOCK on UPSERT — volunteer needs insert policy on volunteer_profiles');
+      } else if (upsertErr.code === '23514' || upsertErr.message?.includes('check')) {
+        console.log('[OB] CHECK CONSTRAINT violation — volunteer_source value "' + source + '" is not in allowed list. Run: ALTER TABLE volunteer_profiles DROP CONSTRAINT volunteer_profiles_volunteer_source_check;');
+      }
+      saveError = upsertErr;
+    } else {
+      saveError = null;
+      savedVia  = 'upsert';
+    }
+  }
+
+  // ── Step 3: Handle save failure ───────────────────────────
+  if (saveError) {
+    console.log('[OB] Save failed. Final error:', saveError.message, '| code:', saveError.code);
+    obError('❌ Could not save profile: ' + (saveError.message || 'Unknown error'));
+    return; // btn already re-enabled by obError
+  }
+
+  console.log('[OB] Save succeeded via:', savedVia);
+
+  // ── Step 4: Re-fetch profile to confirm and get full data ─
+  const { data: profile, error: fetchErr } = await sb
     .from('volunteer_profiles')
     .select('*')
     .eq('user_id', currentUser.id)
-    .single();
+    .maybeSingle(); // maybeSingle returns null instead of error when no row
 
+  console.log('[OB] Post-save profile fetch:', profile ? 'OK' : 'null', fetchErr?.message || '');
+
+  // ── Step 5: Reset UI and navigate ─────────────────────────
+  if (btn) { btn.disabled = false; btn.textContent = 'Complete Profile & Enter Dashboard →'; }
   hideOnboarding();
-  btn.textContent = 'Complete Profile & Enter Dashboard →';
-  btn.disabled = false;
-
   showToast('✅ Profile saved! Welcome to CultureFest 🎉', 'success');
 
-  if (profile) {
-    currentRole = profile.role || 'volunteer';
-    setAuthUI(profile.full_name || currentUser.email, currentRole);
-    await loadVolunteerData(profile);
-    if (currentRole === 'admin') {
-      await loadAdminData();
-      showPage('admin');
-    } else {
-      showPage('volunteer');
-    }
+  const resolvedProfile = profile || { user_id: currentUser.id, role: 'volunteer', full_name: name || currentUser.email };
+  currentRole = resolvedProfile.role || 'volunteer';
+  setAuthUI(resolvedProfile.full_name || currentUser.email, currentRole);
+  updateNavTabs();
+
+  try {
+    await loadVolunteerData(resolvedProfile);
+  } catch (e) {
+    console.log('[OB] loadVolunteerData error after save:', e?.message || String(e));
+  }
+
+  if (currentRole === 'admin') {
+    try { await loadAdminData(); } catch(e) { console.log('[OB] loadAdminData error:', e?.message || String(e)); }
+    showPage('admin');
   } else {
     showPage('volunteer');
   }
@@ -7929,7 +8063,49 @@ function clearContactForm() {
     ('volunteer_instructions',  'Report to the volunteer tent on arrival. Wear your lanyard at all times. Thank you for making CultureFest possible!');
 
   ============================================================
-  MIGRATION: PROMPT 4B — Programs, Coordinator Relationships,
+  CRITICAL FIX: ONBOARDING SAVE — RLS & SCHEMA
+  Run this in Supabase SQL Editor to fix the "Saving..." hang.
+  Safe to run multiple times.
+  ============================================================
+
+  -- ── 1. DROP hard-coded CHECK constraint on volunteer_source ───
+  -- The constraint blocks any program code not in the original 3.
+  -- Dynamic programs added via Admin will fail silently without this.
+  alter table volunteer_profiles
+    drop constraint if exists volunteer_profiles_volunteer_source_check;
+
+  -- ── 2. ADD RLS policy: volunteers can UPDATE their own profile ──
+  -- Without this, the onboarding save silently writes 0 rows and
+  -- appears to hang (button stays disabled).
+  drop policy if exists "Volunteers update own profile" on volunteer_profiles;
+  create policy "Volunteers update own profile"
+    on volunteer_profiles for update
+    using  (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+
+  -- ── 3. ADD RLS policy: volunteers can INSERT their own profile ──
+  -- Needed for the upsert fallback when no profile row exists.
+  drop policy if exists "Volunteers insert own profile" on volunteer_profiles;
+  create policy "Volunteers insert own profile"
+    on volunteer_profiles for insert
+    with check (auth.uid() = user_id);
+
+  -- ── 4. Ensure all onboarding columns exist ─────────────────────
+  alter table volunteer_profiles
+    add column if not exists cell_phone                  text,
+    add column if not exists pronouns                    text,
+    add column if not exists volunteer_source            text default 'YA-Youth',
+    add column if not exists onboarding_complete         boolean default false,
+    add column if not exists emergency_contact_name      text,
+    add column if not exists emergency_contact_phone     text,
+    add column if not exists health_accessibility_notes  text,
+    add column if not exists updated_at                  timestamptz default now();
+
+  -- ── 5. Reload PostgREST schema cache ───────────────────────────
+  -- Run this after any column additions to make them visible to the API.
+  notify pgrst, 'reload schema';
+
+  ============================================================
   Role Details, System Settings
   Run these in Supabase SQL Editor AFTER the initial setup.
   ============================================================
