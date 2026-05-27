@@ -247,6 +247,27 @@ input, select, textarea {
 .input-field:focus { border-color: var(--cf-gold); background: rgba(255,255,255,0.07); }
 .input-field::placeholder { color: var(--text-muted); }
 
+/* Force dark background on all <select> dropdowns and their options.
+   Without this, native OS rendering shows white bg / black text in the
+   option list even when the select itself is styled dark. */
+select.input-field {
+  background-color: #1a2540;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+select.input-field option {
+  background-color: #1a2540;
+  color: var(--text-primary);
+}
+select.input-field option:disabled {
+  color: var(--text-muted);
+}
+select.input-field option:checked,
+select.input-field option:focus {
+  background-color: rgba(245,166,35,0.25);
+  color: var(--cf-gold);
+}
+
 .input-label {
   font-size: 0.78rem;
   font-weight: 600;
@@ -3029,6 +3050,72 @@ pre, code {
         <div class="loading-state"><div class="spinner"></div> Loading...</div>
       </div>
 
+      <!-- ─── VOLUNTEER PROGRAMS SECTION ──────────────────────── -->
+      <div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:28px;padding-top:24px;">
+
+        <!-- Programs form -->
+        <div class="admin-form" id="prog-form">
+          <h4>🗂️ Add / Edit Volunteer Program</h4>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">
+            Programs appear in the <strong>Volunteer Program</strong> dropdown during onboarding and in user management.
+            The <strong>Code</strong> is the value stored in the database (e.g. <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;">YA-Youth</code>).
+          </p>
+          <input type="hidden" id="prog-edit-id">
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="input-label">Program Name <span style="color:var(--cf-coral)">*</span></label>
+              <input type="text" class="input-field" id="prog-name"
+                     placeholder="e.g. Youth Airdrie Volunteer">
+            </div>
+            <div class="form-group">
+              <label class="input-label">Code (short key) <span style="color:var(--cf-coral)">*</span></label>
+              <input type="text" class="input-field" id="prog-code"
+                     placeholder="e.g. YA-Youth" maxlength="32"
+                     oninput="this.value=this.value.replace(/\s/g,'-')">
+            </div>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="input-label">Icon / Emoji</label>
+              <input type="text" class="input-field" id="prog-icon"
+                     placeholder="e.g. 🌱" maxlength="4">
+            </div>
+            <div class="form-group">
+              <label class="input-label">Colour</label>
+              <select class="input-field" id="prog-color">
+                <option value="green">Green</option>
+                <option value="gold">Gold</option>
+                <option value="teal">Teal</option>
+                <option value="purple">Purple</option>
+                <option value="blue">Blue</option>
+                <option value="coral">Coral / Red</option>
+                <option value="pink">Pink</option>
+                <option value="orange">Orange</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Description (optional)</label>
+            <input type="text" class="input-field" id="prog-desc"
+                   placeholder="e.g. Youth under 18 registered through Youth Airdrie">
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="adminSaveProgram()">💾 Save Program</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearProgForm()">Clear</button>
+            <div id="prog-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+          </div>
+        </div>
+
+        <!-- List of programs -->
+        <h4 style="font-family:var(--font-display);font-weight:700;color:var(--cf-blue);margin-bottom:10px;">
+          Volunteer Programs
+        </h4>
+        <div id="admin-prog-list">
+          <div class="loading-state"><div class="spinner"></div> Loading...</div>
+        </div>
+
+      </div><!-- /programs section -->
+
     </div><!-- /designations panel -->
 
     <!-- ═══════════════════════════════════════════════════════
@@ -4164,6 +4251,7 @@ async function loadAdminData() {
     loadAdminContacts(),
     loadHomepageAdminForm(),
     loadAdminRoles(),
+    loadPrograms().then(refreshProgramFilterBar),
   ]);
 }
 
@@ -4438,7 +4526,10 @@ function switchAdminTab(tab) {
   if (panel) panel.classList.add('active');
 
   // Lazy-load designations panel on first open
-  if (tab === 'designations-admin') loadAdminDesignations();
+  if (tab === 'designations-admin') {
+    loadAdminDesignations();
+    loadAdminPrograms();
+  }
 }
 
 /* ============================================================
@@ -4753,6 +4844,9 @@ function showOnboarding(profile) {
   }
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
+  // Populate the source dropdown dynamically from programs table
+  if (_allPrograms.length) refreshProgramDropdowns();
+  else loadPrograms().then(refreshProgramDropdowns);
   // Focus the first empty required field
   setTimeout(() => {
     const phone = document.getElementById('ob-phone');
@@ -4839,8 +4933,10 @@ async function submitOnboarding() {
     return;
   }
 
-  // Validate source group
-  const validSources = ['YA-Youth', 'YVC-Youth', 'VA-Adult'];
+  // Validate source group against known programs
+  const validSources = _allPrograms.length
+    ? _allPrograms.map(p => p.code)
+    : ['YA-Youth', 'YVC-Youth', 'VA-Adult']; // fallback if not loaded
   if (!validSources.includes(source)) {
     errEl.textContent = '⚠️ Please select a valid volunteer program.';
     errEl.style.display = 'block';
@@ -5621,10 +5717,21 @@ function setSourceFilter(src) {
 
 /* Source group helpers */
 function sourceLabel(src) {
+  // Check dynamic programs first
+  const prog = _allPrograms.find(p => p.code === src);
+  if (prog) return (prog.icon ? prog.icon + ' ' : '') + prog.code;
+  // Static fallbacks
   const map = { 'YA-Youth': '🌱 YA-Youth', 'YVC-Youth': '🎓 YVC-Youth', 'VA-Adult': '🙌 VA-Adult' };
   return map[src] || src || '–';
 }
 function sourceBadgeClass(src) {
+  // Map color from programs table if available
+  const prog = _allPrograms.find(p => p.code === src);
+  if (prog) {
+    const colorMap = { gold:'badge-gold', teal:'badge-teal', purple:'badge-purple',
+      blue:'badge-blue', green:'badge-ya', coral:'badge-coral', pink:'badge-pink', orange:'badge-orange' };
+    return colorMap[prog.color] || 'badge-blue';
+  }
   if (src === 'YA-Youth')  return 'badge-ya';
   if (src === 'YVC-Youth') return 'badge-yvc';
   if (src === 'VA-Adult')  return 'badge-va';
@@ -6050,6 +6157,165 @@ async function hydrateUserDesignations() {
   const profileIds = Array.from(cards).map(c => c.id.replace('user-card-', ''));
   // Load all in parallel
   await Promise.all(profileIds.map(id => loadUserDesignations(id)));
+}
+
+/* ============================================================
+   VOLUNTEER PROGRAMS
+   Admin-managed list stored in volunteer_programs table.
+   Used to populate the Volunteer Program dropdown throughout
+   the app (onboarding, user cards, filters).
+   ============================================================ */
+
+/* Cache of all programs — refreshed on loadAdminPrograms */
+let _allPrograms = [];
+
+/* Colour helper (shared with designations) */
+function progColorStyle(color) {
+  return DESIG_COLORS[color] || DESIG_COLORS.gold;
+}
+
+async function loadPrograms() {
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('volunteer_programs')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (!error && data) _allPrograms = data;
+}
+
+async function loadAdminPrograms() {
+  const el = document.getElementById('admin-prog-list');
+  if (!el) return;
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+
+  await loadPrograms();
+
+  if (!_allPrograms.length) {
+    el.innerHTML = renderEmpty('No programs defined yet. Add one above.');
+    return;
+  }
+
+  el.innerHTML = _allPrograms.map(p => {
+    const c = progColorStyle(p.color);
+    return `
+    <div class="desig-pill-row" id="prog-row-${p.id}">
+      <div class="desig-pill-swatch" style="background:${c.text};"></div>
+      <span class="desig-tag" style="background:${c.bg};border-color:${c.border};color:${c.text};">
+        ${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)}
+      </span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);">${escHtml(p.name)}</div>
+        ${p.description ? `<div style="font-size:0.75rem;color:var(--text-muted);">${escHtml(p.description)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" style="padding:4px 10px;"
+                onclick="adminEditProgram(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-danger btn-sm" style="padding:4px 10px;"
+                onclick="adminDeleteProgram('${p.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Refresh any open dropdowns that use programs
+  refreshProgramDropdowns();
+}
+
+async function adminSaveProgram() {
+  const id    = document.getElementById('prog-edit-id').value;
+  const name  = document.getElementById('prog-name').value.trim();
+  const code  = document.getElementById('prog-code').value.trim();
+  const icon  = document.getElementById('prog-icon').value.trim();
+  const color = document.getElementById('prog-color').value;
+  const desc  = document.getElementById('prog-desc').value.trim();
+  const fb    = document.getElementById('prog-feedback');
+
+  if (!name) { fb.style.color='var(--cf-coral)'; fb.textContent='Program name is required.'; return; }
+  if (!code) { fb.style.color='var(--cf-coral)'; fb.textContent='Code is required.'; return; }
+
+  fb.textContent = 'Saving…';
+  const row = {
+    name, code, icon: icon || null, color,
+    description: desc || null,
+    display_order: id ? undefined : ((_allPrograms.length || 0) + 1),
+  };
+  if (!id) row.display_order = (_allPrograms.length || 0) + 1;
+
+  const { error } = id
+    ? await sb.from('volunteer_programs').update(row).eq('id', id)
+    : await sb.from('volunteer_programs').insert(row);
+
+  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
+  fb.style.color='var(--cf-green)';
+  fb.textContent = id ? '✅ Updated!' : '✅ Program added!';
+  clearProgForm();
+  await loadAdminPrograms();
+  // Also refresh the source filter buttons
+  await refreshProgramFilterBar();
+  setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
+}
+
+function adminEditProgram(p) {
+  document.getElementById('prog-edit-id').value = p.id;
+  document.getElementById('prog-name').value    = p.name || '';
+  document.getElementById('prog-code').value    = p.code || '';
+  document.getElementById('prog-icon').value    = p.icon || '';
+  document.getElementById('prog-color').value   = p.color || 'green';
+  document.getElementById('prog-desc').value    = p.description || '';
+  document.getElementById('prog-name').focus();
+  document.getElementById('prog-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function adminDeleteProgram(id) {
+  const prog = _allPrograms.find(p => p.id === id);
+  if (!confirm(`Delete program "${prog?.name || id}"?\n\nVolunteers currently assigned to this program will keep their existing value but it will no longer appear in dropdowns.`)) return;
+  const { error } = await sb.from('volunteer_programs').delete().eq('id', id);
+  if (error) showToast('❌ '+error.message, 'error');
+  else {
+    showToast('Program deleted', 'success');
+    await loadAdminPrograms();
+    await refreshProgramFilterBar();
+  }
+}
+
+function clearProgForm() {
+  ['prog-edit-id','prog-name','prog-code','prog-icon','prog-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const c = document.getElementById('prog-color'); if (c) c.value = 'green';
+}
+
+/* Rebuild the source filter bar in the Users tab from _allPrograms */
+async function refreshProgramFilterBar() {
+  if (!_allPrograms.length) await loadPrograms();
+  const bar = document.getElementById('source-filter-bar');
+  if (!bar) return;
+  const allBtn = `<button class="source-filter-btn active" data-source="all" onclick="setSourceFilter('all')">All</button>`;
+  const progBtns = _allPrograms.map(p => {
+    const label = (p.icon ? p.icon + ' ' : '') + p.code;
+    return `<button class="source-filter-btn" data-source="${escHtml(p.code)}" onclick="setSourceFilter('${escHtml(p.code)}')">${label}</button>`;
+  }).join('');
+  bar.innerHTML = allBtn + progBtns;
+}
+
+/* Rebuild all ob-source / usource dropdowns from _allPrograms */
+async function refreshProgramDropdowns() {
+  if (!_allPrograms.length) await loadPrograms();
+  const opts = _allPrograms.map(p =>
+    `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)} — ${escHtml(p.name)}</option>`
+  ).join('');
+
+  // Onboarding source select
+  const obSrc = document.getElementById('ob-source');
+  if (obSrc) { const v = obSrc.value; obSrc.innerHTML = opts; obSrc.value = v || (_allPrograms[0]?.code ?? ''); }
+
+  // All usource-* selects in the users list
+  document.querySelectorAll('[id^="usource-"]').forEach(sel => {
+    const v = sel.value;
+    sel.innerHTML = _allPrograms.map(p =>
+      `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)}</option>`
+    ).join('');
+    sel.value = v;
+  });
 }
 
 /* ============================================================
@@ -6532,6 +6798,37 @@ function clearContactForm() {
     is_published boolean default true,
     created_at   timestamptz default now()
   );
+
+  -- VOLUNTEER PROGRAMS
+  -- Admin-managed list of volunteer program options shown in dropdowns.
+  -- Adding/editing here automatically updates all dropdown menus in the app.
+  create table volunteer_programs (
+    id            uuid primary key default uuid_generate_v4(),
+    code          text not null unique,   -- e.g. YA-Youth (stored in volunteer_profiles.volunteer_source)
+    name          text not null,          -- e.g. Youth Airdrie Volunteer
+    icon          text,                   -- emoji
+    color         text default 'green' check (color in ('gold','teal','purple','blue','green','coral','pink','orange')),
+    description   text,
+    display_order int default 99,
+    created_at    timestamptz default now()
+  );
+
+  -- Index for fast lookup
+  create index if not exists idx_vol_programs_code on volunteer_programs(code);
+
+  -- Seed the three default programs
+  insert into volunteer_programs (code, name, icon, color, display_order) values
+    ('YA-Youth',  'Youth Airdrie Volunteer',  '🌱', 'green',  1),
+    ('YVC-Youth', 'Youth Volunteer Corps',     '🎓', 'gold',   2),
+    ('VA-Adult',  'Volunteer Airdrie Adult',   '🙌', 'purple', 3);
+
+  -- RLS: authenticated users read, admins manage
+  alter table volunteer_programs enable row level security;
+  create policy "Auth read programs"
+    on volunteer_programs for select using (auth.role() = 'authenticated');
+  create policy "Admins manage programs"
+    on volunteer_programs for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
 
   -- VOLUNTEER DESIGNATIONS
   -- Admin-defined labels assigned to volunteers (e.g. Lead, Co-Lead, Mentor, Senior)
