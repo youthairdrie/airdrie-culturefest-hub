@@ -2715,7 +2715,8 @@ pre, code {
       </div>
     </div>
 
-    <!-- Available Shifts — self-signup -->\n    <div id="vol-panel-available-shifts" class="admin-panel">
+    <!-- Available Shifts — self-signup -->
+    <div id="vol-panel-available-shifts" class="admin-panel">
       <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--cf-green)">✋ Available Shifts</h3>
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">
         Sign up for open shifts. You may sign up for multiple shifts.
@@ -4491,7 +4492,7 @@ async function loadVolunteerData(profile) {
   currentUserProfile = profile;
 
   // Load programs if not yet loaded (needed for shift filters)
-  if (!_allPrograms.length) await loadPrograms();
+  if (!_programsLoaded) await loadPrograms();
 
   // Load system settings if not yet loaded
   if (!Object.keys(_systemSettings).length) await loadSystemSettings();
@@ -5321,9 +5322,9 @@ function showOnboarding(profile) {
   }
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
-  // Populate the source dropdown dynamically from programs table
-  if (_allPrograms.length) refreshProgramDropdowns();
-  else loadPrograms().then(refreshProgramDropdowns);
+  // Always load fresh programs from Supabase then populate dropdown.
+  // Don't rely on _allPrograms.length — it may be 0 or contain only FALLBACKS.
+  loadPrograms().then(refreshProgramDropdowns).catch(() => refreshProgramDropdowns());
   // Focus the first empty required field
   setTimeout(() => {
     const phone = document.getElementById('ob-phone');
@@ -6953,8 +6954,12 @@ async function hydrateUserDesignations() {
    the app (onboarding, user cards, filters).
    ============================================================ */
 
-/* Cache of all programs — refreshed on loadAdminPrograms */
+/* Cache of all active programs — refreshed by loadPrograms() and loadAdminPrograms().
+   Use getProgramList() to access — never read _allPrograms directly in render code. */
 let _allPrograms = [];
+/* True after the first successful Supabase loadPrograms() call completes.
+   Lets getProgramList() distinguish "not loaded yet" from "loaded, 0 results". */
+let _programsLoaded = false;
 
 /* Colour helper (shared with designations) */
 function progColorStyle(color) {
@@ -6963,13 +6968,24 @@ function progColorStyle(color) {
 
 async function loadPrograms() {
   if (!sb) return;
+  // NOTE: We do NOT filter .eq('active', true) here because the `active`
+  // column may not yet exist in the volunteer_programs table for existing
+  // deployments. We fetch all rows and filter in JS so new programs always
+  // appear. The SQL migration below adds the column if missing.
   const { data, error } = await sb
     .from('volunteer_programs')
     .select('id, code, name, icon, color, description, display_order, active')
-    .eq('active', true)
     .order('display_order', { ascending: true });
-  if (!error && data) _allPrograms = data;
-  else if (error) console.log('[WARN] loadPrograms error:', error.message);
+  if (!error && data) {
+    // Filter active in JS — treats missing `active` column (null) as active
+    _allPrograms = data.filter(p => p.active !== false);
+    _programsLoaded = true;
+    console.log('[Programs] Loaded ' + _allPrograms.length + ' active program(s):', _allPrograms.map(p => p.code).join(', '));
+  } else if (error) {
+    console.log('[Programs] loadPrograms error:', error.message);
+    // If query failed entirely (e.g. table doesn't exist), _allPrograms stays
+    // as-is — do NOT overwrite with empty so FALLBACKS remain available
+  }
 }
 
 async function loadAdminPrograms() {
@@ -6989,6 +7005,7 @@ async function loadAdminPrograms() {
 
   // Update the active cache too
   _allPrograms = allProgs.filter(p => p.active !== false);
+  _programsLoaded = true;
 
   el.innerHTML = allProgs.map(p => {
     const c = progColorStyle(p.color);
@@ -7103,7 +7120,7 @@ function clearProgForm() {
 
 /* Rebuild the source filter bar in the Users tab from _allPrograms */
 async function refreshProgramFilterBar() {
-  if (!_allPrograms.length) await loadPrograms();
+  if (!_programsLoaded) await loadPrograms();
   const programs = getProgramList();
   const bar = document.getElementById('source-filter-bar');
   if (!bar) return;
@@ -7116,12 +7133,17 @@ async function refreshProgramFilterBar() {
   bar.innerHTML = allBtn + progBtns;
 }
 
-/* Fix #6: getProgramList() — single source of truth for program options.
-   Returns _allPrograms if loaded (dynamic from Supabase), otherwise
-   falls back to PROGRAM_FALLBACKS. Use this everywhere program
-   options are needed instead of hard-coding strings. */
+/* getProgramList() — single source of truth for program options.
+   Returns _allPrograms (Supabase) once loaded, otherwise PROGRAM_FALLBACKS
+   as a safe offline/pre-load fallback. Never returns an empty array —
+   FALLBACKS always have at least the 3 seed programs. */
 function getProgramList() {
-  return _allPrograms.length ? _allPrograms : PROGRAM_FALLBACKS;
+  // Once Supabase has responded (even with 0 results), use that result.
+  // This means an admin who has deleted all programs sees an empty list
+  // rather than the stale FALLBACKS — intentional for correctness.
+  if (_programsLoaded) return _allPrograms;
+  // Before first load: show FALLBACKS so the UI isn't blank
+  return PROGRAM_FALLBACKS;
 }
 
 /* Fix #6: buildProgramOptions(selectedCode) — renders <option> elements
@@ -7134,7 +7156,7 @@ function buildProgramOptions(selectedCode) {
 
 /* Rebuild all ob-source / usource dropdowns from getProgramList() */
 async function refreshProgramDropdowns() {
-  if (!_allPrograms.length) await loadPrograms();
+  if (!_programsLoaded) await loadPrograms();
   const programs = getProgramList();
   const opts = programs.map(p =>
     `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)} — ${escHtml(p.name)}</option>`
@@ -8114,7 +8136,11 @@ function clearContactForm() {
   alter table volunteer_programs
     add column if not exists active boolean default true;
 
+  -- Treat any existing rows as active
   update volunteer_programs set active = true where active is null;
+
+  -- Reload schema cache after adding column
+  notify pgrst, 'reload schema';
 
   -- 2. Add coordinator_user_id to volunteer_roles (linked relationship)
   alter table volunteer_roles
