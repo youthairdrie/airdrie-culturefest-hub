@@ -2090,6 +2090,52 @@ pre, code {
   color: var(--cf-gold);
 }
 
+/* ─── DESIGNATION TAGS ────────────────────────────────────── */
+.desig-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.desig-tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  color: inherit;
+  opacity: 0.6;
+  min-height: unset;
+  min-width: unset;
+}
+.desig-tag-remove:hover { opacity: 1; }
+
+/* Designation pill in the admin designations manager */
+.desig-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+.desig-pill-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* ─── SOURCE FILTER PILLS ─────────────────────────────────── */
 .source-filters {
   display: flex;
@@ -2570,6 +2616,7 @@ pre, code {
       <button class="admin-tab" onclick="switchAdminTab('booths-admin')">🏮 Booths</button>
       <button class="admin-tab" onclick="switchAdminTab('food-admin')">🍽️ Food</button>
       <button class="admin-tab" onclick="switchAdminTab('users-admin')">👥 Users</button>
+      <button class="admin-tab" onclick="switchAdminTab('designations-admin')">🏷️ Designations</button>
       <button class="admin-tab" onclick="switchAdminTab('announcements-admin')">📢 Announcements</button>
       <button class="admin-tab" onclick="switchAdminTab('homepage-admin')">🏠 Home Page</button>
       <button class="admin-tab" onclick="switchAdminTab('checklist-admin')">✅ Checklist</button>
@@ -2918,6 +2965,71 @@ pre, code {
         <div class="loading-state"><div class="spinner"></div> Loading users...</div>
       </div>
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         DESIGNATIONS ADMIN PANEL
+         Admins define designation labels (e.g. Lead, Co-Lead, Mentor)
+         and assign them to individual volunteers in the Users tab.
+         ═══════════════════════════════════════════════════════ -->
+    <div id="admin-panel-designations-admin" class="admin-panel">
+
+      <!-- Create / edit form -->
+      <div class="admin-form" id="desig-form">
+        <h4>🏷️ Add / Edit Designation</h4>
+        <input type="hidden" id="desig-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Label <span style="color:var(--cf-coral)">*</span></label>
+            <input type="text" class="input-field" id="desig-label"
+                   placeholder="e.g. Lead, Co-Lead, Mentor, Senior">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Icon / Emoji (optional)</label>
+            <input type="text" class="input-field" id="desig-icon"
+                   placeholder="e.g. ⭐ 🎖️ 🔑" maxlength="4">
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Colour</label>
+            <select class="input-field" id="desig-color">
+              <option value="gold">Gold</option>
+              <option value="teal">Teal</option>
+              <option value="purple">Purple</option>
+              <option value="blue">Blue</option>
+              <option value="green">Green</option>
+              <option value="coral">Coral / Red</option>
+              <option value="pink">Pink</option>
+              <option value="orange">Orange</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Display Order</label>
+            <input type="number" class="input-field" id="desig-order"
+                   placeholder="1" min="1" style="max-width:100px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Description (optional — admin note)</label>
+          <input type="text" class="input-field" id="desig-desc"
+                 placeholder="e.g. Leads a team of 5 volunteers">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="adminSaveDesignation()">💾 Save Designation</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearDesigForm()">Clear</button>
+          <div id="desig-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+        </div>
+      </div>
+
+      <!-- List of existing designations -->
+      <h4 style="font-family:var(--font-display);font-weight:700;color:var(--cf-blue);margin-bottom:10px;">
+        Defined Designations
+      </h4>
+      <div id="admin-desig-list">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+
+    </div><!-- /designations panel -->
 
     <!-- ═══════════════════════════════════════════════════════
          HOME PAGE CONTENT PANEL
@@ -4324,6 +4436,9 @@ function switchAdminTab(tab) {
   });
   const panel = document.getElementById('admin-panel-' + tab);
   if (panel) panel.classList.add('active');
+
+  // Lazy-load designations panel on first open
+  if (tab === 'designations-admin') loadAdminDesignations();
 }
 
 /* ============================================================
@@ -5537,6 +5652,8 @@ async function loadUsersAdmin() {
 
   wrap.dataset.users = JSON.stringify(users);
   renderUsersCards(users);
+  // Hydrate designation tags + dropdowns asynchronously
+  setTimeout(hydrateUserDesignations, 0);
 }
 
 function renderUsersCards(users) {
@@ -5597,6 +5714,23 @@ function renderUsersCards(users) {
 
       ${u.pronouns ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">Pronouns: ${escHtml(u.pronouns)}</div>` : ''}
       ${u.emergency_contact_name ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">🚨 EC: ${escHtml(u.emergency_contact_name)}${u.emergency_contact_phone ? ' · ' + escHtml(normalizePhone(u.emergency_contact_phone)) : ''}</div>` : ''}
+
+      <!-- Designation assignment -->
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:0;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:7px;">
+          🏷️ Designations
+        </div>
+        <div id="udesig-tags-${u.id}" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:20px;">
+          <span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">Loading…</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <select class="input-field" id="udesig-select-${u.id}"
+                  style="padding:6px 10px;font-size:0.8rem;flex:1;min-width:140px;max-width:220px;">
+            <option value="">＋ Add designation…</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="assignDesignation('${u.id}')">Add</button>
+        </div>
+      </div>
 
       <!-- Edit fields -->
       <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:2px;">
@@ -5710,6 +5844,7 @@ function filterUsersTable(q) {
   try {
     const users = JSON.parse(wrap.dataset.users || '[]');
     renderUsersCards(users);
+    setTimeout(hydrateUserDesignations, 0);
   } catch(e) {
     // Fallback: show/hide existing cards
     const query = q.toLowerCase().trim();
@@ -5720,6 +5855,201 @@ function filterUsersTable(q) {
       card.style.display = (matchSrc && matchQ) ? '' : 'none';
     });
   }
+}
+
+/* ============================================================
+   DESIGNATIONS SYSTEM
+   Admin can define designation labels (Lead, Co-Lead, Mentor…)
+   and assign/remove them per volunteer.
+   Tables: volunteer_designations, volunteer_designation_assignments
+   ============================================================ */
+
+/* Color map — CSS variable names from the theme */
+const DESIG_COLORS = {
+  gold:   { bg: 'rgba(245,166,35,0.15)',  border: 'rgba(245,166,35,0.35)',  text: 'var(--cf-gold)' },
+  teal:   { bg: 'rgba(0,201,177,0.15)',   border: 'rgba(0,201,177,0.35)',   text: 'var(--cf-teal)' },
+  purple: { bg: 'rgba(167,139,250,0.15)', border: 'rgba(167,139,250,0.35)', text: 'var(--cf-purple)' },
+  blue:   { bg: 'rgba(56,189,248,0.15)',  border: 'rgba(56,189,248,0.35)',  text: 'var(--cf-blue)' },
+  green:  { bg: 'rgba(74,222,128,0.15)',  border: 'rgba(74,222,128,0.35)',  text: 'var(--cf-green)' },
+  coral:  { bg: 'rgba(255,107,107,0.15)', border: 'rgba(255,107,107,0.35)', text: 'var(--cf-coral)' },
+  pink:   { bg: 'rgba(244,114,182,0.15)', border: 'rgba(244,114,182,0.35)', text: 'var(--cf-pink)' },
+  orange: { bg: 'rgba(251,146,60,0.15)',  border: 'rgba(251,146,60,0.35)',  text: 'var(--cf-orange)' },
+};
+
+/* Cache of all defined designations (refreshed on load) */
+let _allDesignations = [];
+
+/* ── Load all designations into cache + populate user dropdowns ── */
+async function loadDesignations() {
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('volunteer_designations')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (!error && data) _allDesignations = data;
+}
+
+/* ── Render the Designations management panel ── */
+async function loadAdminDesignations() {
+  const el = document.getElementById('admin-desig-list');
+  if (!el || !sb) return;
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+
+  await loadDesignations();
+
+  if (!_allDesignations.length) {
+    el.innerHTML = renderEmpty('No designations defined yet. Add one above.');
+    return;
+  }
+
+  el.innerHTML = _allDesignations.map(d => {
+    const c = DESIG_COLORS[d.color] || DESIG_COLORS.gold;
+    return `
+    <div class="desig-pill-row" id="desig-row-${d.id}">
+      <div class="desig-pill-swatch" style="background:${c.text};"></div>
+      <span class="desig-tag" style="background:${c.bg};border-color:${c.border};color:${c.text};">
+        ${d.icon ? escHtml(d.icon) + ' ' : ''}${escHtml(d.label)}
+      </span>
+      <div style="flex:1;font-size:0.8rem;color:var(--text-secondary);">
+        ${d.description ? escHtml(d.description) : ''}
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" style="padding:4px 10px;"
+                onclick="adminEditDesignation(${JSON.stringify(d).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn btn-danger btn-sm" style="padding:4px 10px;"
+                onclick="adminDeleteDesignation('${d.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminSaveDesignation() {
+  const id    = document.getElementById('desig-edit-id').value;
+  const label = document.getElementById('desig-label').value.trim();
+  const icon  = document.getElementById('desig-icon').value.trim();
+  const color = document.getElementById('desig-color').value;
+  const order = parseInt(document.getElementById('desig-order').value) || 99;
+  const desc  = document.getElementById('desig-desc').value.trim();
+  const fb    = document.getElementById('desig-feedback');
+
+  if (!label) { fb.style.color='var(--cf-coral)'; fb.textContent='Label is required.'; return; }
+  fb.textContent = 'Saving…';
+
+  const row = { label, icon: icon || null, color, display_order: order, description: desc || null };
+  const { error } = id
+    ? await sb.from('volunteer_designations').update(row).eq('id', id)
+    : await sb.from('volunteer_designations').insert(row);
+
+  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
+  fb.style.color='var(--cf-green)';
+  fb.textContent = id ? '✅ Updated!' : '✅ Designation added!';
+  clearDesigForm();
+  await loadAdminDesignations();
+  setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
+}
+
+function adminEditDesignation(d) {
+  document.getElementById('desig-edit-id').value  = d.id;
+  document.getElementById('desig-label').value    = d.label || '';
+  document.getElementById('desig-icon').value     = d.icon || '';
+  document.getElementById('desig-color').value    = d.color || 'gold';
+  document.getElementById('desig-order').value    = d.display_order || '';
+  document.getElementById('desig-desc').value     = d.description || '';
+  document.getElementById('desig-label').focus();
+  switchAdminTab('designations-admin');
+  document.getElementById('desig-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function adminDeleteDesignation(id) {
+  if (!confirm('Delete this designation? It will be removed from all volunteers.')) return;
+  const { error } = await sb.from('volunteer_designations').delete().eq('id', id);
+  if (error) showToast('❌ '+error.message, 'error');
+  else { showToast('Designation deleted', 'success'); await loadAdminDesignations(); }
+}
+
+function clearDesigForm() {
+  ['desig-edit-id','desig-label','desig-icon','desig-order','desig-desc'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const c = document.getElementById('desig-color'); if (c) c.value = 'gold';
+}
+
+/* ── Load designations for a single volunteer (user card) ── */
+async function loadUserDesignations(profileId) {
+  const tagsEl   = document.getElementById('udesig-tags-' + profileId);
+  const selectEl = document.getElementById('udesig-select-' + profileId);
+  if (!tagsEl || !sb) return;
+
+  // Ensure master list is loaded
+  if (!_allDesignations.length) await loadDesignations();
+
+  // Get this user's current assignments
+  const { data: assigned } = await sb
+    .from('volunteer_designation_assignments')
+    .select('id, designation_id, volunteer_designations(id, label, icon, color)')
+    .eq('profile_id', profileId);
+
+  const assignedIds = new Set((assigned || []).map(a => a.designation_id));
+
+  // Render tags
+  if (!assigned || !assigned.length) {
+    tagsEl.innerHTML = '<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">None assigned</span>';
+  } else {
+    tagsEl.innerHTML = assigned.map(a => {
+      const d = a.volunteer_designations;
+      if (!d) return '';
+      const c = DESIG_COLORS[d.color] || DESIG_COLORS.gold;
+      return `<span class="desig-tag" style="background:${c.bg};border-color:${c.border};color:${c.text};">
+        ${d.icon ? escHtml(d.icon) + ' ' : ''}${escHtml(d.label)}
+        <button class="desig-tag-remove" title="Remove" onclick="removeDesignation('${a.id}','${profileId}')">×</button>
+      </span>`;
+    }).join('');
+  }
+
+  // Populate the add-dropdown with unassigned options
+  if (selectEl) {
+    const unassigned = _allDesignations.filter(d => !assignedIds.has(d.id));
+    selectEl.innerHTML = unassigned.length
+      ? '<option value="">＋ Add designation…</option>' + unassigned.map(d =>
+          `<option value="${d.id}">${d.icon ? d.icon + ' ' : ''}${escHtml(d.label)}</option>`
+        ).join('')
+      : '<option value="">All designations assigned</option>';
+  }
+}
+
+async function assignDesignation(profileId) {
+  const selectEl = document.getElementById('udesig-select-' + profileId);
+  const desigId  = selectEl?.value;
+  if (!desigId) { showToast('Select a designation first', 'info'); return; }
+
+  const { error } = await sb
+    .from('volunteer_designation_assignments')
+    .insert({ profile_id: profileId, designation_id: desigId });
+
+  if (error) showToast('❌ ' + error.message, 'error');
+  else await loadUserDesignations(profileId);
+}
+
+async function removeDesignation(assignmentId, profileId) {
+  const { error } = await sb
+    .from('volunteer_designation_assignments')
+    .delete()
+    .eq('id', assignmentId);
+
+  if (error) showToast('❌ ' + error.message, 'error');
+  else await loadUserDesignations(profileId);
+}
+
+/* ── Called after user cards render — hydrate each card's designations ── */
+async function hydrateUserDesignations() {
+  if (!sb) return;
+  await loadDesignations();
+  const wrap = document.getElementById('users-list-wrap');
+  if (!wrap) return;
+  const cards = wrap.querySelectorAll('[id^="user-card-"]');
+  const profileIds = Array.from(cards).map(c => c.id.replace('user-card-', ''));
+  // Load all in parallel
+  await Promise.all(profileIds.map(id => loadUserDesignations(id)));
 }
 
 /* ============================================================
@@ -6202,6 +6532,54 @@ function clearContactForm() {
     is_published boolean default true,
     created_at   timestamptz default now()
   );
+
+  -- VOLUNTEER DESIGNATIONS
+  -- Admin-defined labels assigned to volunteers (e.g. Lead, Co-Lead, Mentor, Senior)
+  -- These are visual/organizational designations, not auth roles.
+  create table volunteer_designations (
+    id            uuid primary key default uuid_generate_v4(),
+    label         text not null,
+    icon          text,
+    color         text default 'gold' check (color in ('gold','teal','purple','blue','green','coral','pink','orange')),
+    description   text,
+    display_order int default 99,
+    created_at    timestamptz default now()
+  );
+
+  -- VOLUNTEER DESIGNATION ASSIGNMENTS
+  -- Many-to-many: each volunteer can have multiple designations
+  create table volunteer_designation_assignments (
+    id             uuid primary key default uuid_generate_v4(),
+    profile_id     uuid references volunteer_profiles(id) on delete cascade,
+    designation_id uuid references volunteer_designations(id) on delete cascade,
+    assigned_at    timestamptz default now(),
+    unique (profile_id, designation_id)
+  );
+
+  create index if not exists idx_desig_assign_profile on volunteer_designation_assignments(profile_id);
+
+  -- Seed default designations
+  insert into volunteer_designations (label, icon, color, display_order) values
+    ('Lead',     '⭐', 'gold',   1),
+    ('Co-Lead',  '🔑', 'teal',   2),
+    ('Mentor',   '🎓', 'purple', 3),
+    ('Senior',   '🎖️', 'blue',   4);
+
+  -- RLS for designations (admins manage, all authenticated users can read)
+  alter table volunteer_designations               enable row level security;
+  alter table volunteer_designation_assignments    enable row level security;
+
+  create policy "Auth read designations"
+    on volunteer_designations for select using (auth.role() = 'authenticated');
+  create policy "Admins manage designations"
+    on volunteer_designations for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+
+  create policy "Auth read desig assignments"
+    on volunteer_designation_assignments for select using (auth.role() = 'authenticated');
+  create policy "Admins manage desig assignments"
+    on volunteer_designation_assignments for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
 
   -- ADMIN SETTINGS (key-value store for coordinator contacts, instructions)
   create table admin_settings (
