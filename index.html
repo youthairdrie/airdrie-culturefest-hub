@@ -260,6 +260,130 @@ input, select, textarea {
 .form-group { margin-bottom: 14px; }
 
 /* ============================================================
+   VOLUNTEER SHIFT SYSTEM STYLES
+   ============================================================ */
+.role-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.role-card.expanded { border-color: rgba(245,166,35,0.3); }
+
+.role-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  gap: 10px;
+}
+.role-card-header:hover { background: rgba(255,255,255,0.03); }
+
+.role-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.role-card-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.role-card-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--card-border);
+}
+.role-card.expanded .role-card-body { display: block; }
+
+.shift-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.shift-time-info { flex: 1; min-width: 120px; }
+.shift-time-label {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--cf-gold);
+}
+.shift-time-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+.capacity-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.capacity-track {
+  width: 60px;
+  height: 5px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.capacity-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s;
+}
+
+.signup-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.signup-btn-join {
+  background: rgba(74,222,128,0.15);
+  color: var(--cf-green);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+.signup-btn-join:hover { background: rgba(74,222,128,0.25); }
+.signup-btn-leave {
+  background: rgba(255,107,107,0.12);
+  color: var(--cf-coral);
+  border: 1px solid rgba(255,107,107,0.25);
+}
+.signup-btn-leave:hover { background: rgba(255,107,107,0.22); }
+.signup-btn-full {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--card-border);
+  cursor: not-allowed;
+}
+
+.assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.03);
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.assignment-name { font-weight: 600; font-size: 0.82rem; flex:1; }
+.assignment-email { font-size: 0.72rem; color: var(--text-muted); }
+
+/* ============================================================
    APP SHELL — HEADER & LAYOUT
    ============================================================ */
 #app-header {
@@ -1596,11 +1720,12 @@ input, select, textarea {
     </div>
 
     <!-- Volunteer sections tabs -->
-    <div class="admin-tabs" style="margin-bottom:18px;">
-      <button class="admin-tab active" onclick="switchVolTab('shifts')">My Shifts</button>
-      <button class="admin-tab" onclick="switchVolTab('checklist')">Checklist</button>
-      <button class="admin-tab" onclick="switchVolTab('contacts')">Contacts</button>
-      <button class="admin-tab" onclick="switchVolTab('vol-announce')">Announcements</button>
+    <div class="admin-tabs" style="margin-bottom:18px;flex-wrap:wrap;">
+      <button class="admin-tab active" onclick="switchVolTab('shifts')">📋 My Shifts</button>
+      <button class="admin-tab" onclick="switchVolTab('available-shifts')">✋ Available Shifts</button>
+      <button class="admin-tab" onclick="switchVolTab('checklist')">✅ Checklist</button>
+      <button class="admin-tab" onclick="switchVolTab('contacts')">📞 Contacts</button>
+      <button class="admin-tab" onclick="switchVolTab('vol-announce')">📢 Announcements</button>
     </div>
 
     <!-- Shifts -->
@@ -1608,6 +1733,17 @@ input, select, textarea {
       <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-gold)">Your Assigned Shifts</h3>
       <div id="vol-shifts-list">
         <div class="loading-state"><div class="spinner"></div> Loading shifts...</div>
+      </div>
+    </div>
+
+    <!-- Available Shifts — self-signup -->
+    <div id="vol-panel-available-shifts" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--cf-green)">✋ Available Shifts</h3>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">
+        Sign up for open shifts. You may sign up for multiple shifts.
+      </p>
+      <div id="vol-available-shifts-list">
+        <div class="loading-state"><div class="spinner"></div> Loading available shifts...</div>
       </div>
     </div>
 
@@ -1694,6 +1830,7 @@ input, select, textarea {
       <button class="admin-tab" onclick="switchAdminTab('homepage-admin')">🏠 Home Page</button>
       <button class="admin-tab" onclick="switchAdminTab('checklist-admin')">✅ Checklist</button>
       <button class="admin-tab" onclick="switchAdminTab('contacts-admin')">📞 Contacts</button>
+      <button class="admin-tab" onclick="switchAdminTab('shifts-admin')">📋 Volunteer Shifts</button>
       <button class="admin-tab" onclick="switchAdminTab('tracker')">🚪 Attendance</button>
     </div>
 
@@ -1972,6 +2109,83 @@ input, select, textarea {
         </table>
       </div>
     </div>
+
+    <!-- VOLUNTEER SHIFTS ADMIN PANEL -->
+    <div id="admin-panel-shifts-admin" class="admin-panel">
+
+      <!-- Role form -->
+      <div class="admin-form" id="shifts-role-form">
+        <h4>＋ Add / Edit Volunteer Role</h4>
+        <input type="hidden" id="shift-role-edit-id">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Role Name</label>
+            <input type="text" class="input-field" id="sr-name" placeholder="e.g. Welcome Tent">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Location</label>
+            <input type="text" class="input-field" id="sr-location" placeholder="e.g. Main Entrance">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Description</label>
+          <textarea class="input-field" id="sr-description" rows="2" placeholder="Brief description of this volunteer role..."></textarea>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Zone / Department</label>
+            <input type="text" class="input-field" id="sr-zone" placeholder="e.g. Guest Services">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Coordinator Name</label>
+            <input type="text" class="input-field" id="sr-coordinator" placeholder="e.g. Sarah Johnson">
+          </div>
+        </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Coordinator Phone</label>
+            <input type="text" class="input-field" id="sr-coordinator-phone" placeholder="403-555-0101">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Display Order</label>
+            <input type="number" class="input-field" id="sr-order" placeholder="1" min="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Requirements / Notes</label>
+          <textarea class="input-field" id="sr-requirements" rows="2" placeholder="Any requirements or notes for volunteers..."></textarea>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer;">
+            <input type="checkbox" id="sr-visible" checked> Visible to volunteers for self-signup
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer;">
+            <input type="checkbox" id="sr-admin-only"> Admin assignment only
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer;">
+            <input type="checkbox" id="sr-active" checked> Active
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="adminSaveRole()">Save Role</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearRoleForm()">Clear</button>
+        </div>
+        <div id="sr-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+      </div>
+
+      <!-- Role list -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h4 style="font-family:var(--font-display);font-weight:700;color:var(--cf-blue);">Volunteer Roles</h4>
+        <input type="text" class="input-field" id="shifts-search"
+               placeholder="🔍 Search roles..."
+               style="max-width:220px;padding:7px 12px;font-size:0.82rem;"
+               oninput="filterRoles(this.value)">
+      </div>
+      <div id="admin-roles-list">
+        <div class="loading-state"><div class="spinner"></div> Loading roles...</div>
+      </div>
+
+    </div><!-- /shifts-admin panel -->
 
     <!-- ATTENDANCE TRACKER PANEL -->
     <div id="admin-panel-tracker" class="admin-panel">
@@ -2510,6 +2724,7 @@ async function handleAuthSession(session) {
 
   if (profile) {
     currentRole = profile.role || 'volunteer';
+    currentUserProfile = profile;
     setAuthUI(profile.full_name || session.user.email, currentRole);
 
     // Onboarding gate — phone required for all users
@@ -3015,26 +3230,14 @@ async function loadVolunteerData(profile) {
   document.getElementById('vol-display-name').textContent = `👋 Welcome, ${profile.full_name || 'Volunteer'}!`;
   document.getElementById('vol-role-display').textContent = `🙌 ${profile.role_title || profile.zone || 'Volunteer'}`;
 
-  // Shifts
-  const { data: shifts } = await sb
-    .from('volunteer_assignments')
-    .select('*')
-    .eq('volunteer_id', profile.id);
+  // Store profile globally for shift signup
+  currentUserProfile = profile;
 
-  const shiftsList = document.getElementById('vol-shifts-list');
-  if (shifts && shifts.length) {
-    shiftsList.innerHTML = shifts.map(s => `
-      <div class="shift-card">
-        <div class="shift-title">${escHtml(s.role_title || 'Volunteer Shift')}</div>
-        <div class="shift-meta">
-          📍 ${escHtml(s.zone || '–')} &nbsp;·&nbsp;
-          🕐 ${s.shift_start ? formatTime(s.shift_start.slice(0,5)) : '–'} – ${s.shift_end ? formatTime(s.shift_end.slice(0,5)) : '–'}
-        </div>
-        ${s.notes ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">${escHtml(s.notes)}</div>` : ''}
-      </div>`).join('');
-  } else {
-    shiftsList.innerHTML = renderEmpty('No shifts assigned yet. Check with your coordinator.');
-  }
+  // Load My Shifts from new shift system
+  await loadVolMyShifts();
+
+  // Load Available Shifts
+  await loadVolAvailableShifts();
 
   // Volunteer announcements
   const { data: anns } = await sb
@@ -3110,8 +3313,11 @@ function saveChecklist(key, val) {
 function switchVolTab(tab) {
   document.querySelectorAll('#page-volunteer .admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('#page-volunteer .admin-panel').forEach(p => p.classList.remove('active'));
-  // tab already handled by loop above
-  document.getElementById('vol-panel-' + tab).classList.add('active');
+  document.querySelectorAll('#page-volunteer .admin-tab').forEach(t => {
+    if (t.getAttribute('onclick') === "switchVolTab('" + tab + "')") t.classList.add('active');
+  });
+  const panel = document.getElementById('vol-panel-' + tab);
+  if (panel) panel.classList.add('active');
 }
 
 /* ============================================================
@@ -3130,6 +3336,7 @@ async function loadAdminData() {
     loadAdminChecklist(),
     loadAdminContacts(),
     loadHomepageAdminForm(),
+    loadAdminRoles(),
   ]);
 }
 
@@ -3857,6 +4064,600 @@ async function submitOnboarding() {
   } else {
     showPage('volunteer');
   }
+}
+
+/* ============================================================
+   VOLUNTEER SHIFT SYSTEM — SHARED STATE
+   ============================================================ */
+let currentUserProfile = null; // set after login, used for shift signups
+
+/* ============================================================
+   VOLUNTEER SHIFT SYSTEM — ADMIN
+   ============================================================ */
+
+// ── Load all roles with shift times and assignments ───────────
+async function loadAdminRoles() {
+  const el = document.getElementById('admin-roles-list');
+  if (!el || !sb) return;
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+
+  const { data: roles, error } = await sb
+    .from('volunteer_roles')
+    .select('*')
+    .order('display_order', { ascending: true });
+
+  if (error || !roles) { el.innerHTML = renderEmpty('Could not load roles.'); return; }
+  if (!roles.length)   { el.innerHTML = renderEmpty('No roles yet. Add one above.'); return; }
+
+  el.innerHTML = roles.map(r => renderAdminRoleCard(r)).join('');
+}
+
+function renderAdminRoleCard(r) {
+  const statusBadge = r.active ? 'badge-green' : 'badge-coral';
+  return `
+    <div class="role-card" id="admin-role-${r.id}">
+      <div class="role-card-header" onclick="toggleRoleCard('${r.id}')">
+        <div style="flex:1;">
+          <div class="role-card-title">${escHtml(r.role_name)}</div>
+          <div class="role-card-meta">
+            ${r.location ? '📍 ' + escHtml(r.location) : ''}
+            ${r.zone ? ' · ' + escHtml(r.zone) : ''}
+            ${r.coordinator_name ? ' · 👤 ' + escHtml(r.coordinator_name) : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <span class="badge ${statusBadge}">${r.active ? 'Active' : 'Inactive'}</span>
+          ${r.admin_assign_only ? '<span class="badge badge-purple">Admin Only</span>' : ''}
+          <span style="color:var(--text-muted);font-size:1rem;">▼</span>
+        </div>
+      </div>
+      <div class="role-card-body">
+        <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="adminEditRole(${JSON.stringify(r).replace(/"/g,'&quot;')})">✏️ Edit Role</button>
+          <button class="btn btn-danger btn-sm" onclick="adminDeleteRole('${r.id}')">🗑 Delete</button>
+        </div>
+        ${r.role_description ? `<p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px;">${escHtml(r.role_description)}</p>` : ''}
+        <div style="font-family:var(--font-display);font-weight:700;font-size:0.85rem;color:var(--cf-gold);margin-bottom:8px;">Shift Times</div>
+        <div id="admin-shifts-${r.id}">
+          <div class="loading-state" style="padding:12px 0;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div></div>
+        </div>
+        <!-- Add shift time form -->
+        <div style="background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:var(--radius-sm);padding:12px;margin-top:10px;">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;">＋ Add Shift Time</div>
+          <div class="form-row form-row-2" style="margin-bottom:8px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="input-label" style="font-size:0.7rem;">Start Time</label>
+              <input type="time" class="input-field" id="st-start-${r.id}" style="padding:7px 10px;font-size:0.82rem;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="input-label" style="font-size:0.7rem;">End Time</label>
+              <input type="time" class="input-field" id="st-end-${r.id}" style="padding:7px 10px;font-size:0.82rem;">
+            </div>
+          </div>
+          <div class="form-row form-row-2" style="margin-bottom:8px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="input-label" style="font-size:0.7rem;">Capacity (spots)</label>
+              <input type="number" class="input-field" id="st-cap-${r.id}" min="1" value="3" style="padding:7px 10px;font-size:0.82rem;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="input-label" style="font-size:0.7rem;">Status</label>
+              <select class="input-field" id="st-status-${r.id}" style="padding:7px 10px;font-size:0.82rem;">
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <input type="text" class="input-field" id="st-notes-${r.id}" placeholder="Shift notes (optional)" style="padding:7px 10px;font-size:0.82rem;">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="adminAddShiftTime('${r.id}')">Add Shift</button>
+          <span id="st-feedback-${r.id}" style="font-size:0.75rem;color:var(--cf-green);margin-left:10px;"></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function loadAdminShiftTimes(roleId) {
+  const el = document.getElementById('admin-shifts-' + roleId);
+  if (!el || !sb) return;
+
+  const { data: shifts } = await sb
+    .from('volunteer_shift_times')
+    .select('*')
+    .eq('role_id', roleId)
+    .order('start_time', { ascending: true });
+
+  if (!shifts || !shifts.length) {
+    el.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);padding:8px 0;">No shifts yet.</div>';
+    return;
+  }
+
+  // For each shift, get signup count
+  const shiftHtml = await Promise.all(shifts.map(async s => {
+    const { count } = await sb
+      .from('volunteer_shift_assignments')
+      .select('*', { count: 'exact', head: true })
+      .eq('shift_id', s.id)
+      .not('assignment_status', 'in', '("cancelled","no_show","waitlisted")');
+
+    const filled = count || 0;
+    const pct = Math.min(100, Math.round((filled / s.capacity) * 100));
+    const fillColor = pct >= 100 ? 'var(--cf-coral)' : pct >= 75 ? 'var(--cf-gold)' : 'var(--cf-green)';
+    const statusBadge = {
+      open: 'badge-green', full: 'badge-coral', closed: 'badge-orange',
+      cancelled: 'badge-coral', hidden: 'badge-purple'
+    }[s.status] || 'badge-blue';
+
+    return `
+      <div class="shift-time-row" id="admin-shift-row-${s.id}">
+        <div class="shift-time-info">
+          <div class="shift-time-label">${formatTime(s.start_time.slice(0,5))} – ${formatTime(s.end_time.slice(0,5))}</div>
+          <div class="shift-time-meta">${s.notes ? escHtml(s.notes) : ''}</div>
+        </div>
+        <div class="capacity-bar">
+          <div class="capacity-track"><div class="capacity-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+          <span>${filled}/${s.capacity}</span>
+        </div>
+        <span class="badge ${statusBadge}" style="font-size:0.65rem;">${s.status}</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:0.72rem;" onclick="adminViewAssignments('${s.id}','${escHtml(formatTime(s.start_time.slice(0,5)))} – ${escHtml(formatTime(s.end_time.slice(0,5)))}')">👥</button>
+          <button class="btn btn-danger btn-sm" style="padding:4px 8px;font-size:0.72rem;" onclick="adminDeleteShift('${s.id}','${roleId}')">🗑</button>
+        </div>
+      </div>`;
+  }));
+
+  el.innerHTML = shiftHtml.join('');
+}
+
+function toggleRoleCard(roleId) {
+  const card = document.getElementById('admin-role-' + roleId);
+  if (!card) return;
+  const wasExpanded = card.classList.contains('expanded');
+  card.classList.toggle('expanded');
+  if (!wasExpanded) loadAdminShiftTimes(roleId);
+}
+
+async function adminSaveRole() {
+  const id  = document.getElementById('shift-role-edit-id').value;
+  const fb  = document.getElementById('sr-feedback');
+  const row = {
+    role_name:            document.getElementById('sr-name').value.trim(),
+    role_description:     document.getElementById('sr-description').value.trim() || null,
+    location:             document.getElementById('sr-location').value.trim() || null,
+    zone:                 document.getElementById('sr-zone').value.trim() || null,
+    coordinator_name:     document.getElementById('sr-coordinator').value.trim() || null,
+    coordinator_phone:    document.getElementById('sr-coordinator-phone').value.trim() || null,
+    requirements:         document.getElementById('sr-requirements').value.trim() || null,
+    display_order:        parseInt(document.getElementById('sr-order').value) || 99,
+    visible_to_volunteers:document.getElementById('sr-visible').checked,
+    admin_assign_only:    document.getElementById('sr-admin-only').checked,
+    active:               document.getElementById('sr-active').checked,
+    updated_at:           new Date().toISOString(),
+  };
+  if (!row.role_name) { fb.style.color='var(--cf-coral)'; fb.textContent='Role name is required.'; return; }
+  fb.textContent = 'Saving...';
+
+  const { error } = id
+    ? await sb.from('volunteer_roles').update(row).eq('id', id)
+    : await sb.from('volunteer_roles').insert(row);
+
+  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  else {
+    fb.style.color='var(--cf-green)'; fb.textContent = id ? '✅ Role updated!' : '✅ Role added!';
+    clearRoleForm(); await loadAdminRoles();
+    setTimeout(() => fb.textContent='', 3000);
+  }
+}
+
+function adminEditRole(r) {
+  document.getElementById('shift-role-edit-id').value = r.id;
+  document.getElementById('sr-name').value            = r.role_name || '';
+  document.getElementById('sr-description').value     = r.role_description || '';
+  document.getElementById('sr-location').value        = r.location || '';
+  document.getElementById('sr-zone').value            = r.zone || '';
+  document.getElementById('sr-coordinator').value     = r.coordinator_name || '';
+  document.getElementById('sr-coordinator-phone').value = r.coordinator_phone || '';
+  document.getElementById('sr-requirements').value    = r.requirements || '';
+  document.getElementById('sr-order').value           = r.display_order || '';
+  document.getElementById('sr-visible').checked       = r.visible_to_volunteers !== false;
+  document.getElementById('sr-admin-only').checked    = !!r.admin_assign_only;
+  document.getElementById('sr-active').checked        = r.active !== false;
+  document.getElementById('sr-name').focus();
+  switchAdminTab('shifts-admin');
+  document.getElementById('shifts-role-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function adminDeleteRole(id) {
+  if (!confirm('Delete this role and ALL its shifts and assignments?')) return;
+  const { error } = await sb.from('volunteer_roles').delete().eq('id', id);
+  if (error) showToast('❌ '+error.message, 'error');
+  else { showToast('Role deleted', 'success'); await loadAdminRoles(); }
+}
+
+function clearRoleForm() {
+  ['shift-role-edit-id','sr-name','sr-description','sr-location','sr-zone',
+   'sr-coordinator','sr-coordinator-phone','sr-requirements','sr-order'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const vis = document.getElementById('sr-visible'); if (vis) vis.checked = true;
+  const ao  = document.getElementById('sr-admin-only'); if (ao) ao.checked = false;
+  const act = document.getElementById('sr-active'); if (act) act.checked = true;
+}
+
+async function adminAddShiftTime(roleId) {
+  const start  = document.getElementById('st-start-' + roleId)?.value;
+  const end    = document.getElementById('st-end-' + roleId)?.value;
+  const cap    = parseInt(document.getElementById('st-cap-' + roleId)?.value) || 1;
+  const status = document.getElementById('st-status-' + roleId)?.value || 'open';
+  const notes  = document.getElementById('st-notes-' + roleId)?.value.trim() || null;
+  const fb     = document.getElementById('st-feedback-' + roleId);
+
+  if (!start || !end) { fb.style.color='var(--cf-coral)'; fb.textContent='Start and end time required.'; return; }
+  if (start >= end)   { fb.style.color='var(--cf-coral)'; fb.textContent='End must be after start.'; return; }
+
+  fb.textContent = 'Adding...';
+  const { error } = await sb.from('volunteer_shift_times').insert({
+    role_id: roleId, start_time: start, end_time: end,
+    capacity: cap, status, notes, updated_at: new Date().toISOString()
+  });
+
+  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  else {
+    fb.style.color='var(--cf-green)'; fb.textContent='✅ Shift added!';
+    await loadAdminShiftTimes(roleId);
+    setTimeout(() => { fb.textContent=''; }, 2500);
+  }
+}
+
+async function adminDeleteShift(shiftId, roleId) {
+  if (!confirm('Delete this shift time and all its assignments?')) return;
+  const { error } = await sb.from('volunteer_shift_times').delete().eq('id', shiftId);
+  if (error) showToast('❌ '+error.message, 'error');
+  else { showToast('Shift deleted', 'success'); await loadAdminShiftTimes(roleId); }
+}
+
+// ── Admin: view & manage assignments for a specific shift ─────
+async function adminViewAssignments(shiftId, shiftLabel) {
+  const existing = document.getElementById('assignment-modal');
+  if (existing) existing.remove();
+
+  // Fetch assignments with profile info
+  const { data: assignments } = await sb
+    .from('volunteer_shift_assignments')
+    .select('*, volunteer_profiles!inner(full_name, email, cell_phone)')
+    .eq('shift_id', shiftId);
+
+  // Fetch all volunteer profiles for the assign picker
+  const { data: allProfiles } = await sb
+    .from('volunteer_profiles')
+    .select('id, user_id, full_name, email')
+    .eq('status', 'active')
+    .order('full_name');
+
+  const assignedUserIds = (assignments || []).map(a => a.user_id);
+
+  const modal = document.createElement('div');
+  modal.id = 'assignment-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(11,17,32,0.95);z-index:8888;overflow-y:auto;padding:24px 16px;';
+
+  const assigneeOptions = (allProfiles || [])
+    .filter(p => !assignedUserIds.includes(p.user_id))
+    .map(p => `<option value="${p.user_id}">${escHtml(p.full_name || p.email)}</option>`)
+    .join('');
+
+  const statusBadgeMap = {
+    assigned:'badge-blue', confirmed:'badge-green', checked_in:'badge-teal',
+    completed:'badge-green', no_show:'badge-coral', cancelled:'badge-coral', waitlisted:'badge-gold'
+  };
+
+  modal.innerHTML = `
+    <div style="max-width:560px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;">👥 Shift Assignments</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">${escHtml(shiftLabel)}</div>
+        </div>
+        <button onclick="document.getElementById('assignment-modal').remove()"
+                style="background:rgba(255,255,255,0.1);border:none;color:var(--text-primary);
+                       padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;font-family:var(--font-body);">✕ Close</button>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;color:var(--cf-gold);">Assign Volunteer</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <select id="assign-picker" class="input-field" style="flex:1;padding:8px 10px;font-size:0.82rem;">
+            <option value="">-- Select volunteer --</option>
+            ${assigneeOptions}
+          </select>
+          <select id="assign-status-picker" class="input-field" style="padding:8px 10px;font-size:0.82rem;">
+            <option value="assigned">Assigned</option>
+            <option value="confirmed">Confirmed</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="adminAssignVolunteer('${shiftId}')">Assign</button>
+        </div>
+        <div id="assign-feedback" style="font-size:0.75rem;margin-top:6px;min-height:14px;color:var(--cf-green);"></div>
+      </div>
+
+      <div id="assignment-list">
+        ${(assignments && assignments.length) ? assignments.map(a => `
+          <div class="assignment-row" id="arow-${a.id}">
+            <div style="flex:1;">
+              <div class="assignment-name">${escHtml(a.volunteer_profiles?.full_name || 'Unknown')}</div>
+              <div class="assignment-email">${escHtml(a.volunteer_profiles?.email || '')} ${a.volunteer_profiles?.cell_phone ? '· 📱 '+escHtml(a.volunteer_profiles.cell_phone) : ''}</div>
+            </div>
+            <select class="input-field" id="astatus-${a.id}"
+                    style="padding:5px 8px;font-size:0.75rem;max-width:130px;"
+                    onchange="adminUpdateAssignmentStatus('${a.id}', this.value, '${shiftId}', '${escHtml(shiftLabel)}')">
+              ${['assigned','confirmed','checked_in','completed','no_show','cancelled','waitlisted'].map(s =>
+                `<option value="${s}" ${a.assignment_status===s?'selected':''}>${s}</option>`
+              ).join('')}
+            </select>
+            <button class="btn btn-danger btn-sm" style="padding:4px 8px;font-size:0.72rem;"
+                    onclick="adminRemoveAssignment('${a.id}','${shiftId}','${escHtml(shiftLabel)}')">Remove</button>
+          </div>`).join('') : '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">No volunteers assigned yet.</div>'}
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+async function adminAssignVolunteer(shiftId) {
+  const userId = document.getElementById('assign-picker').value;
+  const status = document.getElementById('assign-status-picker').value;
+  const fb = document.getElementById('assign-feedback');
+  if (!userId) { fb.style.color='var(--cf-coral)'; fb.textContent='Select a volunteer first.'; return; }
+
+  const { error } = await sb.from('volunteer_shift_assignments').insert({
+    shift_id: shiftId, user_id: userId, assignment_status: status,
+    signup_source: 'admin', assigned_by: currentUser?.id,
+    updated_at: new Date().toISOString()
+  });
+
+  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  else {
+    fb.style.color='var(--cf-green)'; fb.textContent='✅ Assigned!';
+    // Refresh modal
+    const label = document.querySelector('#assignment-modal div div div:last-child')?.textContent || '';
+    document.getElementById('assignment-modal').remove();
+    await adminViewAssignments(shiftId, label);
+    await loadAdminShiftTimes(shiftId.split('-')[0]); // best-effort refresh
+  }
+}
+
+async function adminUpdateAssignmentStatus(assignmentId, newStatus, shiftId, shiftLabel) {
+  const updates = { assignment_status: newStatus, updated_at: new Date().toISOString() };
+  if (newStatus === 'checked_in') updates.checked_in_at = new Date().toISOString();
+  if (newStatus === 'completed')  updates.completed_at  = new Date().toISOString();
+
+  const { error } = await sb.from('volunteer_shift_assignments').update(updates).eq('id', assignmentId);
+  if (error) showToast('❌ '+error.message, 'error');
+  else showToast('✅ Status updated', 'success');
+}
+
+async function adminRemoveAssignment(assignmentId, shiftId, shiftLabel) {
+  if (!confirm('Remove this volunteer from the shift?')) return;
+  const { error } = await sb.from('volunteer_shift_assignments').delete().eq('id', assignmentId);
+  if (error) showToast('❌ '+error.message, 'error');
+  else {
+    showToast('Removed', 'success');
+    document.getElementById('assignment-modal').remove();
+    await adminViewAssignments(shiftId, shiftLabel);
+  }
+}
+
+function filterRoles(q) {
+  const query = q.toLowerCase().trim();
+  document.querySelectorAll('#admin-roles-list .role-card').forEach(card => {
+    card.style.display = (!query || card.textContent.toLowerCase().includes(query)) ? '' : 'none';
+  });
+}
+
+/* ============================================================
+   VOLUNTEER SHIFT SYSTEM — VOLUNTEER VIEW
+   ============================================================ */
+
+async function loadVolAvailableShifts() {
+  const el = document.getElementById('vol-available-shifts-list');
+  if (!el || !sb || !currentUser) return;
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+
+  // Load roles
+  const { data: roles } = await sb
+    .from('volunteer_roles')
+    .select('*, volunteer_shift_times(*)')
+    .eq('active', true)
+    .eq('visible_to_volunteers', true)
+    .eq('admin_assign_only', false)
+    .order('display_order', { ascending: true });
+
+  if (!roles || !roles.length) {
+    el.innerHTML = renderEmpty('No shifts available yet. Check back soon!');
+    return;
+  }
+
+  // Get current user assignments
+  const { data: myAssignments } = await sb
+    .from('volunteer_shift_assignments')
+    .select('shift_id, assignment_status')
+    .eq('user_id', currentUser.id)
+    .not('assignment_status', 'in', '("cancelled","no_show")');
+
+  const myShiftIds = new Set((myAssignments || []).map(a => a.shift_id));
+
+  // Get signup counts for all shifts
+  const allShiftIds = roles.flatMap(r =>
+    (r.volunteer_shift_times || []).map(s => s.id)
+  );
+
+  const countMap = {};
+  if (allShiftIds.length) {
+    const { data: counts } = await sb
+      .from('volunteer_shift_assignments')
+      .select('shift_id')
+      .in('shift_id', allShiftIds)
+      .not('assignment_status', 'in', '("cancelled","no_show","waitlisted")');
+    (counts || []).forEach(c => {
+      countMap[c.shift_id] = (countMap[c.shift_id] || 0) + 1;
+    });
+  }
+
+  el.innerHTML = roles.map(role => {
+    const shifts = (role.volunteer_shift_times || [])
+      .filter(s => !['cancelled','hidden'].includes(s.status))
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+
+    if (!shifts.length) return '';
+
+    const shiftsHtml = shifts.map(s => {
+      const filled  = countMap[s.id] || 0;
+      const spots   = s.capacity - filled;
+      const isMine  = myShiftIds.has(s.id);
+      const isFull  = filled >= s.capacity || s.status === 'full';
+      const pct     = Math.min(100, Math.round((filled / s.capacity) * 100));
+      const fillColor = pct >= 100 ? 'var(--cf-coral)' : pct >= 75 ? 'var(--cf-gold)' : 'var(--cf-green)';
+
+      let btn = '';
+      if (isMine) {
+        btn = `<button class="signup-btn signup-btn-leave" onclick="volLeaveShift('${s.id}')">✓ Signed Up — Remove Me</button>`;
+      } else if (isFull) {
+        btn = `<span class="signup-btn signup-btn-full">Full</span>`;
+      } else {
+        btn = `<button class="signup-btn signup-btn-join" onclick="volJoinShift('${s.id}','${role.id}')">✋ Sign Up</button>`;
+      }
+
+      return `
+        <div class="shift-time-row" id="vol-shift-${s.id}">
+          <div class="shift-time-info">
+            <div class="shift-time-label">${formatTime(s.start_time.slice(0,5))} – ${formatTime(s.end_time.slice(0,5))}</div>
+            <div class="shift-time-meta">
+              ${spots > 0 && !isFull ? spots + ' spot' + (spots===1?'':'s') + ' available' : 'Full'}
+              ${s.notes ? ' · ' + escHtml(s.notes) : ''}
+            </div>
+          </div>
+          <div class="capacity-bar">
+            <div class="capacity-track"><div class="capacity-fill" style="width:${pct}%;background:${fillColor};"></div></div>
+            <span>${filled}/${s.capacity}</span>
+          </div>
+          ${btn}
+        </div>`;
+    }).join('');
+
+    if (!shiftsHtml.trim()) return '';
+
+    return `
+      <div class="role-card" style="margin-bottom:14px;">
+        <div style="padding:14px 16px 10px;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-gold);margin-bottom:4px;">
+            ${escHtml(role.role_name)}
+          </div>
+          ${role.role_description ? `<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">${escHtml(role.role_description)}</div>` : ''}
+          <div style="font-size:0.75rem;color:var(--text-muted);">
+            ${role.location ? '📍 ' + escHtml(role.location) : ''}
+            ${role.zone ? ' · ' + escHtml(role.zone) : ''}
+            ${role.coordinator_name ? ' · 👤 ' + escHtml(role.coordinator_name) : ''}
+          </div>
+        </div>
+        <div style="padding:0 14px 14px;">${shiftsHtml}</div>
+      </div>`;
+  }).join('');
+
+  if (!el.innerHTML.trim()) {
+    el.innerHTML = renderEmpty('No open shifts available right now.');
+  }
+}
+
+async function volJoinShift(shiftId, roleId) {
+  if (!currentUser) { showToast('Please sign in first.', 'error'); return; }
+
+  const { error } = await sb.from('volunteer_shift_assignments').insert({
+    shift_id: shiftId,
+    user_id: currentUser.id,
+    assignment_status: 'assigned',
+    signup_source: 'self',
+    updated_at: new Date().toISOString()
+  });
+
+  if (error) {
+    if (error.code === '23505') showToast('You are already signed up for this shift.', 'info');
+    else showToast('❌ ' + error.message, 'error');
+    return;
+  }
+
+  showToast('✅ Signed up! See your shift in My Shifts.', 'success');
+  await loadVolAvailableShifts();
+  await loadVolMyShifts();
+}
+
+async function volLeaveShift(shiftId) {
+  if (!confirm('Remove yourself from this shift?')) return;
+
+  const { error } = await sb
+    .from('volunteer_shift_assignments')
+    .update({ assignment_status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('shift_id', shiftId)
+    .eq('user_id', currentUser.id);
+
+  if (error) { showToast('❌ ' + error.message, 'error'); return; }
+
+  showToast('Removed from shift.', 'info');
+  await loadVolAvailableShifts();
+  await loadVolMyShifts();
+}
+
+async function loadVolMyShifts() {
+  const el = document.getElementById('vol-shifts-list');
+  if (!el || !sb || !currentUser) return;
+  el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading your shifts...</div>';
+
+  const { data: assignments, error } = await sb
+    .from('volunteer_shift_assignments')
+    .select(`
+      id, assignment_status, notes, checked_in_at, completed_at,
+      volunteer_shift_times (
+        id, start_time, end_time, notes, status,
+        volunteer_roles ( role_name, location, zone, coordinator_name, coordinator_phone )
+      )
+    `)
+    .eq('user_id', currentUser.id)
+    .not('assignment_status', 'in', '("cancelled","no_show")')
+    .order('created_at', { ascending: true });
+
+  if (error || !assignments || !assignments.length) {
+    el.innerHTML = renderEmpty('No shifts yet. Check the Available Shifts tab to sign up!');
+    return;
+  }
+
+  const statusBadge = {
+    assigned:'badge-blue', confirmed:'badge-green', checked_in:'badge-teal',
+    completed:'badge-green', no_show:'badge-coral', cancelled:'badge-coral', waitlisted:'badge-gold'
+  };
+
+  el.innerHTML = assignments.map(a => {
+    const st   = a.volunteer_shift_times;
+    const role = st?.volunteer_roles;
+    if (!st || !role) return '';
+    const timeStr = `${formatTime(st.start_time.slice(0,5))} – ${formatTime(st.end_time.slice(0,5))}`;
+    const badge = statusBadge[a.assignment_status] || 'badge-blue';
+    return `
+      <div class="shift-card" style="border-color:rgba(56,189,248,0.2);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+          <div>
+            <div class="shift-title">${escHtml(role.role_name)}</div>
+            <div class="shift-meta">🕐 ${timeStr}</div>
+            ${role.location ? `<div class="shift-meta">📍 ${escHtml(role.location)}</div>` : ''}
+            ${role.coordinator_name ? `<div class="shift-meta">👤 ${escHtml(role.coordinator_name)}${role.coordinator_phone ? ' · 📱 '+escHtml(role.coordinator_phone) : ''}</div>` : ''}
+            ${st.notes ? `<div style="font-size:0.78rem;color:var(--text-secondary);margin-top:4px;">${escHtml(st.notes)}</div>` : ''}
+            ${a.notes ? `<div style="font-size:0.78rem;color:var(--cf-gold);margin-top:4px;">📝 ${escHtml(a.notes)}</div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <span class="badge ${badge}">${a.assignment_status.replace('_',' ')}</span>
+            ${a.assignment_status === 'assigned' ?
+              `<button class="signup-btn signup-btn-leave" style="font-size:0.72rem;" onclick="volLeaveShift('${st.id}')">Remove Me</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 /* ============================================================
