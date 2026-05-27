@@ -2069,6 +2069,50 @@ pre, code {
 .capacity-track { width: 50px; }
 .capacity-bar { font-size: 0.72rem; }
 
+/* ─── VOLUNTEER SOURCE GROUP BADGES ──────────────────────── */
+.badge-ya    { background: rgba(52,211,153,0.15); color: #34d399; }
+.badge-yvc   { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.badge-va    { background: rgba(129,140,248,0.15); color: #818cf8; }
+
+/* ─── VOLUNTEER ID CHIP ────────────────────────────────────── */
+.vol-id-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: 'DM Mono', monospace, var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--cf-gold);
+}
+
+/* ─── SOURCE FILTER PILLS ─────────────────────────────────── */
+.source-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.source-filter-btn {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 32px;
+}
+.source-filter-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+.source-filter-btn.active { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.35); color: var(--cf-gold); }
+
 /* ─── VERY SMALL SCREENS (iPhone SE: 375px) ───────────────── */
 @media (max-width: 390px) {
   .hero-title { font-size: 1.4rem; }
@@ -2857,11 +2901,18 @@ pre, code {
          USERS PANEL
          ═══════════════════════════════════════════════════════ -->
     <div id="admin-panel-users-admin" class="admin-panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px;">
         <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--cf-teal)">👥 User Management</h3>
-        <input type="text" class="input-field" id="users-search" placeholder="🔍 Search by name or email…"
+        <input type="text" class="input-field" id="users-search" placeholder="🔍 Name, email, phone, ID…"
                style="max-width:240px;padding:8px 12px;font-size:0.82rem;"
                oninput="filterUsersTable(this.value)">
+      </div>
+      <!-- Source group filters -->
+      <div class="source-filters" id="source-filter-bar">
+        <button class="source-filter-btn active" data-source="all" onclick="setSourceFilter('all')">All</button>
+        <button class="source-filter-btn" data-source="YA-Youth" onclick="setSourceFilter('YA-Youth')">🌱 YA-Youth</button>
+        <button class="source-filter-btn" data-source="YVC-Youth" onclick="setSourceFilter('YVC-Youth')">🎓 YVC-Youth</button>
+        <button class="source-filter-btn" data-source="VA-Adult" onclick="setSourceFilter('VA-Adult')">🙌 VA-Adult</button>
       </div>
       <div id="users-list-wrap">
         <div class="loading-state"><div class="spinner"></div> Loading users...</div>
@@ -3073,6 +3124,22 @@ pre, code {
           <label class="input-label">Full Name <span style="color:var(--text-muted);font-weight:400;">(optional — we'll use your email if blank)</span></label>
           <input type="text" class="input-field" id="ob-name"
                  placeholder="e.g. Jane Smith" autocomplete="name">
+        </div>
+
+        <!-- Volunteer Source Group -->
+        <div class="form-group">
+          <label class="input-label">
+            Volunteer Program
+            <span style="color:var(--cf-coral);margin-left:3px;">*</span>
+          </label>
+          <select class="input-field" id="ob-source">
+            <option value="YA-Youth">🌱 YA-Youth — Youth Airdrie Volunteer</option>
+            <option value="YVC-Youth">🎓 YVC-Youth — Youth Volunteer Corps</option>
+            <option value="VA-Adult">🙌 VA-Adult — Volunteer Airdrie Adult</option>
+          </select>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">
+            Select the program you registered through. Your coordinator can update this if needed.
+          </div>
         </div>
 
         <!-- Cell phone — REQUIRED -->
@@ -4540,29 +4607,43 @@ function escHtml(str) {
 function showOnboarding(profile) {
   const overlay = document.getElementById('onboarding-overlay');
   if (!overlay) return;
-  // Pre-fill name if available
+  // Pre-fill fields from existing profile
   if (profile?.full_name) {
     const nameEl = document.getElementById('ob-name');
     if (nameEl) nameEl.value = profile.full_name;
   }
   if (profile?.cell_phone) {
     const phoneEl = document.getElementById('ob-phone');
-    if (phoneEl) phoneEl.value = profile.cell_phone;
+    if (phoneEl) phoneEl.value = normalizePhone(profile.cell_phone);
   }
   if (profile?.pronouns) {
     const prEl = document.getElementById('ob-pronouns');
     if (prEl) prEl.value = profile.pronouns;
   }
+  if (profile?.volunteer_source) {
+    const srcEl = document.getElementById('ob-source');
+    if (srcEl) srcEl.value = profile.volunteer_source;
+  }
+  if (profile?.emergency_contact_name) {
+    const ecEl = document.getElementById('ob-ec-name');
+    if (ecEl) ecEl.value = profile.emergency_contact_name;
+  }
+  if (profile?.emergency_contact_phone) {
+    const ecPEl = document.getElementById('ob-ec-phone');
+    if (ecPEl) ecPEl.value = normalizePhone(profile.emergency_contact_phone);
+  }
+  if (profile?.health_accessibility_notes) {
+    const hEl = document.getElementById('ob-health');
+    if (hEl) hEl.value = profile.health_accessibility_notes;
+  }
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
-  // Focus phone field after a tick
+  // Focus the first empty required field
   setTimeout(() => {
     const phone = document.getElementById('ob-phone');
-    if (phone && !phone.value) phone.focus();
-    else {
-      const name = document.getElementById('ob-name');
-      if (name && !name.value) name.focus();
-    }
+    if (phone && !phone.value) { phone.focus(); return; }
+    const name = document.getElementById('ob-name');
+    if (name && !name.value) name.focus();
   }, 120);
 }
 
@@ -4576,17 +4657,39 @@ function hideOnboarding() {
 function formatCanadianPhone(input) {
   // Strip everything except digits
   let digits = input.value.replace(/\D/g, '');
-  // Remove leading 1 if present
+  // Remove leading country code 1
   if (digits.startsWith('1') && digits.length > 10) digits = digits.slice(1);
   digits = digits.slice(0, 10);
-  // Format as XXX-XXX-XXXX
+  // Format as (XXX) XXX-XXXX
   if (digits.length >= 7) {
-    input.value = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+    input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
   } else if (digits.length >= 4) {
-    input.value = digits.slice(0,3) + '-' + digits.slice(3);
+    input.value = '(' + digits.slice(0,3) + ') ' + digits.slice(3);
+  } else if (digits.length >= 1) {
+    input.value = '(' + digits;
   } else {
-    input.value = digits;
+    input.value = '';
   }
+}
+
+/* Normalize phone to (XXX) XXX-XXXX display format from any input */
+function normalizePhone(val) {
+  if (!val) return '';
+  let digits = val.replace(/\D/g, '');
+  if (digits.startsWith('1') && digits.length > 10) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
+  if (digits.length === 10) {
+    return '(' + digits.slice(0,3) + ') ' + digits.slice(3,6) + '-' + digits.slice(6);
+  }
+  return val; // return as-is if not 10 digits
+}
+
+/* Strip to raw 10-digit string for DB storage */
+function stripPhone(val) {
+  if (!val) return null;
+  let digits = val.replace(/\D/g, '');
+  if (digits.startsWith('1') && digits.length > 10) digits = digits.slice(1);
+  return digits.length === 10 ? digits : null;
 }
 
 function validateCanadianPhone(val) {
@@ -4595,14 +4698,15 @@ function validateCanadianPhone(val) {
 }
 
 async function submitOnboarding() {
-  const btn     = document.getElementById('ob-submit-btn');
-  const errEl   = document.getElementById('ob-error');
-  const phone   = document.getElementById('ob-phone').value.trim();
-  const name    = document.getElementById('ob-name').value.trim();
-  const pronouns= document.getElementById('ob-pronouns').value.trim();
-  const ecName  = document.getElementById('ob-ec-name').value.trim();
-  const ecPhone = document.getElementById('ob-ec-phone').value.trim();
-  const health  = document.getElementById('ob-health').value.trim();
+  const btn      = document.getElementById('ob-submit-btn');
+  const errEl    = document.getElementById('ob-error');
+  const phone    = document.getElementById('ob-phone').value.trim();
+  const name     = document.getElementById('ob-name').value.trim();
+  const source   = document.getElementById('ob-source')?.value || 'YA-Youth';
+  const pronouns = document.getElementById('ob-pronouns').value.trim();
+  const ecName   = document.getElementById('ob-ec-name').value.trim();
+  const ecPhone  = document.getElementById('ob-ec-phone').value.trim();
+  const health   = document.getElementById('ob-health').value.trim();
 
   errEl.style.display = 'none';
 
@@ -4614,9 +4718,17 @@ async function submitOnboarding() {
     return;
   }
   if (!validateCanadianPhone(phone)) {
-    errEl.textContent = '📱 Please enter a valid 10-digit Canadian phone number (e.g. 403-555-0123).';
+    errEl.textContent = '📱 Please enter a valid 10-digit Canadian number (e.g. (403) 555-1234).';
     errEl.style.display = 'block';
     document.getElementById('ob-phone').focus();
+    return;
+  }
+
+  // Validate source group
+  const validSources = ['YA-Youth', 'YVC-Youth', 'VA-Adult'];
+  if (!validSources.includes(source)) {
+    errEl.textContent = '⚠️ Please select a valid volunteer program.';
+    errEl.style.display = 'block';
     return;
   }
 
@@ -4624,28 +4736,43 @@ async function submitOnboarding() {
   btn.disabled = true;
 
   const updates = {
-    cell_phone:               phone,
-    full_name:                name || null,
-    pronouns:                 pronouns || null,
-    emergency_contact_name:   ecName || null,
-    emergency_contact_phone:  ecPhone || null,
+    cell_phone:                 normalizePhone(phone),
+    full_name:                  name || null,
+    volunteer_source:           source,
+    pronouns:                   pronouns || null,
+    emergency_contact_name:     ecName || null,
+    emergency_contact_phone:    ecPhone ? normalizePhone(ecPhone) : null,
     health_accessibility_notes: health || null,
-    onboarding_complete:      true,
-    updated_at:               new Date().toISOString(),
+    onboarding_complete:        true,
+    updated_at:                 new Date().toISOString(),
   };
 
-  // Upsert: if trigger created a row, update it; else insert
+  // Update profile row (created by DB trigger on auth signup)
   const { error } = await sb
     .from('volunteer_profiles')
     .update(updates)
     .eq('user_id', currentUser.id);
 
   if (error) {
-    btn.textContent = 'Complete Profile & Enter Dashboard →';
-    btn.disabled = false;
-    errEl.textContent = '❌ Could not save: ' + error.message;
-    errEl.style.display = 'block';
-    return;
+    // If update failed because row doesn't exist, try insert
+    if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
+      const { error: insertErr } = await sb
+        .from('volunteer_profiles')
+        .insert({ ...updates, user_id: currentUser.id, email: currentUser.email });
+      if (insertErr) {
+        btn.textContent = 'Complete Profile & Enter Dashboard →';
+        btn.disabled = false;
+        errEl.textContent = '❌ Could not save profile: ' + insertErr.message;
+        errEl.style.display = 'block';
+        return;
+      }
+    } else {
+      btn.textContent = 'Complete Profile & Enter Dashboard →';
+      btn.disabled = false;
+      errEl.textContent = '❌ Could not save: ' + error.message;
+      errEl.style.display = 'block';
+      return;
+    }
   }
 
   // Refresh profile from DB
@@ -5365,6 +5492,30 @@ async function adminSaveHomepage() {
 /* ============================================================
    USERS ADMIN
    ============================================================ */
+
+/* Active source filter state */
+let _activeSourceFilter = 'all';
+
+function setSourceFilter(src) {
+  _activeSourceFilter = src;
+  document.querySelectorAll('.source-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.source === src);
+  });
+  filterUsersTable(document.getElementById('users-search')?.value || '');
+}
+
+/* Source group helpers */
+function sourceLabel(src) {
+  const map = { 'YA-Youth': '🌱 YA-Youth', 'YVC-Youth': '🎓 YVC-Youth', 'VA-Adult': '🙌 VA-Adult' };
+  return map[src] || src || '–';
+}
+function sourceBadgeClass(src) {
+  if (src === 'YA-Youth')  return 'badge-ya';
+  if (src === 'YVC-Youth') return 'badge-yvc';
+  if (src === 'VA-Adult')  return 'badge-va';
+  return 'badge-blue';
+}
+
 async function loadUsersAdmin() {
   const wrap = document.getElementById('users-list-wrap');
   if (!wrap || !sb) return;
@@ -5379,90 +5530,196 @@ async function loadUsersAdmin() {
     wrap.innerHTML = renderEmpty('Could not load users.');
     return;
   }
-
   if (!users.length) {
     wrap.innerHTML = renderEmpty('No users yet.');
     return;
   }
 
-  wrap.innerHTML = users.map(u => `
-    <div class="card card-hover" style="margin-bottom:10px;" id="user-card-${u.id}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:200px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <div style="width:32px;height:32px;font-size:0.8rem;border-radius:50%;background:var(--cf-gradient);
-                        display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;">
-              ${escHtml((u.full_name || u.email || '?')[0].toUpperCase())}
-            </div>
-            <div>
-              <div style="font-weight:700;font-size:0.9rem;">${escHtml(u.full_name || '(No name yet)')}</div>
-              <div style="font-size:0.75rem;color:var(--text-muted);">${escHtml(u.email || '')}</div>
-              ${u.cell_phone ? `<div style="font-size:0.75rem;color:var(--cf-teal);">📱 ${escHtml(u.cell_phone)}</div>` : '<div style="font-size:0.72rem;color:var(--cf-coral);">📱 No phone yet</div>'}
-            </div>
+  wrap.dataset.users = JSON.stringify(users);
+  renderUsersCards(users);
+}
+
+function renderUsersCards(users) {
+  const wrap = document.getElementById('users-list-wrap');
+  if (!wrap) return;
+
+  const query = (document.getElementById('users-search')?.value || '').toLowerCase().trim();
+  const src   = _activeSourceFilter;
+
+  const filtered = users.filter(u => {
+    const matchSrc = src === 'all' || (u.volunteer_source || 'YA-Youth') === src;
+    if (!matchSrc) return false;
+    if (!query) return true;
+    const haystack = [u.full_name, u.email, u.cell_phone, u.volunteer_id, u.role].join(' ').toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (!filtered.length) {
+    wrap.innerHTML = renderEmpty('No users match your search.');
+    return;
+  }
+
+  wrap.innerHTML = filtered.map(u => {
+    const src       = u.volunteer_source || 'YA-Youth';
+    const phoneDisp = u.cell_phone ? normalizePhone(u.cell_phone) : null;
+    const initial   = (u.full_name || u.email || '?')[0].toUpperCase();
+
+    return `
+    <div class="card card-hover" style="margin-bottom:10px;" id="user-card-${u.id}"
+         data-source="${escHtml(src)}" data-search="${escHtml([u.full_name,u.email,u.cell_phone,u.volunteer_id].join(' ').toLowerCase())}">
+
+      <!-- Top info row -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <div style="width:36px;height:36px;font-size:0.85rem;border-radius:50%;background:var(--cf-gradient);
+                      display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;">
+            ${escHtml(initial)}
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge ${u.role === 'admin' ? 'badge-purple' : 'badge-blue'}">${u.role || 'volunteer'}</span>
-            <span class="badge ${u.status === 'active' ? 'badge-green' : 'badge-coral'}">${u.status || 'active'}</span>
-            <span class="badge ${u.onboarding_complete ? 'badge-green' : 'badge-gold'}">${u.onboarding_complete ? '✅ Onboarded' : '⏳ Pending'}</span>
-            ${u.role_title ? `<span class="badge badge-gold">${escHtml(u.role_title)}</span>` : ''}
+          <div style="min-width:0;">
+            <div style="font-weight:700;font-size:0.92rem;margin-bottom:1px;word-break:break-word;">${escHtml(u.full_name || '(No name yet)')}</div>
+            <div style="font-size:0.73rem;color:var(--text-muted);margin-bottom:3px;">${escHtml(u.email || '')}</div>
+            ${phoneDisp
+              ? `<div style="font-size:0.75rem;color:var(--cf-teal);">📱 ${escHtml(phoneDisp)}</div>`
+              : `<div style="font-size:0.72rem;color:var(--cf-coral);">📱 No phone yet</div>`}
           </div>
-          ${u.pronouns ? `<div style="font-size:0.72rem;color:var(--text-muted);">Pronouns: ${escHtml(u.pronouns)}</div>` : ''}
-          ${u.emergency_contact_name ? `<div style="font-size:0.72rem;color:var(--text-muted);">🚨 EC: ${escHtml(u.emergency_contact_name)} ${u.emergency_contact_phone ? '· ' + escHtml(u.emergency_contact_phone) : ''}</div>` : ''}
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;min-width:190px;">
-          <input type="text" class="input-field" id="uname-${u.id}"
-                 value="${escHtml(u.full_name || '')}"
-                 placeholder="Full name"
-                 style="padding:7px 10px;font-size:0.82rem;">
-          <input type="tel" class="input-field" id="uphone-${u.id}"
-                 value="${escHtml(u.cell_phone || '')}"
-                 placeholder="Cell phone"
-                 style="padding:7px 10px;font-size:0.82rem;"
-                 oninput="formatCanadianPhone(this)">
-          <select class="input-field" id="urole-${u.id}" style="padding:7px 10px;font-size:0.82rem;">
-            <option value="volunteer" ${u.role !== 'admin' ? 'selected' : ''}>Volunteer</option>
-            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-          </select>
-          <select class="input-field" id="ustatus-${u.id}" style="padding:7px 10px;font-size:0.82rem;">
-            <option value="active" ${u.status !== 'inactive' ? 'selected' : ''}>Active</option>
-            <option value="inactive" ${u.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-          </select>
+        ${u.volunteer_id ? `<span class="vol-id-chip">${escHtml(u.volunteer_id)}</span>` : ''}
+      </div>
+
+      <!-- Badges row -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">
+        <span class="badge ${u.role === 'admin' ? 'badge-purple' : 'badge-blue'}">${escHtml(u.role || 'volunteer')}</span>
+        <span class="badge ${sourceBadgeClass(src)}">${sourceLabel(src)}</span>
+        <span class="badge ${u.status === 'active' ? 'badge-green' : 'badge-coral'}">${u.status || 'active'}</span>
+        <span class="badge ${u.onboarding_complete ? 'badge-green' : 'badge-gold'}">${u.onboarding_complete ? '✅ Onboarded' : '⏳ Pending'}</span>
+        ${u.role_title ? `<span class="badge badge-gold">${escHtml(u.role_title)}</span>` : ''}
+      </div>
+
+      ${u.pronouns ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">Pronouns: ${escHtml(u.pronouns)}</div>` : ''}
+      ${u.emergency_contact_name ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;">🚨 EC: ${escHtml(u.emergency_contact_name)}${u.emergency_contact_phone ? ' · ' + escHtml(normalizePhone(u.emergency_contact_phone)) : ''}</div>` : ''}
+
+      <!-- Edit fields -->
+      <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:2px;">
+        <div class="form-row form-row-2" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Full Name</label>
+            <input type="text" class="input-field" id="uname-${u.id}"
+                   value="${escHtml(u.full_name || '')}" placeholder="Full name"
+                   style="padding:8px 10px;font-size:0.83rem;">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Cell Phone</label>
+            <input type="tel" class="input-field" id="uphone-${u.id}"
+                   value="${escHtml(phoneDisp || '')}" placeholder="(403) 555-1234"
+                   style="padding:8px 10px;font-size:0.83rem;"
+                   oninput="formatCanadianPhone(this)">
+          </div>
+        </div>
+        <div class="form-row form-row-2" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Volunteer Program</label>
+            <select class="input-field" id="usource-${u.id}" style="padding:8px 10px;font-size:0.83rem;">
+              <option value="YA-Youth"  ${src === 'YA-Youth'  ? 'selected' : ''}>🌱 YA-Youth</option>
+              <option value="YVC-Youth" ${src === 'YVC-Youth' ? 'selected' : ''}>🎓 YVC-Youth</option>
+              <option value="VA-Adult"  ${src === 'VA-Adult'  ? 'selected' : ''}>🙌 VA-Adult</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Role</label>
+            <select class="input-field" id="urole-${u.id}" style="padding:8px 10px;font-size:0.83rem;">
+              <option value="volunteer" ${u.role !== 'admin' ? 'selected' : ''}>Volunteer</option>
+              <option value="admin"     ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row form-row-2" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Status</label>
+            <select class="input-field" id="ustatus-${u.id}" style="padding:8px 10px;font-size:0.83rem;">
+              <option value="active"   ${u.status !== 'inactive' ? 'selected' : ''}>Active</option>
+              <option value="inactive" ${u.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label" style="font-size:0.68rem;">Onboarding</label>
+            <select class="input-field" id="uonboard-${u.id}" style="padding:8px 10px;font-size:0.83rem;">
+              <option value="true"  ${u.onboarding_complete ? 'selected' : ''}>✅ Complete</option>
+              <option value="false" ${!u.onboarding_complete ? 'selected' : ''}>⏳ Pending</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-primary btn-sm" onclick="adminSaveUser('${u.id}')">💾 Save</button>
+          <div id="usave-feedback-${u.id}" style="font-size:0.75rem;color:var(--cf-green);min-height:16px;"></div>
         </div>
       </div>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">
+
+      <!-- Footer meta -->
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.04);">
         Joined: ${u.created_at ? new Date(u.created_at).toLocaleDateString('en-CA') : '–'}
+        ${u.volunteer_id ? ` · ID: ${escHtml(u.volunteer_id)}` : ''}
         ${u.zone ? ' · Zone: ' + escHtml(u.zone) : ''}
         ${u.health_accessibility_notes ? ' · ♿ ' + escHtml(u.health_accessibility_notes.slice(0,60)) : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function adminSaveUser(id) {
-  const name   = document.getElementById('uname-' + id)?.value.trim();
-  const phone  = document.getElementById('uphone-' + id)?.value.trim();
-  const role   = document.getElementById('urole-' + id)?.value;
-  const status = document.getElementById('ustatus-' + id)?.value;
+  const name    = document.getElementById('uname-' + id)?.value.trim();
+  const phone   = document.getElementById('uphone-' + id)?.value.trim();
+  const source  = document.getElementById('usource-' + id)?.value;
+  const role    = document.getElementById('urole-' + id)?.value;
+  const status  = document.getElementById('ustatus-' + id)?.value;
+  const onboard = document.getElementById('uonboard-' + id)?.value === 'true';
+  const fbEl    = document.getElementById('usave-feedback-' + id);
+
+  const updates = {
+    full_name:           name || null,
+    cell_phone:          phone ? normalizePhone(phone) : null,
+    volunteer_source:    source || 'YA-Youth',
+    role,
+    status,
+    onboarding_complete: onboard,
+    updated_at:          new Date().toISOString(),
+  };
+
   const { error } = await sb
     .from('volunteer_profiles')
-    .update({
-      full_name: name || null,
-      cell_phone: phone || null,
-      role,
-      status,
-      updated_at: new Date().toISOString()
-    })
+    .update(updates)
     .eq('id', id);
-  if (error) showToast('❌ ' + error.message, 'error');
-  else { showToast('✅ User updated!', 'success'); await loadUsersAdmin(); }
+
+  if (error) {
+    showToast('❌ ' + error.message, 'error');
+    if (fbEl) { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = '❌ Save failed'; }
+  } else {
+    showToast('✅ User updated!', 'success');
+    if (fbEl) {
+      fbEl.style.color = 'var(--cf-green)';
+      fbEl.textContent = '✅ Saved';
+      setTimeout(() => { if (fbEl) fbEl.textContent = ''; }, 3000);
+    }
+    await loadUsersAdmin();
+  }
 }
 
 function filterUsersTable(q) {
-  const query = q.toLowerCase().trim();
-  document.querySelectorAll('#users-list-wrap > .card').forEach(card => {
-    const text = card.textContent.toLowerCase();
-    card.style.display = (!query || text.includes(query)) ? '' : 'none';
-  });
+  const wrap = document.getElementById('users-list-wrap');
+  if (!wrap) return;
+  // Re-render from cached data so source filter still works
+  try {
+    const users = JSON.parse(wrap.dataset.users || '[]');
+    renderUsersCards(users);
+  } catch(e) {
+    // Fallback: show/hide existing cards
+    const query = q.toLowerCase().trim();
+    const src = _activeSourceFilter;
+    document.querySelectorAll('#users-list-wrap > .card').forEach(card => {
+      const matchSrc = src === 'all' || card.dataset.source === src;
+      const matchQ   = !query || (card.dataset.search || card.textContent).toLowerCase().includes(query);
+      card.style.display = (matchSrc && matchQ) ? '' : 'none';
+    });
+  }
 }
 
 /* ============================================================
@@ -5701,21 +5958,188 @@ function clearContactForm() {
   -- ENABLE UUID EXTENSION
   create extension if not exists "uuid-ossp";
 
+  -- ============================================================
   -- VOLUNTEER PROFILES (also stores admin profiles)
+  -- ============================================================
+  -- NOTE: volunteer_source controls which coordination group manages this volunteer.
+  -- Allowed values:
+  --   YA-Youth   = Youth Airdrie volunteer
+  --   YVC-Youth  = Youth Volunteer Corps
+  --   VA-Adult   = Volunteer Airdrie adult
+  --
+  -- CSV IMPORT SAFETY NOTE (future):
+  --   When importing from external CSVs, NEVER overwrite an existing row's
+  --   volunteer_source or volunteer_id. Always match on email first, and
+  --   only INSERT rows that do not already exist.
+  --   volunteer_id is stable and should survive any re-import.
+  -- ============================================================
   create table volunteer_profiles (
-    id            uuid primary key default uuid_generate_v4(),
-    user_id       uuid references auth.users(id) on delete cascade,
-    full_name     text not null,
-    email         text,
-    role          text default 'volunteer' check (role in ('volunteer','admin')),
-    role_title    text,
-    zone          text,
-    shift_start   time,
-    shift_end     time,
-    phone         text,
-    notes         text,
-    created_at    timestamptz default now()
+    id                          uuid primary key default uuid_generate_v4(),
+    user_id                     uuid references auth.users(id) on delete cascade,
+
+    -- Identity
+    full_name                   text,
+    email                       text,
+    cell_phone                  text,           -- stored as (XXX) XXX-XXXX
+    pronouns                    text,
+
+    -- Volunteer program source group (controlled vocabulary)
+    volunteer_source            text not null default 'YA-Youth'
+                                  check (volunteer_source in ('YA-Youth','YVC-Youth','VA-Adult')),
+
+    -- Stable human-readable volunteer ID (e.g. YA-0001, VOL-000042)
+    -- Set by DB trigger on insert; never changes after creation
+    volunteer_id                text unique,
+
+    -- Role within the app
+    role                        text default 'volunteer' check (role in ('volunteer','admin')),
+    role_title                  text,
+    zone                        text,
+    status                      text default 'active' check (status in ('active','inactive')),
+
+    -- Onboarding
+    onboarding_complete         boolean default false,
+
+    -- Emergency / accessibility
+    emergency_contact_name      text,
+    emergency_contact_phone     text,
+    health_accessibility_notes  text,
+
+    -- Shift tracking (legacy fields kept for compatibility)
+    shift_start                 time,
+    shift_end                   time,
+    notes                       text,
+
+    -- Timestamps
+    created_at                  timestamptz default now(),
+    updated_at                  timestamptz default now()
   );
+
+  -- Index for fast lookup by email and source group
+  create index if not exists idx_vol_profiles_email  on volunteer_profiles(email);
+  create index if not exists idx_vol_profiles_source on volunteer_profiles(volunteer_source);
+  create index if not exists idx_vol_profiles_vol_id on volunteer_profiles(volunteer_id);
+
+  -- ============================================================
+  -- TRIGGER: auto-generate volunteer_id on insert
+  -- Format: YA-0001 / YVC-0001 / VA-0001 based on source group
+  -- Falls back to VOL-XXXXX if source is unknown
+  -- ============================================================
+  create or replace function generate_volunteer_id()
+  returns trigger as $$
+  declare
+    prefix text;
+    seq    int;
+    new_id text;
+  begin
+    -- Determine prefix from source group
+    prefix := case new.volunteer_source
+      when 'YA-Youth'  then 'YA'
+      when 'YVC-Youth' then 'YVC'
+      when 'VA-Adult'  then 'VA'
+      else 'VOL'
+    end;
+
+    -- Count existing IDs with this prefix to get next sequence
+    select count(*) + 1
+      into seq
+      from volunteer_profiles
+      where volunteer_id like prefix || '-%';
+
+    new_id := prefix || '-' || lpad(seq::text, 4, '0');
+
+    -- Ensure uniqueness (loop if collision)
+    while exists (select 1 from volunteer_profiles where volunteer_id = new_id) loop
+      seq := seq + 1;
+      new_id := prefix || '-' || lpad(seq::text, 4, '0');
+    end loop;
+
+    new.volunteer_id := new_id;
+    return new;
+  end;
+  $$ language plpgsql;
+
+  create trigger trg_volunteer_id
+    before insert on volunteer_profiles
+    for each row
+    when (new.volunteer_id is null)
+    execute function generate_volunteer_id();
+
+  -- ============================================================
+  -- MIGRATION SCRIPT (run if volunteer_profiles already exists)
+  -- Safe to run multiple times (uses IF NOT EXISTS / DO blocks)
+  -- ============================================================
+  -- Add new columns if they don't exist
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='volunteer_source') then
+      alter table volunteer_profiles
+        add column volunteer_source text not null default 'YA-Youth'
+          check (volunteer_source in ('YA-Youth','YVC-Youth','VA-Adult'));
+    end if;
+  end $$;
+
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='volunteer_id') then
+      alter table volunteer_profiles add column volunteer_id text unique;
+    end if;
+  end $$;
+
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='status') then
+      alter table volunteer_profiles
+        add column status text default 'active' check (status in ('active','inactive'));
+    end if;
+  end $$;
+
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='onboarding_complete') then
+      alter table volunteer_profiles add column onboarding_complete boolean default false;
+    end if;
+  end $$;
+
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='updated_at') then
+      alter table volunteer_profiles add column updated_at timestamptz default now();
+    end if;
+  end $$;
+
+  do $$ begin
+    if not exists (select 1 from information_schema.columns
+                   where table_name='volunteer_profiles' and column_name='cell_phone') then
+      alter table volunteer_profiles add column cell_phone text;
+    end if;
+  end $$;
+
+  -- Backfill volunteer_ids for existing rows that don't have one
+  -- (run this after creating the trigger above)
+  do $$
+  declare
+    r record;
+    prefix text;
+    seq int;
+    new_id text;
+  begin
+    for r in select id, volunteer_source from volunteer_profiles where volunteer_id is null order by created_at loop
+      prefix := case r.volunteer_source
+        when 'YA-Youth'  then 'YA'
+        when 'YVC-Youth' then 'YVC'
+        when 'VA-Adult'  then 'VA'
+        else 'VOL'
+      end;
+      select count(*) + 1 into seq from volunteer_profiles where volunteer_id like prefix || '-%';
+      new_id := prefix || '-' || lpad(seq::text, 4, '0');
+      while exists (select 1 from volunteer_profiles where volunteer_id = new_id) loop
+        seq := seq + 1;
+        new_id := prefix || '-' || lpad(seq::text, 4, '0');
+      end loop;
+      update volunteer_profiles set volunteer_id = new_id where id = r.id;
+    end loop;
+  end $$;
 
   -- VOLUNTEER ASSIGNMENTS (shifts)
   create table volunteer_assignments (
