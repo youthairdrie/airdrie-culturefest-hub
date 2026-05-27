@@ -2406,6 +2406,19 @@ function updateDateTime() {
    PAGE NAVIGATION
    ============================================================ */
 function showPage(page) {
+  // If the onboarding overlay is visible and user navigates away,
+  // only allow going to vol-login (sign-in) or public — block dashboard access
+  const overlay = document.getElementById('onboarding-overlay');
+  const onboardingActive = overlay && overlay.style.display === 'block';
+  if (onboardingActive && page !== 'vol-login' && page !== 'public') {
+    // Block navigation to protected pages until onboarding is done
+    return;
+  }
+  // If navigating to login or public, always hide onboarding overlay
+  if (page === 'vol-login' || page === 'public') {
+    hideOnboarding();
+  }
+
   document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById('page-' + page);
   if (target) target.classList.add('active');
@@ -2545,6 +2558,8 @@ function clearAuthState() {
   currentRole = null;
   document.getElementById('user-chip').classList.add('hidden');
   document.getElementById('logout-btn').classList.add('hidden');
+  // Always reset onboarding overlay on sign-out
+  hideOnboarding();
   updateNavTabs();
   showPage('public');
 }
@@ -3737,6 +3752,7 @@ function hideOnboarding() {
   const overlay = document.getElementById('onboarding-overlay');
   if (overlay) overlay.style.display = 'none';
   document.body.style.overflow = '';
+  document.body.style.position = '';
 }
 
 function formatCanadianPhone(input) {
