@@ -1824,7 +1824,6 @@ input, select, textarea {
       <button class="admin-tab" onclick="switchAdminTab('schedule')">🎤 Schedule</button>
       <button class="admin-tab" onclick="switchAdminTab('booths-admin')">🏮 Booths</button>
       <button class="admin-tab" onclick="switchAdminTab('food-admin')">🍽️ Food</button>
-      <button class="admin-tab" onclick="switchAdminTab('volunteers-admin')">🙌 Volunteers</button>
       <button class="admin-tab" onclick="switchAdminTab('users-admin')">👥 Users</button>
       <button class="admin-tab" onclick="switchAdminTab('announcements-admin')">📢 Announcements</button>
       <button class="admin-tab" onclick="switchAdminTab('homepage-admin')">🏠 Home Page</button>
@@ -2016,57 +2015,6 @@ input, select, textarea {
             <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
           </tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- VOLUNTEERS PANEL -->
-    <div id="admin-panel-volunteers-admin" class="admin-panel">
-      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--cf-blue)">Volunteer Roster</h3>
-      <div class="data-table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr><th>Name</th><th>Email</th><th>Role</th><th>Zone</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="admin-vol-tbody">
-            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="admin-form" style="margin-top:16px;">
-        <h4>＋ Add Volunteer</h4>
-        <input type="hidden" id="vol-edit-id">
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="input-label">Full Name</label>
-            <input type="text" class="input-field" id="vol-name-field" placeholder="Jane Smith">
-          </div>
-          <div class="form-group">
-            <label class="input-label">Email</label>
-            <input type="email" class="input-field" id="vol-email-field" placeholder="jane@example.com">
-          </div>
-        </div>
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="input-label">Role</label>
-            <input type="text" class="input-field" id="vol-role-field" placeholder="e.g. Gate Greeter">
-          </div>
-          <div class="form-group">
-            <label class="input-label">Zone / Area</label>
-            <input type="text" class="input-field" id="vol-zone-field" placeholder="e.g. Main Entrance">
-          </div>
-        </div>
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="input-label">Shift Start</label>
-            <input type="time" class="input-field" id="vol-shift-start">
-          </div>
-          <div class="form-group">
-            <label class="input-label">Shift End</label>
-            <input type="time" class="input-field" id="vol-shift-end">
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="adminSaveVolunteer()">Save Volunteer</button>
-        <div id="vol-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
       </div>
     </div>
 
@@ -3330,7 +3278,6 @@ async function loadAdminData() {
     loadAdminScheduleTable(),
     loadAdminBoothsTable(),
     loadAdminFoodTable(),
-    loadAdminVolunteersTable(),
     loadAdminAnnouncementsTable(),
     loadUsersAdmin(),
     loadAdminChecklist(),
@@ -3420,25 +3367,7 @@ async function loadAdminFoodTable() {
     </tr>`).join('');
 }
 
-async function loadAdminVolunteersTable() {
-  const { data } = await sb.from('volunteer_profiles').select('*').order('full_name');
-  const tbody = document.getElementById('admin-vol-tbody');
-  if (!data || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No volunteers yet.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map(r => `
-    <tr>
-      <td>${escHtml(r.full_name || '–')}</td>
-      <td style="font-size:0.78rem;color:var(--text-muted)">${escHtml(r.email || '–')}</td>
-      <td>${escHtml(r.role_title || '–')}</td>
-      <td>${escHtml(r.zone || '–')}</td>
-      <td><span class="badge ${r.role==='admin'?'badge-purple':'badge-teal'}">${r.role || 'volunteer'}</span></td>
-      <td>
-        <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('volunteer_profiles','${r.id}',loadAdminVolunteersTable)">Remove</button>
-      </td>
-    </tr>`).join('');
-}
+
 
 async function loadAdminAnnouncementsTable() {
   const { data } = await sb.from('announcements').select('*').order('created_at', { ascending: false });
@@ -3531,27 +3460,7 @@ async function adminSaveFood() {
   else { showFeedback('food-feedback', '✅ Saved!', true); clearFoodForm(); await loadAdminFoodTable(); await loadAdminStats(); }
 }
 
-async function adminSaveVolunteer() {
-  const id  = document.getElementById('vol-edit-id').value;
-  const row = {
-    full_name:  document.getElementById('vol-name-field').value.trim(),
-    email:      document.getElementById('vol-email-field').value.trim(),
-    role_title: document.getElementById('vol-role-field').value.trim(),
-    zone:       document.getElementById('vol-zone-field').value.trim(),
-    shift_start:document.getElementById('vol-shift-start').value || null,
-    shift_end:  document.getElementById('vol-shift-end').value || null,
-    role:       'volunteer',
-  };
-  if (!row.full_name) { showFeedback('vol-feedback', 'Name is required.', false); return; }
-  if (!sb) { showFeedback('vol-feedback', '✅ Saved (demo)', true); return; }
 
-  const { error } = id
-    ? await sb.from('volunteer_profiles').update(row).eq('id', id)
-    : await sb.from('volunteer_profiles').insert(row);
-
-  if (error) showFeedback('vol-feedback', error.message, false);
-  else { showFeedback('vol-feedback', '✅ Saved!', true); await loadAdminVolunteersTable(); await loadAdminStats(); }
-}
 
 async function adminSaveAnnouncement() {
   const id  = document.getElementById('ann-edit-id').value;
