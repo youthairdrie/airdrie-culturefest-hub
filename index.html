@@ -1374,13 +1374,8 @@ input, select, textarea {
 }
 
 /* ============================================================
-   RESPONSIVE HELPERS
+   RESPONSIVE HELPERS — MOBILE-FIRST OVERHAUL
    ============================================================ */
-@media (max-width: 440px) {
-  .hero-title { font-size: 1.55rem; }
-  #nav-tabs .nav-tab { display: none; }
-  #nav-tabs .nav-tab.active { display: block; }
-}
 
 /* Fade in animation for sections */
 @keyframes fade-up {
@@ -1388,6 +1383,712 @@ input, select, textarea {
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-view.active { animation: fade-up 0.3s ease; }
+
+/* ─── GLOBAL MOBILE BASE ──────────────────────────────────── */
+/* Prevent horizontal overflow everywhere */
+html, body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure all elements respect viewport width */
+*, *::before, *::after {
+  max-width: 100%;
+}
+
+/* iOS safe area support */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ─── MINIMUM TAP TARGET SIZE ─────────────────────────────── */
+button, .btn, .nav-tab, .nav-pill, .admin-tab, .signup-btn,
+.accordion-header, .tracker-btn, .modal-close, .checklist-cb {
+  min-height: 44px;
+  min-width: 44px;
+  -webkit-tap-highlight-color: rgba(245,166,35,0.15);
+  touch-action: manipulation;
+}
+
+/* Override min-height for items where it shouldn't apply */
+.accordion-count, .badge { min-height: unset; min-width: unset; }
+
+/* Checklist checkbox touch zone enlargement */
+.checklist-cb {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+/* ─── IMPROVED INPUT SIZING ───────────────────────────────── */
+.input-field {
+  min-height: 48px;
+  font-size: 16px; /* prevents iOS zoom on focus */
+  padding: 12px 16px;
+}
+
+select.input-field {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23637189' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+textarea.input-field {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* ─── FOCUS STATES ────────────────────────────────────────── */
+.btn:focus-visible,
+.nav-tab:focus-visible,
+.nav-pill:focus-visible,
+.admin-tab:focus-visible,
+.input-field:focus-visible,
+.accordion-header:focus-visible {
+  outline: 2px solid var(--cf-gold);
+  outline-offset: 2px;
+}
+
+/* ─── HEADER — MOBILE ─────────────────────────────────────── */
+#app-header {
+  height: auto;
+  min-height: 56px;
+  padding: 8px 14px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.header-logo {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.header-right {
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ─── NAV TABS — MOBILE ───────────────────────────────────── */
+#nav-tabs {
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  min-height: 36px;
+}
+
+/* User chip condensed on mobile */
+.user-chip {
+  padding: 5px 10px 5px 7px;
+  font-size: 0.73rem;
+  max-width: 160px;
+}
+#user-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px;
+}
+
+/* Sign out button — smaller on mobile */
+#logout-btn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  min-height: 36px;
+}
+
+/* ─── MAIN CONTENT ────────────────────────────────────────── */
+#main-content {
+  padding: 14px 12px 100px;
+  /* Extra bottom padding for iOS home bar */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ─── HERO CARD — MOBILE ──────────────────────────────────── */
+.hero-card {
+  padding: 22px 18px 20px;
+  border-radius: var(--radius-lg);
+}
+
+.hero-title {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.hero-subtitle {
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+#hero-badges {
+  gap: 6px;
+}
+
+/* ─── NAV PILLS GRID — MOBILE ─────────────────────────────── */
+.nav-pills-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.nav-pill {
+  padding: 14px 8px 12px;
+  font-size: 0.76rem;
+  min-height: 72px;
+  border-radius: var(--radius-md);
+}
+
+.nav-pill .pill-icon {
+  font-size: 1.4rem;
+}
+
+/* ─── ACCORDION — MOBILE ──────────────────────────────────── */
+.accordion-header {
+  padding: 15px 16px;
+  font-size: 0.92rem;
+  min-height: 54px;
+}
+
+.accordion-body {
+  padding: 4px 14px 16px;
+}
+
+/* Prevent long accordion titles from overflowing */
+.accordion-title-wrap span:not(.accordion-icon):not(.accordion-count) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ─── SCHEDULE ITEMS — MOBILE ─────────────────────────────── */
+.schedule-item {
+  gap: 10px;
+  padding: 12px 0;
+  flex-wrap: wrap;
+}
+
+.schedule-time {
+  min-width: 62px;
+  font-size: 0.78rem;
+}
+
+.schedule-name {
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+/* ─── VENDOR GRID — MOBILE ────────────────────────────────── */
+.vendor-grid {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.vendor-card {
+  padding: 14px 12px;
+}
+
+/* ─── SHIFT CARDS — MOBILE ────────────────────────────────── */
+.shift-time-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+}
+
+.shift-time-info { min-width: unset; width: 100%; }
+
+.signup-btn {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  width: 100%;
+  text-align: center;
+}
+
+/* ─── ROLE CARD HEADER — MOBILE ───────────────────────────── */
+.role-card-header {
+  padding: 14px 14px;
+  min-height: 54px;
+}
+
+.role-card-title { font-size: 0.9rem; }
+.role-card-meta  { font-size: 0.72rem; }
+
+/* ─── ADMIN STATS GRID — MOBILE ───────────────────────────── */
+.stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.stat-card { padding: 14px 10px; }
+.stat-number { font-size: 1.6rem; }
+.stat-label  { font-size: 0.68rem; }
+
+/* ─── ADMIN TABS — MOBILE ─────────────────────────────────── */
+.admin-tabs {
+  gap: 5px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
+  /* hide scrollbar but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.admin-tabs::-webkit-scrollbar { display: none; }
+
+.admin-tab {
+  padding: 8px 14px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 38px;
+}
+
+/* ─── ADMIN FORMS — MOBILE ────────────────────────────────── */
+.admin-form {
+  padding: 16px 14px;
+}
+
+.admin-form h4 { font-size: 0.9rem; }
+
+.form-group { margin-bottom: 12px; }
+
+.input-label {
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+}
+
+/* ─── DATA TABLES — MOBILE CARD CONVERSION ────────────────── */
+/* On small screens, convert tables to stacked cards */
+@media (max-width: 640px) {
+  .data-table-wrap {
+    border: none;
+    overflow: visible;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table thead {
+    display: none; /* Hide column headers */
+  }
+
+  .data-table tr {
+    background: var(--bg-card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .data-table tr:hover { transform: none; }
+
+  .data-table td {
+    padding: 5px 0;
+    border-bottom: none;
+    font-size: 0.83rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    flex-wrap: wrap;
+    word-break: break-word;
+  }
+
+  /* Inject column header as data-label */
+  .data-table td::before {
+    content: attr(data-label);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+
+  /* Action column cells — don't show label, just show buttons */
+  .data-table td:last-child {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .data-table td:last-child::before { display: none; }
+
+  /* Make action buttons full-row on mobile */
+  .data-table td .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+}
+
+/* ─── MODALS — MOBILE ─────────────────────────────────────── */
+.modal-overlay {
+  padding: 0;
+  align-items: flex-end; /* Sheet slides up from bottom on mobile */
+}
+
+.modal-box {
+  max-width: 100%;
+  width: 100%;
+  max-height: 92vh;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 18px 28px;
+  /* iOS safe area bottom padding */
+  padding-bottom: calc(28px + env(safe-area-inset-bottom));
+}
+
+/* Drag handle for bottom sheets */
+.modal-box::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+.modal-header {
+  margin-bottom: 16px;
+}
+
+.modal-title { font-size: 1rem; }
+
+.modal-close {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 8px 12px;
+  font-size: 1rem;
+}
+
+/* ─── ONBOARDING OVERLAY — MOBILE ─────────────────────────── */
+#onboarding-overlay {
+  padding: 16px 14px 48px;
+}
+
+/* ─── LOGIN — MOBILE ──────────────────────────────────────── */
+.login-wrap {
+  padding: 12px 0 20px;
+  max-width: 100%;
+}
+
+.login-card {
+  padding: 22px 18px;
+  border-radius: var(--radius-md);
+}
+
+.login-title { font-size: 1.3rem; }
+.login-subtitle { font-size: 0.83rem; }
+.login-logo { font-size: 2.4rem; }
+
+/* ─── VOLUNTEER HEADER CARD — MOBILE ─────────────────────── */
+.volunteer-header-card {
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+}
+.vol-name { font-size: 1.15rem; }
+
+/* ─── ADMIN HEADER CARD — MOBILE ─────────────────────────── */
+.admin-header-card {
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+}
+
+/* ─── TOAST — MOBILE ──────────────────────────────────────── */
+#toast-container {
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  right: 12px;
+  left: 12px;
+}
+
+.toast {
+  max-width: 100%;
+  font-size: 0.82rem;
+  padding: 12px 14px;
+}
+
+/* ─── TRACKER BUTTONS — MOBILE ────────────────────────────── */
+.tracker-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 1.5rem;
+}
+
+.tracker-count { font-size: 2.2rem; }
+.tracker-total-num { font-size: 2.6rem; }
+
+/* ─── ASSIGNMENT ROWS — MOBILE ────────────────────────────── */
+.assignment-row {
+  gap: 6px;
+  padding: 10px;
+}
+
+.assignment-name { font-size: 0.85rem; }
+
+/* ─── FORM ROWS MOBILE (always stack) ────────────────────── */
+@media (max-width: 500px) {
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── TABLET BREAKPOINT (640px+) ─────────────────────────── */
+@media (min-width: 640px) {
+  #app-header {
+    height: 58px;
+    flex-wrap: nowrap;
+    padding: 0 20px;
+  }
+
+  .header-logo { font-size: 1.05rem; }
+
+  #main-content {
+    padding: 18px 18px 80px;
+  }
+
+  .nav-pills-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .vendor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-overlay {
+    padding: 20px;
+    align-items: center;
+  }
+
+  .modal-box {
+    border-radius: var(--radius-lg);
+    max-width: 520px;
+    padding: 24px;
+  }
+
+  .modal-box::before { display: none; }
+
+  .shift-time-row {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .signup-btn {
+    width: auto;
+  }
+
+  .admin-tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .login-wrap { max-width: 400px; }
+}
+
+/* ─── DESKTOP BREAKPOINT (1024px+) ───────────────────────── */
+@media (min-width: 1024px) {
+  .nav-pills-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .hero-title { font-size: 2.1rem; }
+
+  #main-content {
+    padding: 24px 20px 80px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ─── READABILITY — OUTDOOR USE ───────────────────────────── */
+/* Increase base body text on mobile for outdoor readability */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+
+  .schedule-name   { font-size: 0.95rem; }
+  .schedule-meta   { font-size: 0.8rem; }
+  .vendor-name     { font-size: 0.95rem; }
+  .announcement-title { font-size: 0.95rem; }
+  .announcement-body  { font-size: 0.85rem; }
+
+  /* Slightly increased contrast on muted text for sunlight */
+  .text-muted, .text-secondary {
+    color: #8a9ab8;
+  }
+}
+
+/* ─── PREVENT CONTENT OVERFLOW ────────────────────────────── */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+pre, code {
+  overflow-x: auto;
+  max-width: 100%;
+  word-break: break-all;
+}
+
+/* Long text that could overflow */
+.schedule-name,
+.vendor-name,
+.announcement-title,
+.vol-name,
+.modal-title,
+.role-card-title {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* ─── PERFORMANCE — REDUCE HEAVY EFFECTS ON MOBILE ───────── */
+@media (max-width: 640px) {
+  /* Simplify heavy box shadows */
+  .hero-card {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Disable hover transform animations */
+  .nav-pill:hover,
+  .card-hover:hover,
+  .btn-primary:hover {
+    transform: none;
+  }
+
+  /* Reduce glow effects */
+  .btn-primary {
+    box-shadow: none;
+  }
+
+  /* Disable fade-up animation on mobile for faster feel */
+  .page-view.active {
+    animation: none;
+  }
+
+  /* Lighter backdrop blur for performance */
+  #app-header {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* ─── SECTION HEADER — MOBILE ─────────────────────────────── */
+.section-header {
+  padding: 8px 0 14px;
+  word-break: break-word;
+}
+
+/* ─── EMPTY STATES — MOBILE ───────────────────────────────── */
+.empty-state {
+  padding: 28px 16px;
+}
+
+.empty-state .empty-icon { font-size: 2.2rem; }
+
+/* ─── ADMIN FORM BUTTON ROW ───────────────────────────────── */
+@media (max-width: 500px) {
+  .admin-form > div[style*="display:flex"],
+  .admin-form > div[style*="display: flex"] {
+    flex-wrap: wrap;
+  }
+
+  .admin-form .btn {
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+}
+
+/* ─── CARD CONTENT — NO OVERFLOW ──────────────────────────── */
+.card, .vendor-card, .shift-card, .tracker-card,
+.role-card, .announcement-item, .stat-card {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ─── CHECKLIST ITEM — BETTER TOUCH ──────────────────────── */
+.checklist-item {
+  padding: 14px 4px;
+  gap: 14px;
+}
+
+.checklist-label {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ─── VOLUNTEER CONTACTS — MOBILE ─────────────────────────── */
+.contact-card {
+  padding: 14px;
+}
+
+/* ─── HERO DATETIME — MOBILE ──────────────────────────────── */
+#hero-datetime {
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+/* ─── SECTION ACCORDION SCROLL MARGIN (sticky header) ─────── */
+.section-accordion {
+  scroll-margin-top: 68px;
+}
+
+/* ─── SEARCH BAR — MOBILE ─────────────────────────────────── */
+.search-bar-wrap { margin-bottom: 16px; }
+.search-bar-wrap input { min-height: 46px; font-size: 16px; }
+
+/* ─── CAPACITY BAR — MOBILE ───────────────────────────────── */
+.capacity-track { width: 50px; }
+.capacity-bar { font-size: 0.72rem; }
+
+/* ─── VERY SMALL SCREENS (iPhone SE: 375px) ───────────────── */
+@media (max-width: 390px) {
+  .hero-title { font-size: 1.4rem; }
+
+  .header-logo span:last-child {
+    /* Shorten logo text on very small screens */
+    font-size: 0.85rem;
+  }
+
+  .nav-pill { font-size: 0.7rem; }
+  .nav-pill .pill-icon { font-size: 1.25rem; }
+
+  #main-content { padding: 10px 10px 90px; }
+
+  .accordion-header { padding: 13px 12px; }
+
+  .admin-tab { padding: 7px 10px; font-size: 0.72rem; }
+
+  .stat-number { font-size: 1.4rem; }
+}
 </style>
 </head>
 <body>
@@ -3314,12 +4015,12 @@ async function loadAdminScheduleTable() {
   }
   tbody.innerHTML = data.map(r => `
     <tr>
-      <td>${r.start_time ? formatTime(r.start_time.slice(0,5)) : '–'}</td>
-      <td>${escHtml(r.name || '–')}</td>
-      <td>${escHtml(r.cultural_category || '–')}</td>
-      <td>${escHtml(r.stage_location || '–')}</td>
-      <td><span class="badge badge-purple">${escHtml(r.section || '–')}</span></td>
-      <td style="white-space:nowrap;">
+      <td data-label="Time">${r.start_time ? formatTime(r.start_time.slice(0,5)) : '–'}</td>
+      <td data-label="Performer">${escHtml(r.name || '–')}</td>
+      <td data-label="Category">${escHtml(r.cultural_category || '–')}</td>
+      <td data-label="Stage">${escHtml(r.stage_location || '–')}</td>
+      <td data-label="Section"><span class="badge badge-purple">${escHtml(r.section || '–')}</span></td>
+      <td>
         <button class="btn btn-ghost btn-sm" onclick="adminEditSchedule(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('stage_schedule','${r.id}',loadAdminScheduleTable)">Del</button>
       </td>
@@ -3335,12 +4036,12 @@ async function loadAdminBoothsTable() {
   }
   tbody.innerHTML = data.map((r, i) => `
     <tr>
-      <td>${i+1}</td>
-      <td>${escHtml(r.name || '–')}</td>
-      <td>${escHtml(r.cultural_background || '–')}</td>
-      <td>${escHtml(r.location || '–')}</td>
-      <td>${escHtml(r.category || '–')}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="#">${i+1}</td>
+      <td data-label="Name">${escHtml(r.name || '–')}</td>
+      <td data-label="Culture">${escHtml(r.cultural_background || '–')}</td>
+      <td data-label="Location">${escHtml(r.location || '–')}</td>
+      <td data-label="Category">${escHtml(r.category || '–')}</td>
+      <td>
         <button class="btn btn-ghost btn-sm" onclick="adminEditBooth(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('cultural_booths','${r.id}',loadAdminBoothsTable)">Del</button>
       </td>
@@ -3356,11 +4057,11 @@ async function loadAdminFoodTable() {
   }
   tbody.innerHTML = data.map(r => `
     <tr>
-      <td>${escHtml(r.name || '–')}</td>
-      <td><span class="badge ${r.vendor_type==='truck'?'badge-orange':'badge-coral'}">${r.vendor_type==='truck'?'🚚 Truck':'🍽️ Vendor'}</span></td>
-      <td>${escHtml(r.cuisine_category || '–')}</td>
-      <td>${escHtml(r.location || '–')}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="Name">${escHtml(r.name || '–')}</td>
+      <td data-label="Type"><span class="badge ${r.vendor_type==='truck'?'badge-orange':'badge-coral'}">${r.vendor_type==='truck'?'🚚 Truck':'🍽️ Vendor'}</span></td>
+      <td data-label="Cuisine">${escHtml(r.cuisine_category || '–')}</td>
+      <td data-label="Location">${escHtml(r.location || '–')}</td>
+      <td>
         <button class="btn btn-ghost btn-sm" onclick="adminEditFood(${JSON.stringify(r).replace(/"/g,'&quot;')})">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('food_vendors','${r.id}',loadAdminFoodTable)">Del</button>
       </td>
@@ -3380,9 +4081,9 @@ async function loadAdminAnnouncementsTable() {
     const time = r.created_at ? new Date(r.created_at).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '–';
     return `
     <tr>
-      <td>${escHtml(r.title || '–')}</td>
-      <td><span class="badge ${r.audience==='volunteer'?'badge-blue':'badge-gold'}">${r.audience || 'public'}</span></td>
-      <td style="font-size:0.78rem;color:var(--text-muted)">${time}</td>
+      <td data-label="Title">${escHtml(r.title || '–')}</td>
+      <td data-label="Audience"><span class="badge ${r.audience==='volunteer'?'badge-blue':'badge-gold'}">${r.audience || 'public'}</span></td>
+      <td data-label="Posted" style="font-size:0.78rem;color:var(--text-muted)">${time}</td>
       <td>
         <button class="btn btn-danger btn-sm" onclick="adminDeleteRow('announcements','${r.id}',loadAdminAnnouncementsTable)">Delete</button>
       </td>
