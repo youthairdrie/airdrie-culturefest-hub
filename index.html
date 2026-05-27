@@ -2145,6 +2145,143 @@ input, select, textarea {
 
   </div><!-- /page-admin -->
 
+
+  <!-- ======================================================
+       ONBOARDING MODAL — shown on first sign-in if phone missing
+       Overlays everything; cannot be dismissed until complete.
+       ====================================================== -->
+  <div id="onboarding-overlay" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(11,17,32,0.97);
+    z-index:9999;
+    overflow-y:auto;
+    padding:24px 16px 48px;
+  ">
+    <div style="max-width:480px;margin:0 auto;">
+
+      <!-- Logo -->
+      <div style="text-align:center;margin-bottom:28px;padding-top:16px;">
+        <div style="font-size:2rem;margin-bottom:8px;">🌍</div>
+        <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:800;
+                    background:var(--cf-gradient);-webkit-background-clip:text;
+                    -webkit-text-fill-color:transparent;background-clip:text;">
+          Airdrie CultureFest
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;
+                    letter-spacing:0.08em;margin-top:2px;">Volunteer Hub</div>
+      </div>
+
+      <!-- Card -->
+      <div style="background:var(--bg-card);border:1px solid var(--card-border);
+                  border-radius:var(--radius-lg);padding:28px 24px 24px;
+                  box-shadow:var(--shadow-card);position:relative;overflow:hidden;">
+        <!-- gradient top bar -->
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;
+                    background:var(--cf-gradient);border-radius:var(--radius-lg) var(--radius-lg) 0 0;"></div>
+
+        <h2 style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;
+                   margin-bottom:6px;letter-spacing:-0.02em;">Welcome to CultureFest! 🎉</h2>
+        <p style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.55;">
+          Before we take you to your volunteer dashboard, we need a couple of quick details.
+          This only takes 30 seconds.
+        </p>
+
+        <!-- WhatsApp notice -->
+        <div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);
+                    border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:20px;
+                    display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:1.2rem;flex-shrink:0;">📱</span>
+          <div style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;">
+            <strong style="color:var(--cf-green);">WhatsApp is our primary volunteer communication method</strong>
+            leading up to the event. Your cell number is required so your coordinator can reach you.
+          </div>
+        </div>
+
+        <!-- Error alert -->
+        <div id="ob-error" style="display:none;background:rgba(255,107,107,0.12);
+             border:1px solid rgba(255,107,107,0.25);border-radius:var(--radius-sm);
+             padding:10px 14px;margin-bottom:16px;font-size:0.84rem;color:#ff8f8f;"></div>
+
+        <!-- Full name -->
+        <div class="form-group">
+          <label class="input-label">Full Name <span style="color:var(--text-muted);font-weight:400;">(optional — we'll use your email if blank)</span></label>
+          <input type="text" class="input-field" id="ob-name"
+                 placeholder="e.g. Jane Smith" autocomplete="name">
+        </div>
+
+        <!-- Cell phone — REQUIRED -->
+        <div class="form-group">
+          <label class="input-label">
+            Cell Phone Number
+            <span style="color:var(--cf-coral);margin-left:3px;">*</span>
+          </label>
+          <input type="tel" class="input-field" id="ob-phone"
+                 placeholder="e.g. 403-555-0123 or (403) 555-0123"
+                 autocomplete="tel"
+                 oninput="formatCanadianPhone(this)">
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">
+            Canadian format. Used for WhatsApp only — never shared publicly.
+          </div>
+        </div>
+
+        <!-- Pronouns -->
+        <div class="form-group">
+          <label class="input-label">Preferred Pronouns <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+          <input type="text" class="input-field" id="ob-pronouns"
+                 placeholder="e.g. she/her, he/him, they/them">
+        </div>
+
+        <!-- Emergency contact -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid var(--card-border);
+                    border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text-secondary);
+                      text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">
+            🚨 Emergency Contact <span style="font-weight:400;color:var(--text-muted);">(optional but recommended)</span>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Emergency Contact Name</label>
+            <input type="text" class="input-field" id="ob-ec-name"
+                   placeholder="e.g. Alex Smith" autocomplete="off">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="input-label">Emergency Contact Phone</label>
+            <input type="tel" class="input-field" id="ob-ec-phone"
+                   placeholder="e.g. 403-555-9999"
+                   oninput="formatCanadianPhone(this)">
+          </div>
+        </div>
+
+        <!-- Health / accessibility -->
+        <div class="form-group">
+          <label class="input-label">Health / Accessibility Considerations <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+          <textarea class="input-field" id="ob-health" rows="2"
+                    placeholder="e.g. I use a wheelchair, allergies, etc. This helps us support you on the day."></textarea>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn btn-primary w-full" id="ob-submit-btn"
+                style="padding:14px;font-size:1rem;font-family:var(--font-display);font-weight:700;"
+                onclick="submitOnboarding()">
+          Complete Profile &amp; Enter Dashboard →
+        </button>
+
+        <p style="text-align:center;font-size:0.72rem;color:var(--text-muted);margin-top:14px;">
+          🔒 Your information is stored securely and never shared publicly.
+        </p>
+      </div><!-- /card -->
+
+      <div style="text-align:center;margin-top:16px;">
+        <button onclick="handleLogout()"
+                style="background:none;border:none;color:var(--text-muted);
+                       font-size:0.78rem;cursor:pointer;font-family:var(--font-body);">
+          ← Sign out and return to public site
+        </button>
+      </div>
+    </div><!-- /inner -->
+  </div><!-- /onboarding-overlay -->
+
 </main><!-- /main-content -->
 
 <!-- Toast container -->
@@ -2349,29 +2486,37 @@ function handlePublicSearch(query) {
    ============================================================ */
 async function handleAuthSession(session) {
   currentUser = session.user;
-  if (sb) {
-    const { data: profile } = await sb
-      .from('volunteer_profiles')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .single();
-    if (profile) {
-      currentRole = profile.role || 'volunteer';
-      setAuthUI(profile.full_name || session.user.email, currentRole);
-      await loadVolunteerData(profile);
-      if (currentRole === 'admin') {
-        await loadAdminData();
-        showPage('admin');
-      } else {
-        showPage('volunteer');
-      }
-    } else {
-      currentRole = 'volunteer';
-      setAuthUI(session.user.email, 'volunteer');
-      updateNavTabs();
-      showPage('volunteer');
-      showToast('⚠️ Profile incomplete — contact your coordinator.', 'info');
+  if (!sb) return;
+
+  const { data: profile } = await sb
+    .from('volunteer_profiles')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .single();
+
+  if (profile) {
+    currentRole = profile.role || 'volunteer';
+    setAuthUI(profile.full_name || session.user.email, currentRole);
+
+    // Onboarding gate — phone required for all users
+    if (!profile.onboarding_complete || !profile.cell_phone) {
+      showOnboarding(profile);
+      return;
     }
+
+    await loadVolunteerData(profile);
+    if (currentRole === 'admin') {
+      await loadAdminData();
+      showPage('admin');
+    } else {
+      showPage('volunteer');
+    }
+  } else {
+    // No profile — show onboarding so they can create one
+    currentRole = 'volunteer';
+    setAuthUI(session.user.email, 'volunteer');
+    updateNavTabs();
+    showOnboarding(null);
   }
 }
 
@@ -2463,6 +2608,12 @@ async function unifiedLogin() {
 
   currentRole = profile.role || 'volunteer';
   setAuthUI(profile.full_name || email, currentRole);
+
+  // Onboarding gate — phone required for all users
+  if (!profile.onboarding_complete || !profile.cell_phone) {
+    showOnboarding(profile);
+    return;
+  }
 
   if (currentRole === 'admin') {
     await loadAdminData();
@@ -3551,6 +3702,147 @@ function escHtml(str) {
 }
 
 /* ============================================================
+   ONBOARDING FLOW
+   ============================================================ */
+function showOnboarding(profile) {
+  const overlay = document.getElementById('onboarding-overlay');
+  if (!overlay) return;
+  // Pre-fill name if available
+  if (profile?.full_name) {
+    const nameEl = document.getElementById('ob-name');
+    if (nameEl) nameEl.value = profile.full_name;
+  }
+  if (profile?.cell_phone) {
+    const phoneEl = document.getElementById('ob-phone');
+    if (phoneEl) phoneEl.value = profile.cell_phone;
+  }
+  if (profile?.pronouns) {
+    const prEl = document.getElementById('ob-pronouns');
+    if (prEl) prEl.value = profile.pronouns;
+  }
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  // Focus phone field after a tick
+  setTimeout(() => {
+    const phone = document.getElementById('ob-phone');
+    if (phone && !phone.value) phone.focus();
+    else {
+      const name = document.getElementById('ob-name');
+      if (name && !name.value) name.focus();
+    }
+  }, 120);
+}
+
+function hideOnboarding() {
+  const overlay = document.getElementById('onboarding-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function formatCanadianPhone(input) {
+  // Strip everything except digits
+  let digits = input.value.replace(/\D/g, '');
+  // Remove leading 1 if present
+  if (digits.startsWith('1') && digits.length > 10) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
+  // Format as XXX-XXX-XXXX
+  if (digits.length >= 7) {
+    input.value = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+  } else if (digits.length >= 4) {
+    input.value = digits.slice(0,3) + '-' + digits.slice(3);
+  } else {
+    input.value = digits;
+  }
+}
+
+function validateCanadianPhone(val) {
+  const digits = val.replace(/\D/g, '');
+  return digits.length === 10;
+}
+
+async function submitOnboarding() {
+  const btn     = document.getElementById('ob-submit-btn');
+  const errEl   = document.getElementById('ob-error');
+  const phone   = document.getElementById('ob-phone').value.trim();
+  const name    = document.getElementById('ob-name').value.trim();
+  const pronouns= document.getElementById('ob-pronouns').value.trim();
+  const ecName  = document.getElementById('ob-ec-name').value.trim();
+  const ecPhone = document.getElementById('ob-ec-phone').value.trim();
+  const health  = document.getElementById('ob-health').value.trim();
+
+  errEl.style.display = 'none';
+
+  // Validate phone
+  if (!phone) {
+    errEl.textContent = '📱 Your cell phone number is required — it's how we contact volunteers via WhatsApp.';
+    errEl.style.display = 'block';
+    document.getElementById('ob-phone').focus();
+    return;
+  }
+  if (!validateCanadianPhone(phone)) {
+    errEl.textContent = '📱 Please enter a valid 10-digit Canadian phone number (e.g. 403-555-0123).';
+    errEl.style.display = 'block';
+    document.getElementById('ob-phone').focus();
+    return;
+  }
+
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const updates = {
+    cell_phone:               phone,
+    full_name:                name || null,
+    pronouns:                 pronouns || null,
+    emergency_contact_name:   ecName || null,
+    emergency_contact_phone:  ecPhone || null,
+    health_accessibility_notes: health || null,
+    onboarding_complete:      true,
+    updated_at:               new Date().toISOString(),
+  };
+
+  // Upsert: if trigger created a row, update it; else insert
+  const { error } = await sb
+    .from('volunteer_profiles')
+    .update(updates)
+    .eq('user_id', currentUser.id);
+
+  if (error) {
+    btn.textContent = 'Complete Profile & Enter Dashboard →';
+    btn.disabled = false;
+    errEl.textContent = '❌ Could not save: ' + error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Refresh profile from DB
+  const { data: profile } = await sb
+    .from('volunteer_profiles')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .single();
+
+  hideOnboarding();
+  btn.textContent = 'Complete Profile & Enter Dashboard →';
+  btn.disabled = false;
+
+  showToast('✅ Profile saved! Welcome to CultureFest 🎉', 'success');
+
+  if (profile) {
+    currentRole = profile.role || 'volunteer';
+    setAuthUI(profile.full_name || currentUser.email, currentRole);
+    await loadVolunteerData(profile);
+    if (currentRole === 'admin') {
+      await loadAdminData();
+      showPage('admin');
+    } else {
+      showPage('volunteer');
+    }
+  } else {
+    showPage('volunteer');
+  }
+}
+
+/* ============================================================
    HOME PAGE CONTENT
    ============================================================ */
 async function loadHomepageContent() {
@@ -3670,25 +3962,35 @@ async function loadUsersAdmin() {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <div class="user-avatar" style="width:32px;height:32px;font-size:0.8rem;border-radius:50%;background:var(--cf-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;">
+            <div style="width:32px;height:32px;font-size:0.8rem;border-radius:50%;background:var(--cf-gradient);
+                        display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;">
               ${escHtml((u.full_name || u.email || '?')[0].toUpperCase())}
             </div>
             <div>
-              <div style="font-weight:700;font-size:0.9rem;">${escHtml(u.full_name || '(No name)')}</div>
+              <div style="font-weight:700;font-size:0.9rem;">${escHtml(u.full_name || '(No name yet)')}</div>
               <div style="font-size:0.75rem;color:var(--text-muted);">${escHtml(u.email || '')}</div>
+              ${u.cell_phone ? `<div style="font-size:0.75rem;color:var(--cf-teal);">📱 ${escHtml(u.cell_phone)}</div>` : '<div style="font-size:0.72rem;color:var(--cf-coral);">📱 No phone yet</div>'}
             </div>
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge ${u.role === 'admin' ? 'badge-purple' : 'badge-blue'}">${u.role || 'volunteer'}</span>
             <span class="badge ${u.status === 'active' ? 'badge-green' : 'badge-coral'}">${u.status || 'active'}</span>
+            <span class="badge ${u.onboarding_complete ? 'badge-green' : 'badge-gold'}">${u.onboarding_complete ? '✅ Onboarded' : '⏳ Pending'}</span>
             ${u.role_title ? `<span class="badge badge-gold">${escHtml(u.role_title)}</span>` : ''}
           </div>
+          ${u.pronouns ? `<div style="font-size:0.72rem;color:var(--text-muted);">Pronouns: ${escHtml(u.pronouns)}</div>` : ''}
+          ${u.emergency_contact_name ? `<div style="font-size:0.72rem;color:var(--text-muted);">🚨 EC: ${escHtml(u.emergency_contact_name)} ${u.emergency_contact_phone ? '· ' + escHtml(u.emergency_contact_phone) : ''}</div>` : ''}
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;min-width:180px;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:190px;">
           <input type="text" class="input-field" id="uname-${u.id}"
                  value="${escHtml(u.full_name || '')}"
                  placeholder="Full name"
                  style="padding:7px 10px;font-size:0.82rem;">
+          <input type="tel" class="input-field" id="uphone-${u.id}"
+                 value="${escHtml(u.cell_phone || '')}"
+                 placeholder="Cell phone"
+                 style="padding:7px 10px;font-size:0.82rem;"
+                 oninput="formatCanadianPhone(this)">
           <select class="input-field" id="urole-${u.id}" style="padding:7px 10px;font-size:0.82rem;">
             <option value="volunteer" ${u.role !== 'admin' ? 'selected' : ''}>Volunteer</option>
             <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
@@ -3700,23 +4002,31 @@ async function loadUsersAdmin() {
           <button class="btn btn-primary btn-sm" onclick="adminSaveUser('${u.id}')">💾 Save</button>
         </div>
       </div>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">
         Joined: ${u.created_at ? new Date(u.created_at).toLocaleDateString('en-CA') : '–'}
         ${u.zone ? ' · Zone: ' + escHtml(u.zone) : ''}
+        ${u.health_accessibility_notes ? ' · ♿ ' + escHtml(u.health_accessibility_notes.slice(0,60)) : ''}
       </div>
     </div>`).join('');
 }
 
 async function adminSaveUser(id) {
   const name   = document.getElementById('uname-' + id)?.value.trim();
+  const phone  = document.getElementById('uphone-' + id)?.value.trim();
   const role   = document.getElementById('urole-' + id)?.value;
   const status = document.getElementById('ustatus-' + id)?.value;
   const { error } = await sb
     .from('volunteer_profiles')
-    .update({ full_name: name, role, status, updated_at: new Date().toISOString() })
+    .update({
+      full_name: name || null,
+      cell_phone: phone || null,
+      role,
+      status,
+      updated_at: new Date().toISOString()
+    })
     .eq('id', id);
   if (error) showToast('❌ ' + error.message, 'error');
-  else showToast('✅ User updated!', 'success');
+  else { showToast('✅ User updated!', 'success'); await loadUsersAdmin(); }
 }
 
 function filterUsersTable(q) {
