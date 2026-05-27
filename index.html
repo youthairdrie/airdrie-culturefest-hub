@@ -2180,6 +2180,173 @@ pre, code {
 .source-filter-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
 .source-filter-btn.active { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.35); color: var(--cf-gold); }
 
+/* ============================================================
+   ROLE DETAILS MODAL
+   ============================================================ */
+.role-details-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11,17,32,0.97);
+  z-index: 9000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.role-details-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 20px 16px calc(40px + env(safe-area-inset-bottom));
+  flex: 1;
+}
+
+.role-details-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 0;
+  position: sticky;
+  top: 0;
+  background: rgba(11,17,32,0.97);
+  z-index: 1;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 20px;
+}
+
+.role-details-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  flex: 1;
+  letter-spacing: -0.02em;
+}
+
+.role-details-close {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: 44px;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+.role-details-close:hover { background: rgba(255,255,255,0.14); }
+
+.role-details-section {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.role-details-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.role-details-section-body {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Coordinator search select ─────────────────────────────── */
+.coord-search-wrap {
+  position: relative;
+}
+
+.coord-search-wrap input {
+  padding-right: 36px;
+}
+
+.coord-preview {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--cf-teal);
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Program filter chips on volunteer shifts ──────────────── */
+.prog-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.prog-filter-btn {
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  min-height: 34px;
+  font-family: var(--font-body);
+}
+.prog-filter-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+.prog-filter-btn.active { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.35); color: var(--cf-green); }
+
+/* ── System settings panel ─────────────────────────────────── */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-key {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 140px;
+}
+.settings-desc {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.settings-val {
+  font-size: 0.82rem;
+  color: var(--cf-gold);
+  font-weight: 700;
+  min-width: 60px;
+  text-align: right;
+}
+
 /* ─── VERY SMALL SCREENS (iPhone SE: 375px) ───────────────── */
 @media (max-width: 390px) {
   .hero-title { font-size: 1.4rem; }
@@ -2548,12 +2715,13 @@ pre, code {
       </div>
     </div>
 
-    <!-- Available Shifts — self-signup -->
-    <div id="vol-panel-available-shifts" class="admin-panel">
+    <!-- Available Shifts — self-signup -->\n    <div id="vol-panel-available-shifts" class="admin-panel">
       <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--cf-green)">✋ Available Shifts</h3>
-      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">
         Sign up for open shifts. You may sign up for multiple shifts.
       </p>
+      <!-- Program filter chips — populated dynamically from _allPrograms -->
+      <div class="prog-filters" id="vol-shift-prog-filters"></div>
       <div id="vol-available-shifts-list">
         <div class="loading-state"><div class="spinner"></div> Loading available shifts...</div>
       </div>
@@ -2644,6 +2812,7 @@ pre, code {
       <button class="admin-tab" onclick="switchAdminTab('contacts-admin')">📞 Contacts</button>
       <button class="admin-tab" onclick="switchAdminTab('shifts-admin')">📋 Volunteer Shifts</button>
       <button class="admin-tab" onclick="switchAdminTab('tracker')">🚪 Attendance</button>
+      <button class="admin-tab" onclick="switchAdminTab('settings-admin')">⚙️ Settings</button>
     </div>
 
     <!-- OVERVIEW PANEL -->
@@ -2898,23 +3067,66 @@ pre, code {
             <input type="text" class="input-field" id="sr-zone" placeholder="e.g. Guest Services">
           </div>
           <div class="form-group">
-            <label class="input-label">Coordinator Name</label>
-            <input type="text" class="input-field" id="sr-coordinator" placeholder="e.g. Sarah Johnson">
-          </div>
-        </div>
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="input-label">Coordinator Phone</label>
-            <input type="text" class="input-field" id="sr-coordinator-phone" placeholder="403-555-0101">
-          </div>
-          <div class="form-group">
             <label class="input-label">Display Order</label>
             <input type="number" class="input-field" id="sr-order" placeholder="1" min="1">
           </div>
         </div>
+        <!-- Coordinator: searchable dropdown of registered users -->
+        <div class="form-group">
+          <label class="input-label">Coordinator</label>
+          <div class="coord-search-wrap">
+            <input type="text" class="input-field" id="sr-coord-search"
+                   placeholder="🔍 Search by name or email…"
+                   oninput="filterCoordDropdown(this.value)"
+                   autocomplete="off">
+          </div>
+          <select class="input-field" id="sr-coordinator-select"
+                  style="margin-top:6px;"
+                  onchange="onCoordSelect(this.value)">
+            <option value="">— No coordinator assigned —</option>
+          </select>
+          <div class="coord-preview" id="sr-coord-preview"></div>
+          <!-- Hidden legacy fields preserved for backward compat with existing DB rows -->
+          <input type="hidden" id="sr-coordinator-user-id">
+          <input type="hidden" id="sr-coordinator" value="">
+          <input type="hidden" id="sr-coordinator-phone" value="">
+        </div>
         <div class="form-group">
           <label class="input-label">Requirements / Notes</label>
           <textarea class="input-field" id="sr-requirements" rows="2" placeholder="Any requirements or notes for volunteers..."></textarea>
+        </div>
+        <!-- Role Details (shown in volunteer Details modal) -->
+        <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:14px;margin-top:4px;margin-bottom:14px;">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--cf-blue);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">
+            📋 Role Details (shown to volunteers)
+          </div>
+          <div class="form-group">
+            <label class="input-label">What You'll Be Doing</label>
+            <textarea class="input-field" id="sr-role-details" rows="3"
+                      placeholder="Describe what this volunteer will actually be doing during their shift…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Arrival Instructions</label>
+            <textarea class="input-field" id="sr-arrival-instructions" rows="2"
+                      placeholder="Where to go, who to check in with, parking, etc."></textarea>
+          </div>
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="input-label">Supplies Needed</label>
+              <textarea class="input-field" id="sr-supplies-needed" rows="2"
+                        placeholder="e.g. Wear comfortable shoes, bring water bottle…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="input-label">Safety Notes</label>
+              <textarea class="input-field" id="sr-safety-notes" rows="2"
+                        placeholder="e.g. Familiarise yourself with first aid tent location…"></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Coordinator Notes <span style="color:var(--text-muted);font-weight:400;">(admin only)</span></label>
+            <textarea class="input-field" id="sr-coordinator-notes" rows="2"
+                      placeholder="Internal notes for admin reference only — not shown to volunteers."></textarea>
+          </div>
         </div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
           <label style="display:flex;align-items:center;gap:8px;font-size:0.83rem;cursor:pointer;">
@@ -2975,12 +3187,9 @@ pre, code {
                style="max-width:240px;padding:8px 12px;font-size:0.82rem;"
                oninput="filterUsersTable(this.value)">
       </div>
-      <!-- Source group filters -->
+      <!-- Source group filters — populated dynamically from volunteer_programs table via refreshProgramFilterBar() -->
       <div class="source-filters" id="source-filter-bar">
         <button class="source-filter-btn active" data-source="all" onclick="setSourceFilter('all')">All</button>
-        <button class="source-filter-btn" data-source="YA-Youth" onclick="setSourceFilter('YA-Youth')">🌱 YA-Youth</button>
-        <button class="source-filter-btn" data-source="YVC-Youth" onclick="setSourceFilter('YVC-Youth')">🎓 YVC-Youth</button>
-        <button class="source-filter-btn" data-source="VA-Adult" onclick="setSourceFilter('VA-Adult')">🙌 VA-Adult</button>
       </div>
       <div id="users-list-wrap">
         <div class="loading-state"><div class="spinner"></div> Loading users...</div>
@@ -3257,7 +3466,40 @@ pre, code {
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         SYSTEM SETTINGS PANEL
+         ═══════════════════════════════════════════════════════ -->
+    <div id="admin-panel-settings-admin" class="admin-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--cf-teal)">⚙️ System Settings</h3>
+        <button class="btn btn-primary btn-sm" id="settings-save-btn" onclick="adminSaveSettings()">💾 Save All Settings</button>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;line-height:1.55;">
+        These settings control app behaviour. Changes take effect immediately after saving.
+      </p>
+      <div id="settings-list">
+        <div class="loading-state"><div class="spinner"></div> Loading settings...</div>
+      </div>
+      <div id="settings-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
+    </div>
+
   </div><!-- /page-admin -->
+
+  <!-- ======================================================
+       ROLE DETAILS OVERLAY — shown when volunteer taps Details
+       ====================================================== -->
+  <div id="role-details-overlay" style="display:none;" class="role-details-overlay">
+    <div class="role-details-header">
+      <div>
+        <div class="role-details-title" id="rdo-title">Role Details</div>
+        <div style="font-size:0.76rem;color:var(--text-muted);margin-top:2px;" id="rdo-meta"></div>
+      </div>
+      <button class="role-details-close" onclick="closeRoleDetails()">✕ Close</button>
+    </div>
+    <div class="role-details-inner" id="rdo-body">
+      <!-- populated by openRoleDetails() -->
+    </div>
+  </div>
 
 
   <!-- ======================================================
@@ -3332,12 +3574,9 @@ pre, code {
             <span style="color:var(--cf-coral);margin-left:3px;">*</span>
           </label>
           <select class="input-field" id="ob-source">
-            <option value="YA-Youth">🌱 YA-Youth — Youth Airdrie Volunteer</option>
-            <option value="YVC-Youth">🎓 YVC-Youth — Youth Volunteer Corps</option>
-            <option value="VA-Adult">🙌 VA-Adult — Volunteer Airdrie Adult</option>
+            <!-- Options seeded from PROGRAM_FALLBACKS; replaced by refreshProgramDropdowns()
+                 once Supabase loads. Adding programs in Admin automatically updates this. -->
           </select>
-          <!-- Note: options above are defaults matching PROGRAM_FALLBACKS.
-               refreshProgramDropdowns() replaces them with live data from Supabase. -->
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">
             Select the program you registered through. Your coordinator can update this if needed.
           </div>
@@ -3476,6 +3715,20 @@ let _activeModalShiftLabel = null;
    Populated on loadUsersAdmin(); filterUsersTable reads from here. */
 let _cachedUsers = [];
 
+/* ── Coordinator cache ───────────────────────────────────────────
+   All active volunteer_profiles with role admin or volunteer.
+   Used to populate coordinator dropdown in role form. */
+let _allCoordinators = [];
+
+/* ── System settings cache ───────────────────────────────────────
+   Loaded once on init. Read via getSetting(key, default). */
+let _systemSettings = {};
+
+/* ── Volunteer shift program filter ─────────────────────────────
+   Active program code filter on the volunteer Available Shifts tab.
+   null = show all. */
+let _volShiftProgFilter = null;
+
 /* ── Unsaved-changes guard (Fix #7) ──────────────────────────────
    Tracks whether an admin form has been modified since last save. */
 let _adminFormDirty = false;
@@ -3502,6 +3755,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDateTime();
   renderTrackerGates();
   updateNavTabs();
+
+  // Seed ob-source immediately from PROGRAM_FALLBACKS so it's never blank
+  // before Supabase loads. refreshProgramDropdowns() will replace these with
+  // live data once the DB responds.
+  const obSrc = document.getElementById('ob-source');
+  if (obSrc && !obSrc.options.length) {
+    obSrc.innerHTML = PROGRAM_FALLBACKS.map(p =>
+      `<option value="${p.code}">${p.icon ? p.icon + ' ' : ''}${p.code} — ${p.name}</option>`
+    ).join('');
+  }
 
   // Fix #7: Attach delegated input listener on admin forms to track dirty state.
   // Any input/change inside an .admin-form marks the form dirty.
@@ -4227,6 +4490,12 @@ async function loadVolunteerData(profile) {
   // Store profile globally for shift signup
   currentUserProfile = profile;
 
+  // Load programs if not yet loaded (needed for shift filters)
+  if (!_allPrograms.length) await loadPrograms();
+
+  // Load system settings if not yet loaded
+  if (!Object.keys(_systemSettings).length) await loadSystemSettings();
+
   // Load My Shifts from new shift system
   await loadVolMyShifts();
 
@@ -4340,6 +4609,8 @@ async function loadAdminData() {
     loadHomepageAdminForm(),
     loadAdminRoles(),
     loadPrograms().then(refreshProgramFilterBar),
+    loadCoordinators(),
+    loadSystemSettings(),
   ]);
   } catch(err) {
     console.log('[ERROR] loadAdminData: unexpected error', err?.message || String(err));
@@ -4668,6 +4939,15 @@ function switchAdminTab(tab) {
   if (tab === 'designations-admin') {
     loadAdminDesignations();
     loadAdminPrograms();
+  }
+  // Lazy-load settings panel on first open
+  if (tab === 'settings-admin') {
+    if (!Object.keys(_systemSettings).length) loadSystemSettings();
+    else renderSettingsPanel();
+  }
+  // Refresh coordinator dropdown when shifts tab opens
+  if (tab === 'shifts-admin' && _allCoordinators.length) {
+    populateCoordDropdown('');
   }
 }
 
@@ -5108,7 +5388,7 @@ async function submitOnboarding() {
   const errEl    = document.getElementById('ob-error');
   const phone    = document.getElementById('ob-phone').value.trim();
   const name     = document.getElementById('ob-name').value.trim();
-  const source   = document.getElementById('ob-source')?.value || 'YA-Youth';
+  const source   = document.getElementById('ob-source')?.value || getProgramList()[0]?.code || '';
   const pronouns = document.getElementById('ob-pronouns').value.trim();
   const ecName   = document.getElementById('ob-ec-name').value.trim();
   const ecPhone  = document.getElementById('ob-ec-phone').value.trim();
@@ -5133,7 +5413,7 @@ async function submitOnboarding() {
   // Validate source group against known programs
   const validSources = _allPrograms.length
     ? _allPrograms.map(p => p.code)
-    : ['YA-Youth', 'YVC-Youth', 'VA-Adult']; // fallback if not loaded
+    : PROGRAM_FALLBACKS.map(p => p.code); // offline fallback — matches seed data
   if (!validSources.includes(source)) {
     errEl.textContent = '⚠️ Please select a valid volunteer program.';
     errEl.style.display = 'block';
@@ -5379,13 +5659,21 @@ async function adminSaveRole() {
     role_description:     document.getElementById('sr-description').value.trim() || null,
     location:             document.getElementById('sr-location').value.trim() || null,
     zone:                 document.getElementById('sr-zone').value.trim() || null,
-    coordinator_name:     document.getElementById('sr-coordinator').value.trim() || null,
-    coordinator_phone:    document.getElementById('sr-coordinator-phone').value.trim() || null,
+    // Coordinator: prefer linked user_id; fall back to legacy text fields
+    coordinator_user_id:  document.getElementById('sr-coordinator-user-id')?.value || null,
+    coordinator_name:     document.getElementById('sr-coordinator')?.value.trim() || null,
+    coordinator_phone:    document.getElementById('sr-coordinator-phone')?.value.trim() || null,
     requirements:         document.getElementById('sr-requirements').value.trim() || null,
     display_order:        parseInt(document.getElementById('sr-order').value) || 99,
     visible_to_volunteers:document.getElementById('sr-visible').checked,
     admin_assign_only:    document.getElementById('sr-admin-only').checked,
     active:               document.getElementById('sr-active').checked,
+    // Role detail fields
+    role_details:         document.getElementById('sr-role-details')?.value.trim() || null,
+    arrival_instructions: document.getElementById('sr-arrival-instructions')?.value.trim() || null,
+    supplies_needed:      document.getElementById('sr-supplies-needed')?.value.trim() || null,
+    safety_notes:         document.getElementById('sr-safety-notes')?.value.trim() || null,
+    coordinator_notes:    document.getElementById('sr-coordinator-notes')?.value.trim() || null,
     updated_at:           new Date().toISOString(),
   };
   if (!row.role_name) { fb.style.color='var(--cf-coral)'; fb.textContent='Role name is required.'; return; }
@@ -5411,13 +5699,20 @@ function adminEditRole(r) {
   document.getElementById('sr-description').value     = r.role_description || '';
   document.getElementById('sr-location').value        = r.location || '';
   document.getElementById('sr-zone').value            = r.zone || '';
-  document.getElementById('sr-coordinator').value     = r.coordinator_name || '';
-  document.getElementById('sr-coordinator-phone').value = r.coordinator_phone || '';
   document.getElementById('sr-requirements').value    = r.requirements || '';
   document.getElementById('sr-order').value           = r.display_order || '';
   document.getElementById('sr-visible').checked       = r.visible_to_volunteers !== false;
   document.getElementById('sr-admin-only').checked    = !!r.admin_assign_only;
   document.getElementById('sr-active').checked        = r.active !== false;
+  // Role details
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setVal('sr-role-details',         r.role_details);
+  setVal('sr-arrival-instructions', r.arrival_instructions);
+  setVal('sr-supplies-needed',      r.supplies_needed);
+  setVal('sr-safety-notes',         r.safety_notes);
+  setVal('sr-coordinator-notes',    r.coordinator_notes);
+  // Coordinator dropdown
+  setCoordFromRole(r);
   document.getElementById('sr-name').focus();
   switchAdminTab('shifts-admin');
   document.getElementById('shifts-role-form').scrollIntoView({ behavior: 'smooth' });
@@ -5432,9 +5727,17 @@ async function adminDeleteRole(id) {
 
 function clearRoleForm() {
   ['shift-role-edit-id','sr-name','sr-description','sr-location','sr-zone',
-   'sr-coordinator','sr-coordinator-phone','sr-requirements','sr-order'].forEach(id => {
+   'sr-requirements','sr-order',
+   'sr-role-details','sr-arrival-instructions','sr-supplies-needed',
+   'sr-safety-notes','sr-coordinator-notes',
+   'sr-coordinator','sr-coordinator-phone','sr-coordinator-user-id',
+   'sr-coord-search'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  const coordPreview = document.getElementById('sr-coord-preview');
+  if (coordPreview) coordPreview.innerHTML = '';
+  const coordSel = document.getElementById('sr-coordinator-select');
+  if (coordSel) coordSel.value = '';
   const vis = document.getElementById('sr-visible'); if (vis) vis.checked = true;
   const ao  = document.getElementById('sr-admin-only'); if (ao) ao.checked = false;
   const act = document.getElementById('sr-active'); if (act) act.checked = true;
@@ -5651,6 +5954,9 @@ async function loadVolAvailableShifts() {
   el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
   try {
 
+  // Render program filter chips from _allPrograms
+  _renderVolShiftProgFilters();
+
   // Load roles
   const { data: roles } = await sb
     .from('volunteer_roles')
@@ -5691,7 +5997,13 @@ async function loadVolAvailableShifts() {
     });
   }
 
-  el.innerHTML = roles.map(role => {
+  el.innerHTML = roles.filter(role => {
+    // Apply program filter if active
+    if (!_volShiftProgFilter) return true;
+    // volunteer_source_filter is optional per-role; if not set, show to all
+    if (!role.volunteer_source_filter) return true;
+    return role.volunteer_source_filter === _volShiftProgFilter;
+  }).map(role => {
     const shifts = (role.volunteer_shift_times || [])
       .filter(s => !['cancelled','hidden'].includes(s.status))
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -5737,8 +6049,12 @@ async function loadVolAvailableShifts() {
     return `
       <div class="role-card" style="margin-bottom:14px;">
         <div style="padding:14px 16px 10px;">
-          <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-gold);margin-bottom:4px;">
-            ${escHtml(role.role_name)}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-gold);margin-bottom:4px;">
+              ${escHtml(role.role_name)}
+            </div>
+            <button class="btn btn-ghost btn-sm" style="font-size:0.75rem;padding:5px 12px;min-height:36px;flex-shrink:0;"
+                    onclick="openRoleDetails('${role.id}')">📋 Details</button>
           </div>
           ${role.role_description ? `<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">${escHtml(role.role_description)}</div>` : ''}
           <div style="font-size:0.75rem;color:var(--text-muted);">
@@ -5760,6 +6076,37 @@ async function loadVolAvailableShifts() {
   } finally {
     _loading.volAvailShifts = false;
   }
+}
+
+/* Render program filter chips above the available shifts list */
+function _renderVolShiftProgFilters() {
+  const bar = document.getElementById('vol-shift-prog-filters');
+  if (!bar) return;
+  const programs = getProgramList();
+  if (programs.length <= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const allBtn = `<button class="prog-filter-btn active" data-prog="" onclick="setVolShiftProgFilter(null, this)">All</button>`;
+  const progBtns = programs.map(p => {
+    const label = (p.icon ? p.icon + ' ' : '') + escHtml(p.code);
+    return `<button class="prog-filter-btn" data-prog="${escHtml(p.code)}"
+      onclick="setVolShiftProgFilter('${escHtml(p.code)}', this)">${label}</button>`;
+  }).join('');
+  bar.innerHTML = allBtn + progBtns;
+  // Restore active state
+  if (_volShiftProgFilter) {
+    bar.querySelectorAll('.prog-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.prog === _volShiftProgFilter);
+    });
+  }
+}
+
+function setVolShiftProgFilter(code, btnEl) {
+  _volShiftProgFilter = code || null;
+  document.querySelectorAll('#vol-shift-prog-filters .prog-filter-btn').forEach(b =>
+    b.classList.toggle('active', b === btnEl));
+  // Re-render with filter applied
+  _loading.volAvailShifts = false; // reset guard so reload can proceed
+  loadVolAvailableShifts();
 }
 
 async function volJoinShift(shiftId, roleId) {
@@ -6009,9 +6356,10 @@ function sourceLabel(src) {
   // Check dynamic programs first
   const prog = _allPrograms.find(p => p.code === src);
   if (prog) return (prog.icon ? prog.icon + ' ' : '') + prog.code;
-  // Static fallbacks
-  const map = { 'YA-Youth': '🌱 YA-Youth', 'YVC-Youth': '🎓 YVC-Youth', 'VA-Adult': '🙌 VA-Adult' };
-  return map[src] || src || '–';
+  // Fall back to PROGRAM_FALLBACKS (used before Supabase loads or in offline mode)
+  const fallback = PROGRAM_FALLBACKS.find(p => p.code === src);
+  if (fallback) return (fallback.icon ? fallback.icon + ' ' : '') + fallback.code;
+  return src || '–';
 }
 function sourceBadgeClass(src) {
   // Map color from programs table if available
@@ -6021,9 +6369,13 @@ function sourceBadgeClass(src) {
       blue:'badge-blue', green:'badge-ya', coral:'badge-coral', pink:'badge-pink', orange:'badge-orange' };
     return colorMap[prog.color] || 'badge-blue';
   }
-  if (src === 'YA-Youth')  return 'badge-ya';
-  if (src === 'YVC-Youth') return 'badge-yvc';
-  if (src === 'VA-Adult')  return 'badge-va';
+  // Fall back to PROGRAM_FALLBACKS before Supabase loads
+  const fallback = PROGRAM_FALLBACKS.find(p => p.code === src);
+  if (fallback) {
+    const colorMap = { gold:'badge-gold', teal:'badge-teal', purple:'badge-purple',
+      blue:'badge-blue', green:'badge-ya', coral:'badge-coral', pink:'badge-pink', orange:'badge-orange' };
+    return colorMap[fallback.color] || 'badge-blue';
+  }
   return 'badge-blue';
 }
 
@@ -6073,8 +6425,9 @@ function renderUsersCards(users) {
   const query = (document.getElementById('users-search')?.value || '').toLowerCase().trim();
   const src   = _activeSourceFilter;
 
+  const defaultProgCode = getProgramList()[0]?.code || '';
   const filtered = users.filter(u => {
-    const matchSrc = src === 'all' || (u.volunteer_source || 'YA-Youth') === src;
+    const matchSrc = src === 'all' || (u.volunteer_source || defaultProgCode) === src;
     if (!matchSrc) return false;
     if (!query) return true;
     const haystack = [u.full_name, u.email, u.cell_phone, u.volunteer_id, u.role].join(' ').toLowerCase();
@@ -6087,7 +6440,7 @@ function renderUsersCards(users) {
   }
 
   wrap.innerHTML = filtered.map(u => {
-    const src       = u.volunteer_source || 'YA-Youth';
+    const src       = u.volunteer_source || getProgramList()[0]?.code || '';
     const phoneDisp = u.cell_phone ? normalizePhone(u.cell_phone) : null;
     const initial   = (u.full_name || u.email || '?')[0].toUpperCase();
 
@@ -6220,7 +6573,7 @@ async function adminSaveUser(id) {
   const updates = {
     full_name:           name || null,
     cell_phone:          phone ? normalizePhone(phone) : null,
-    volunteer_source:    source || getProgramList()[0]?.code || 'YA-Youth',
+    volunteer_source:    source || getProgramList()[0]?.code || '',
     role,
     status,
     onboarding_complete: onboard,
@@ -6478,9 +6831,11 @@ async function loadPrograms() {
   if (!sb) return;
   const { data, error } = await sb
     .from('volunteer_programs')
-    .select('*')
+    .select('id, code, name, icon, color, description, display_order, active')
+    .eq('active', true)
     .order('display_order', { ascending: true });
   if (!error && data) _allPrograms = data;
+  else if (error) console.log('[WARN] loadPrograms error:', error.message);
 }
 
 async function loadAdminPrograms() {
@@ -6488,17 +6843,24 @@ async function loadAdminPrograms() {
   if (!el) return;
   el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
 
-  await loadPrograms();
+  // Admin sees ALL programs (including inactive) to allow re-activation
+  if (!sb) { el.innerHTML = renderEmpty('Configure Supabase to manage programs.'); return; }
+  const { data: allProgs, error } = await sb
+    .from('volunteer_programs')
+    .select('*')
+    .order('display_order', { ascending: true });
 
-  if (!_allPrograms.length) {
-    el.innerHTML = renderEmpty('No programs defined yet. Add one above.');
-    return;
-  }
+  if (error || !allProgs) { el.innerHTML = renderEmpty('Could not load programs.'); return; }
+  if (!allProgs.length) { el.innerHTML = renderEmpty('No programs defined yet. Add one above.'); return; }
 
-  el.innerHTML = _allPrograms.map(p => {
+  // Update the active cache too
+  _allPrograms = allProgs.filter(p => p.active !== false);
+
+  el.innerHTML = allProgs.map(p => {
     const c = progColorStyle(p.color);
+    const isActive = p.active !== false;
     return `
-    <div class="desig-pill-row" id="prog-row-${p.id}">
+    <div class="desig-pill-row" id="prog-row-${p.id}" style="${isActive ? '' : 'opacity:0.55;'}">
       <div class="desig-pill-swatch" style="background:${c.text};"></div>
       <span class="desig-tag" style="background:${c.bg};border-color:${c.border};color:${c.text};">
         ${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)}
@@ -6507,7 +6869,10 @@ async function loadAdminPrograms() {
         <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);">${escHtml(p.name)}</div>
         ${p.description ? `<div style="font-size:0.75rem;color:var(--text-muted);">${escHtml(p.description)}</div>` : ''}
       </div>
-      <div style="display:flex;gap:5px;flex-shrink:0;">
+      <div style="display:flex;gap:5px;flex-shrink:0;align-items:center;">
+        <span class="badge ${isActive ? 'badge-green' : 'badge-coral'}">${isActive ? 'Active' : 'Inactive'}</span>
+        <button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:0.72rem;"
+                onclick="adminToggleProgram('${p.id}', ${!isActive})">${isActive ? 'Deactivate' : 'Activate'}</button>
         <button class="btn btn-ghost btn-sm" style="padding:4px 10px;"
                 onclick="adminEditProgram(${JSON.stringify(p).replace(/"/g,'&quot;')})">✏️</button>
         <button class="btn btn-danger btn-sm" style="padding:4px 10px;"
@@ -6523,7 +6888,7 @@ async function loadAdminPrograms() {
 async function adminSaveProgram() {
   const id    = document.getElementById('prog-edit-id').value;
   const name  = document.getElementById('prog-name').value.trim();
-  const code  = document.getElementById('prog-code').value.trim();
+  const code  = document.getElementById('prog-code').value.trim().replace(/\s+/g, '-');
   const icon  = document.getElementById('prog-icon').value.trim();
   const color = document.getElementById('prog-color').value;
   const desc  = document.getElementById('prog-desc').value.trim();
@@ -6532,10 +6897,19 @@ async function adminSaveProgram() {
   if (!name) { fb.style.color='var(--cf-coral)'; fb.textContent='Program name is required.'; return; }
   if (!code) { fb.style.color='var(--cf-coral)'; fb.textContent='Code is required.'; return; }
 
+  // Duplicate code check (client-side, DB unique constraint is the safety net)
+  const existing = _allPrograms.find(p => p.code === code && p.id !== id);
+  if (existing) {
+    fb.style.color='var(--cf-coral)';
+    fb.textContent = `Code "${code}" already exists. Each program must have a unique code.`;
+    return;
+  }
+
   fb.textContent = 'Saving…';
   const row = {
     name, code, icon: icon || null, color,
     description: desc || null,
+    active: true,
   };
   if (!id) row.display_order = (_allPrograms.length || 0) + 1;
 
@@ -6577,6 +6951,14 @@ async function adminDeleteProgram(id) {
   }
 }
 
+async function adminToggleProgram(id, active) {
+  const { error } = await sb.from('volunteer_programs').update({ active }).eq('id', id);
+  if (error) { showToast('❌ ' + error.message, 'error'); return; }
+  showToast(active ? '✅ Program activated' : 'Program deactivated', 'success');
+  await loadAdminPrograms();
+  await refreshProgramFilterBar();
+}
+
 function clearProgForm() {
   ['prog-edit-id','prog-name','prog-code','prog-icon','prog-desc'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -6588,12 +6970,14 @@ function clearProgForm() {
 /* Rebuild the source filter bar in the Users tab from _allPrograms */
 async function refreshProgramFilterBar() {
   if (!_allPrograms.length) await loadPrograms();
+  const programs = getProgramList();
   const bar = document.getElementById('source-filter-bar');
   if (!bar) return;
-  const allBtn = `<button class="source-filter-btn active" data-source="all" onclick="setSourceFilter('all')">All</button>`;
-  const progBtns = _allPrograms.map(p => {
-    const label = (p.icon ? p.icon + ' ' : '') + p.code;
-    return `<button class="source-filter-btn" data-source="${escHtml(p.code)}" onclick="setSourceFilter('${escHtml(p.code)}')">${label}</button>`;
+  const allBtn = `<button class="source-filter-btn ${_activeSourceFilter === 'all' ? 'active' : ''}" data-source="all" onclick="setSourceFilter('all')">All</button>`;
+  const progBtns = programs.map(p => {
+    const label = (p.icon ? p.icon + ' ' : '') + escHtml(p.code);
+    const isActive = _activeSourceFilter === p.code;
+    return `<button class="source-filter-btn ${isActive ? 'active' : ''}" data-source="${escHtml(p.code)}" onclick="setSourceFilter('${escHtml(p.code)}')">${label}</button>`;
   }).join('');
   bar.innerHTML = allBtn + progBtns;
 }
@@ -6622,9 +7006,15 @@ async function refreshProgramDropdowns() {
     `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)} — ${escHtml(p.name)}</option>`
   ).join('');
 
-  // Onboarding source select
+  // Onboarding source select — always populate (HTML is now empty by default)
   const obSrc = document.getElementById('ob-source');
-  if (obSrc) { const v = obSrc.value; obSrc.innerHTML = opts; obSrc.value = v || (programs[0]?.code ?? ''); }
+  if (obSrc) {
+    const v = obSrc.value;
+    obSrc.innerHTML = opts || programs.map(p =>
+      `<option value="${escHtml(p.code)}">${escHtml(p.code)}</option>`).join('');
+    // Restore selection or pick first
+    obSrc.value = (v && programs.find(p => p.code === v)) ? v : (programs[0]?.code ?? '');
+  }
 
   // All usource-* selects in the users list
   document.querySelectorAll('[id^="usource-"]').forEach(sel => {
@@ -6634,6 +7024,326 @@ async function refreshProgramDropdowns() {
     ).join('');
     sel.value = v;
   });
+}
+
+/* ============================================================
+   COORDINATOR MANAGEMENT
+   Loads active volunteer profiles for coordinator dropdown.
+   Caches in _allCoordinators; refreshed on admin init and
+   whenever the Users tab saves a user.
+   ============================================================ */
+async function loadCoordinators() {
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('volunteer_profiles')
+    .select('id, user_id, full_name, email, cell_phone, volunteer_source, role')
+    .eq('status', 'active')
+    .order('full_name', { ascending: true });
+  if (!error && data) {
+    _allCoordinators = data;
+    populateCoordDropdown('');
+  } else if (error) {
+    console.log('[WARN] loadCoordinators error:', error.message);
+  }
+}
+
+/* Populate the coordinator select from the cached list, filtered by query */
+function populateCoordDropdown(query) {
+  const sel = document.getElementById('sr-coordinator-select');
+  if (!sel) return;
+  const q = (query || '').toLowerCase().trim();
+  const filtered = q
+    ? _allCoordinators.filter(u =>
+        (u.full_name || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q))
+    : _allCoordinators;
+
+  const opts = filtered.map(u => {
+    const label = escHtml(u.full_name || u.email || u.id);
+    const phone = u.cell_phone ? ' · ' + normalizePhone(u.cell_phone) : '';
+    const prog  = u.volunteer_source ? ' [' + u.volunteer_source + ']' : '';
+    return `<option value="${escHtml(u.id)}">${label}${phone}${prog}</option>`;
+  }).join('');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— No coordinator assigned —</option>' + opts;
+  // Restore selection if still in list
+  if (current && filtered.find(u => u.id === current)) sel.value = current;
+}
+
+function filterCoordDropdown(q) {
+  populateCoordDropdown(q);
+}
+
+function onCoordSelect(profileId) {
+  const coord = _allCoordinators.find(u => u.id === profileId);
+  const preview = document.getElementById('sr-coord-preview');
+  const hiddenName  = document.getElementById('sr-coordinator');
+  const hiddenPhone = document.getElementById('sr-coordinator-phone');
+  const hiddenId    = document.getElementById('sr-coordinator-user-id');
+  if (coord) {
+    const phone = coord.cell_phone ? normalizePhone(coord.cell_phone) : '';
+    if (preview) preview.innerHTML =
+      `<span>👤 ${escHtml(coord.full_name || coord.email)}</span>` +
+      (phone ? `<span>📱 ${escHtml(phone)}</span>` : '');
+    if (hiddenName)  hiddenName.value  = coord.full_name || coord.email || '';
+    if (hiddenPhone) hiddenPhone.value = phone;
+    if (hiddenId)    hiddenId.value    = coord.id;
+  } else {
+    if (preview)     preview.innerHTML = '';
+    if (hiddenName)  hiddenName.value  = '';
+    if (hiddenPhone) hiddenPhone.value = '';
+    if (hiddenId)    hiddenId.value    = '';
+  }
+}
+
+/* Pre-select coordinator when editing an existing role */
+function setCoordFromRole(r) {
+  const sel    = document.getElementById('sr-coordinator-select');
+  const search = document.getElementById('sr-coord-search');
+  if (!sel) return;
+
+  // Try to match by coordinator_user_id first, then fall back to legacy name match
+  let profileId = r.coordinator_user_id || '';
+  if (!profileId && r.coordinator_name) {
+    const match = _allCoordinators.find(u =>
+      (u.full_name || '').toLowerCase() === r.coordinator_name.toLowerCase());
+    if (match) profileId = match.id;
+  }
+
+  if (search) search.value = '';
+  populateCoordDropdown('');
+  if (profileId) {
+    sel.value = profileId;
+    onCoordSelect(profileId);
+  } else {
+    // Legacy: show the stored text but no match in dropdown
+    const preview = document.getElementById('sr-coord-preview');
+    if (r.coordinator_name && preview) {
+      preview.innerHTML = `<span style="color:var(--text-muted);">👤 ${escHtml(r.coordinator_name)}${r.coordinator_phone ? ' · 📱 ' + escHtml(r.coordinator_phone) : ''} <em>(legacy — not linked to a user account)</em></span>`;
+    }
+    const hiddenName  = document.getElementById('sr-coordinator');
+    const hiddenPhone = document.getElementById('sr-coordinator-phone');
+    const hiddenId    = document.getElementById('sr-coordinator-user-id');
+    if (hiddenName)  hiddenName.value  = r.coordinator_name  || '';
+    if (hiddenPhone) hiddenPhone.value = r.coordinator_phone || '';
+    if (hiddenId)    hiddenId.value    = '';
+  }
+}
+
+/* ============================================================
+   SYSTEM SETTINGS
+   Lightweight key-value store loaded from system_settings table.
+   Access values via getSetting(key, defaultValue).
+   ============================================================ */
+async function loadSystemSettings() {
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('system_settings')
+    .select('setting_key, setting_value');
+  if (!error && data) {
+    _systemSettings = {};
+    data.forEach(row => { _systemSettings[row.setting_key] = row.setting_value; });
+  } else if (error) {
+    console.log('[WARN] loadSystemSettings error:', error.message);
+  }
+  // Also render admin panel if it's open
+  renderSettingsPanel();
+}
+
+/* Read a setting value; returns defaultVal if not set */
+function getSetting(key, defaultVal = null) {
+  return _systemSettings.hasOwnProperty(key) ? _systemSettings[key] : defaultVal;
+}
+
+/* Render the settings admin panel */
+function renderSettingsPanel() {
+  const el = document.getElementById('settings-list');
+  if (!el) return;
+
+  const SETTING_DEFS = [
+    { key: 'volunteer_signup_open',       label: 'Volunteer Self-Signup Open',   type: 'bool',   desc: 'Allow volunteers to sign themselves up for open shifts.' },
+    { key: 'allow_self_remove_from_shift',label: 'Allow Self-Remove from Shift', type: 'bool',   desc: 'Allow volunteers to remove themselves from a signed-up shift.' },
+    { key: 'allow_waitlist',              label: 'Allow Waitlist',               type: 'bool',   desc: 'Allow volunteers to join a waitlist when a shift is full.' },
+    { key: 'onboarding_required',         label: 'Onboarding Required',          type: 'bool',   desc: 'Block dashboard access until onboarding is complete.' },
+    { key: 'event_live_mode',             label: 'Event Live Mode',              type: 'bool',   desc: 'Mark the event as currently live (shows live badge on public page).' },
+    { key: 'attendance_tracking_enabled', label: 'Attendance Tracking Enabled',  type: 'bool',   desc: 'Enable the attendance tracker in the admin panel.' },
+    { key: 'max_shifts_per_day',          label: 'Max Shifts per Volunteer / Day',type: 'number', desc: 'Maximum number of shifts a single volunteer can sign up for. Set to 0 for no limit.' },
+  ];
+
+  if (!Object.keys(_systemSettings).length && sb) {
+    el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+    return;
+  }
+
+  el.innerHTML = `<div class="card">` + SETTING_DEFS.map(def => {
+    const val = _systemSettings[def.key] ?? (def.type === 'bool' ? 'true' : '0');
+    if (def.type === 'bool') {
+      const checked = val === 'true' || val === true || val === '1';
+      return `
+        <div class="settings-row">
+          <div style="flex:1;">
+            <div class="settings-key">${escHtml(def.label)}</div>
+            <div class="settings-desc">${escHtml(def.desc)}</div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex-shrink:0;">
+            <input type="checkbox" id="setting-${escHtml(def.key)}" ${checked ? 'checked' : ''}
+                   style="width:18px;height:18px;cursor:pointer;accent-color:var(--cf-teal);">
+            <span style="font-size:0.78rem;color:var(--text-secondary);">${checked ? 'On' : 'Off'}</span>
+          </label>
+        </div>`;
+    } else {
+      return `
+        <div class="settings-row">
+          <div style="flex:1;">
+            <div class="settings-key">${escHtml(def.label)}</div>
+            <div class="settings-desc">${escHtml(def.desc)}</div>
+          </div>
+          <input type="number" class="input-field" id="setting-${escHtml(def.key)}"
+                 value="${escHtml(String(val))}" min="0"
+                 style="max-width:80px;padding:7px 10px;font-size:0.85rem;text-align:center;">
+        </div>`;
+    }
+  }).join('') + `</div>`;
+}
+
+async function adminSaveSettings() {
+  if (!sb) { showToast('Demo mode — settings not persisted', 'info'); return; }
+  const SETTING_KEYS = [
+    'volunteer_signup_open','allow_self_remove_from_shift','allow_waitlist',
+    'onboarding_required','event_live_mode','attendance_tracking_enabled','max_shifts_per_day'
+  ];
+  const BOOL_KEYS = new Set([
+    'volunteer_signup_open','allow_self_remove_from_shift','allow_waitlist',
+    'onboarding_required','event_live_mode','attendance_tracking_enabled'
+  ]);
+  const fb = document.getElementById('settings-feedback');
+  setBtn('settings-save-btn', true, 'Saving…');
+
+  const upserts = SETTING_KEYS.map(key => {
+    const el = document.getElementById('setting-' + key);
+    if (!el) return null;
+    const val = BOOL_KEYS.has(key) ? String(el.checked) : el.value.trim();
+    return { setting_key: key, setting_value: val, updated_at: new Date().toISOString() };
+  }).filter(Boolean);
+
+  const { error } = await sb.from('system_settings').upsert(upserts, { onConflict: 'setting_key' });
+  setBtn('settings-save-btn', false);
+
+  if (error) {
+    console.log('[ERROR] adminSaveSettings error:', error.message);
+    fb.style.color = 'var(--cf-coral)';
+    fb.textContent = '❌ ' + error.message;
+  } else {
+    await loadSystemSettings();
+    fb.style.color = 'var(--cf-green)';
+    fb.textContent = '✅ Settings saved!';
+    setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
+  }
+}
+
+/* ============================================================
+   ROLE DETAILS MODAL (volunteer-facing)
+   ============================================================ */
+function openRoleDetails(roleId) {
+  // Find role data from cached roles if available, else do a targeted fetch
+  _openRoleDetailsForId(roleId);
+}
+
+async function _openRoleDetailsForId(roleId) {
+  const overlay = document.getElementById('role-details-overlay');
+  const titleEl = document.getElementById('rdo-title');
+  const metaEl  = document.getElementById('rdo-meta');
+  const bodyEl  = document.getElementById('rdo-body');
+  if (!overlay) return;
+
+  // Show immediately with loading state
+  titleEl.textContent = 'Loading…';
+  metaEl.textContent  = '';
+  bodyEl.innerHTML    = '<div class="loading-state"><div class="spinner"></div></div>';
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (!sb) {
+    titleEl.textContent = 'Role Details';
+    bodyEl.innerHTML = renderEmpty('Connect Supabase to see role details.');
+    return;
+  }
+
+  const { data: role, error } = await sb
+    .from('volunteer_roles')
+    .select('*, volunteer_profiles!coordinator_user_id(full_name, cell_phone, email)')
+    .eq('id', roleId)
+    .single();
+
+  if (error || !role) {
+    titleEl.textContent = 'Role Details';
+    bodyEl.innerHTML = renderEmpty('Could not load role details.');
+    return;
+  }
+
+  titleEl.textContent = role.role_name || 'Role Details';
+  const metaParts = [
+    role.location ? '📍 ' + role.location : '',
+    role.zone ? role.zone : '',
+  ].filter(Boolean);
+  metaEl.textContent = metaParts.join(' · ');
+
+  // Build coordinator info — prefer linked profile, fall back to legacy text
+  const coordProfile = role.volunteer_profiles;
+  const coordName  = coordProfile?.full_name  || role.coordinator_name  || null;
+  const coordPhone = coordProfile?.cell_phone || role.coordinator_phone || null;
+
+  const sections = [
+    { icon: '📋', title: 'What You\'ll Be Doing',  key: 'role_details',           content: role.role_details },
+    { icon: '📍', title: 'Arrival Instructions',    key: 'arrival_instructions',   content: role.arrival_instructions },
+    { icon: '🎒', title: 'Supplies Needed',          key: 'supplies_needed',        content: role.supplies_needed },
+    { icon: '⚠️', title: 'Safety Notes',             key: 'safety_notes',           content: role.safety_notes },
+  ];
+
+  const hasDetails = sections.some(s => s.content);
+
+  bodyEl.innerHTML = `
+    ${!hasDetails && !coordName ? `<div class="role-details-section">
+      <div class="role-details-section-body" style="font-style:italic;color:var(--text-muted);">
+        No additional details have been added for this role yet.
+        Check with your coordinator for more information.
+      </div>
+    </div>` : ''}
+
+    ${role.role_description ? `
+    <div class="role-details-section">
+      <div class="role-details-section-title">ℹ️ About This Role</div>
+      <div class="role-details-section-body">${escHtml(role.role_description)}</div>
+    </div>` : ''}
+
+    ${sections.filter(s => s.content).map(s => `
+    <div class="role-details-section">
+      <div class="role-details-section-title">${s.icon} ${escHtml(s.title)}</div>
+      <div class="role-details-section-body">${escHtml(s.content)}</div>
+    </div>`).join('')}
+
+    ${coordName ? `
+    <div class="role-details-section">
+      <div class="role-details-section-title">👤 Your Coordinator</div>
+      <div class="role-details-section-body">
+        <strong>${escHtml(coordName)}</strong>
+        ${coordPhone ? `<br>📱 <a href="tel:${escHtml(coordPhone.replace(/\D/g,''))}"
+           style="color:var(--cf-teal);">${escHtml(normalizePhone(coordPhone))}</a>` : ''}
+      </div>
+    </div>` : ''}
+
+    ${role.requirements ? `
+    <div class="role-details-section">
+      <div class="role-details-section-title">📝 Requirements</div>
+      <div class="role-details-section-body">${escHtml(role.requirements)}</div>
+    </div>` : ''}
+  `;
+}
+
+function closeRoleDetails() {
+  const overlay = document.getElementById('role-details-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 /* ============================================================
@@ -7219,7 +7929,75 @@ function clearContactForm() {
     ('volunteer_instructions',  'Report to the volunteer tent on arrival. Wear your lanyard at all times. Thank you for making CultureFest possible!');
 
   ============================================================
-  ROW LEVEL SECURITY (run after creating tables)
+  MIGRATION: PROMPT 4B — Programs, Coordinator Relationships,
+  Role Details, System Settings
+  Run these in Supabase SQL Editor AFTER the initial setup.
+  ============================================================
+
+  -- 1. Add active column to volunteer_programs (if not present)
+  alter table volunteer_programs
+    add column if not exists active boolean default true;
+
+  update volunteer_programs set active = true where active is null;
+
+  -- 2. Add coordinator_user_id to volunteer_roles (linked relationship)
+  alter table volunteer_roles
+    add column if not exists coordinator_user_id uuid
+      references volunteer_profiles(id) on delete set null;
+
+  create index if not exists idx_vol_roles_coord_uid on volunteer_roles(coordinator_user_id);
+
+  -- 3. Add role detail columns to volunteer_roles
+  alter table volunteer_roles
+    add column if not exists role_details           text,
+    add column if not exists arrival_instructions   text,
+    add column if not exists safety_notes           text,
+    add column if not exists supplies_needed        text,
+    add column if not exists coordinator_notes      text;
+
+  -- 4. Add volunteer_source_filter to volunteer_roles (optional; restricts which
+  --    program's volunteers see this role in the Available Shifts tab)
+  alter table volunteer_roles
+    add column if not exists volunteer_source_filter text;
+
+  -- 5. CREATE system_settings table
+  create table if not exists system_settings (
+    setting_key   text primary key,
+    setting_value text,
+    description   text,
+    updated_at    timestamptz default now()
+  );
+
+  -- Seed default system settings
+  insert into system_settings (setting_key, setting_value, description) values
+    ('volunteer_signup_open',        'true',  'Allow volunteers to self-signup for shifts'),
+    ('allow_self_remove_from_shift', 'true',  'Allow volunteers to remove themselves from shifts'),
+    ('allow_waitlist',               'false', 'Allow waitlist when shift is full'),
+    ('onboarding_required',          'true',  'Block dashboard until onboarding complete'),
+    ('event_live_mode',              'false', 'Mark event as currently live'),
+    ('attendance_tracking_enabled',  'true',  'Enable attendance tracker panel'),
+    ('max_shifts_per_day',           '0',     'Max shifts per volunteer per day (0 = unlimited)')
+  on conflict (setting_key) do nothing;
+
+  -- 6. RLS for system_settings
+  alter table system_settings enable row level security;
+
+  create policy "Auth read system settings"
+    on system_settings for select using (auth.role() = 'authenticated');
+  create policy "Admins manage system settings"
+    on system_settings for all
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+
+  -- 7. Update volunteer_programs RLS to allow public read of active programs
+  --    (needed if public pages ever need to reference program names)
+  drop policy if exists "Auth read programs" on volunteer_programs;
+  create policy "Auth read active programs"
+    on volunteer_programs for select
+    using (active = true and auth.role() = 'authenticated');
+  create policy "Admins read all programs"
+    on volunteer_programs for select
+    using (exists (select 1 from volunteer_profiles where user_id = auth.uid() and role = 'admin'));
+
   ============================================================
 
   -- Enable RLS on all tables
