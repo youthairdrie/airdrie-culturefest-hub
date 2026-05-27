@@ -2233,16 +2233,37 @@ pre, code {
   border: 1px solid var(--card-border);
   color: var(--text-primary);
   border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
-  min-height: 44px;
+  min-height: 48px;
+  min-width: 80px;
   font-family: var(--font-body);
   white-space: nowrap;
+  transition: background 0.15s;
 }
 .role-details-close:hover { background: rgba(255,255,255,0.14); }
+
+/* Bottom close strip — large tap target for one-thumb use */
+.role-details-bottom-close {
+  display: block;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 20px;
+  font-family: var(--font-body);
+  transition: background 0.15s;
+}
+.role-details-bottom-close:hover { background: rgba(255,255,255,0.1); }
 
 .role-details-section {
   background: var(--bg-card);
@@ -2715,8 +2736,7 @@ pre, code {
       </div>
     </div>
 
-    <!-- Available Shifts — self-signup -->
-    <div id="vol-panel-available-shifts" class="admin-panel">
+    <!-- Available Shifts — self-signup -->\n    <div id="vol-panel-available-shifts" class="admin-panel">
       <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--cf-green)">✋ Available Shifts</h3>
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">
         Sign up for open shifts. You may sign up for multiple shifts.
@@ -3489,13 +3509,15 @@ pre, code {
   <!-- ======================================================
        ROLE DETAILS OVERLAY — shown when volunteer taps Details
        ====================================================== -->
-  <div id="role-details-overlay" style="display:none;" class="role-details-overlay">
+  <div id="role-details-overlay" style="display:none;" class="role-details-overlay"
+       onclick="if(event.target===this)closeRoleDetails()">
     <div class="role-details-header">
-      <div>
+      <div style="flex:1;min-width:0;">
         <div class="role-details-title" id="rdo-title">Role Details</div>
         <div style="font-size:0.76rem;color:var(--text-muted);margin-top:2px;" id="rdo-meta"></div>
       </div>
-      <button class="role-details-close" onclick="closeRoleDetails()">✕ Close</button>
+      <button class="role-details-close" onclick="closeRoleDetails()"
+              aria-label="Close role details">✕ Close</button>
     </div>
     <div class="role-details-inner" id="rdo-body">
       <!-- populated by openRoleDetails() -->
@@ -3729,6 +3751,10 @@ let _systemSettings = {};
    Active program code filter on the volunteer Available Shifts tab.
    null = show all. */
 let _volShiftProgFilter = null;
+
+/* ── Cached roles from loadVolAvailableShifts (with detail fields) ─
+   Used by openRoleDetails to avoid a second DB fetch. */
+let _cachedVolRoles = [];
 
 /* ── Unsaved-changes guard (Fix #7) ──────────────────────────────
    Tracks whether an admin form has been modified since last save. */
@@ -4492,7 +4518,7 @@ async function loadVolunteerData(profile) {
   currentUserProfile = profile;
 
   // Load programs if not yet loaded (needed for shift filters)
-  if (!_programsLoaded) await loadPrograms();
+  if (!_allPrograms.length) await loadPrograms();
 
   // Load system settings if not yet loaded
   if (!Object.keys(_systemSettings).length) await loadSystemSettings();
@@ -5322,9 +5348,9 @@ function showOnboarding(profile) {
   }
   overlay.style.display = 'block';
   document.body.style.overflow = 'hidden';
-  // Always load fresh programs from Supabase then populate dropdown.
-  // Don't rely on _allPrograms.length — it may be 0 or contain only FALLBACKS.
-  loadPrograms().then(refreshProgramDropdowns).catch(() => refreshProgramDropdowns());
+  // Populate the source dropdown dynamically from programs table
+  if (_allPrograms.length) refreshProgramDropdowns();
+  else loadPrograms().then(refreshProgramDropdowns);
   // Focus the first empty required field
   setTimeout(() => {
     const phone = document.getElementById('ob-phone');
@@ -6095,7 +6121,14 @@ async function loadVolAvailableShifts() {
   // Load roles
   const { data: roles } = await sb
     .from('volunteer_roles')
-    .select('*, volunteer_shift_times(*)')
+    .select(`
+      id, role_name, role_description, location, zone, display_order,
+      coordinator_name, coordinator_phone, coordinator_user_id,
+      volunteer_source_filter,
+      role_details, arrival_instructions, supplies_needed, safety_notes, requirements,
+      volunteer_shift_times(*),
+      volunteer_profiles!coordinator_user_id ( full_name, cell_phone )
+    `)
     .eq('active', true)
     .eq('visible_to_volunteers', true)
     .eq('admin_assign_only', false)
@@ -6105,6 +6138,9 @@ async function loadVolAvailableShifts() {
     el.innerHTML = renderEmpty('No shifts available yet. Check back soon!');
     return;
   }
+
+  // Cache for Details modal — avoids a second DB fetch
+  _cachedVolRoles = roles;
 
   // Get current user assignments
   const { data: myAssignments } = await sb
@@ -6181,21 +6217,29 @@ async function loadVolAvailableShifts() {
 
     if (!shiftsHtml.trim()) return '';
 
+    // Resolve coordinator display: prefer coordinator_name legacy field if set,
+    // or fall back to showing "Contact coordinator" hint — full detail via Details modal
+    const coordHint = role.coordinator_name
+      ? `<span>👤 ${escHtml(role.coordinator_name)}</span>` : '';
+
     return `
       <div class="role-card" style="margin-bottom:14px;">
         <div style="padding:14px 16px 10px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-            <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-gold);margin-bottom:4px;">
-              ${escHtml(role.role_name)}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-gold);margin-bottom:4px;word-break:break-word;">
+                ${escHtml(role.role_name)}
+              </div>
+              ${role.role_description ? `<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">${escHtml(role.role_description)}</div>` : ''}
+              <div style="font-size:0.75rem;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                ${role.location ? `<span>📍 ${escHtml(role.location)}</span>` : ''}
+                ${role.zone ? `<span>${escHtml(role.zone)}</span>` : ''}
+                ${coordHint}
+              </div>
             </div>
-            <button class="btn btn-ghost btn-sm" style="font-size:0.75rem;padding:5px 12px;min-height:36px;flex-shrink:0;"
+            <button class="btn btn-ghost btn-sm"
+                    style="font-size:0.75rem;padding:6px 14px;min-height:40px;min-width:80px;flex-shrink:0;white-space:nowrap;"
                     onclick="openRoleDetails('${role.id}')">📋 Details</button>
-          </div>
-          ${role.role_description ? `<div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">${escHtml(role.role_description)}</div>` : ''}
-          <div style="font-size:0.75rem;color:var(--text-muted);">
-            ${role.location ? '📍 ' + escHtml(role.location) : ''}
-            ${role.zone ? ' · ' + escHtml(role.zone) : ''}
-            ${role.coordinator_name ? ' · 👤 ' + escHtml(role.coordinator_name) : ''}
           </div>
         </div>
         <div style="padding:0 14px 14px;">${shiftsHtml}</div>
@@ -6320,7 +6364,12 @@ async function loadVolMyShifts() {
       id, assignment_status, notes, checked_in_at, completed_at,
       volunteer_shift_times (
         id, start_time, end_time, notes, status,
-        volunteer_roles ( role_name, location, zone, coordinator_name, coordinator_phone )
+        volunteer_roles (
+          id, role_name, location, zone,
+          coordinator_name, coordinator_phone,
+          coordinator_user_id,
+          volunteer_profiles!coordinator_user_id ( full_name, cell_phone )
+        )
       )
     `)
     .eq('user_id', currentUser.id)
@@ -6348,19 +6397,26 @@ async function loadVolMyShifts() {
     if (!st || !role) return '';
     const timeStr = `${formatTime(st.start_time.slice(0,5))} – ${formatTime(st.end_time.slice(0,5))}`;
     const badge = statusBadge[a.assignment_status] || 'badge-blue';
+    // Resolve coordinator: prefer linked profile, fall back to legacy text fields
+    const coordProfile = role.volunteer_profiles;
+    const coordName  = coordProfile?.full_name  || role.coordinator_name  || null;
+    const coordPhone = coordProfile?.cell_phone || role.coordinator_phone || null;
+    const coordPhoneNorm = coordPhone ? normalizePhone(coordPhone) : null;
     return `
       <div class="shift-card" style="border-color:rgba(56,189,248,0.2);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-          <div>
+          <div style="flex:1;min-width:0;">
             <div class="shift-title">${escHtml(role.role_name)}</div>
             <div class="shift-meta">🕐 ${timeStr}</div>
             ${role.location ? `<div class="shift-meta">📍 ${escHtml(role.location)}</div>` : ''}
-            ${role.coordinator_name ? `<div class="shift-meta">👤 ${escHtml(role.coordinator_name)}${role.coordinator_phone ? ' · 📱 '+escHtml(role.coordinator_phone) : ''}</div>` : ''}
+            ${coordName ? `<div class="shift-meta">👤 ${escHtml(coordName)}${coordPhoneNorm ? ` · <a href="tel:${coordPhone.replace(/\D/g,'')}" style="color:var(--cf-teal);">📱 ${escHtml(coordPhoneNorm)}</a>` : ''}</div>` : ''}
             ${st.notes ? `<div style="font-size:0.78rem;color:var(--text-secondary);margin-top:4px;">${escHtml(st.notes)}</div>` : ''}
             ${a.notes ? `<div style="font-size:0.78rem;color:var(--cf-gold);margin-top:4px;">📝 ${escHtml(a.notes)}</div>` : ''}
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
             <span class="badge ${badge}">${a.assignment_status.replace('_',' ')}</span>
+            <button class="btn btn-ghost btn-sm" style="font-size:0.72rem;padding:4px 10px;"
+                    onclick="openRoleDetails('${role.id}')">📋 Details</button>
             ${a.assignment_status === 'assigned' ?
               `<button class="signup-btn signup-btn-leave" style="font-size:0.72rem;" onclick="volLeaveShift('${st.id}')">Remove Me</button>` : ''}
           </div>
@@ -6954,12 +7010,8 @@ async function hydrateUserDesignations() {
    the app (onboarding, user cards, filters).
    ============================================================ */
 
-/* Cache of all active programs — refreshed by loadPrograms() and loadAdminPrograms().
-   Use getProgramList() to access — never read _allPrograms directly in render code. */
+/* Cache of all programs — refreshed on loadAdminPrograms */
 let _allPrograms = [];
-/* True after the first successful Supabase loadPrograms() call completes.
-   Lets getProgramList() distinguish "not loaded yet" from "loaded, 0 results". */
-let _programsLoaded = false;
 
 /* Colour helper (shared with designations) */
 function progColorStyle(color) {
@@ -6968,24 +7020,13 @@ function progColorStyle(color) {
 
 async function loadPrograms() {
   if (!sb) return;
-  // NOTE: We do NOT filter .eq('active', true) here because the `active`
-  // column may not yet exist in the volunteer_programs table for existing
-  // deployments. We fetch all rows and filter in JS so new programs always
-  // appear. The SQL migration below adds the column if missing.
   const { data, error } = await sb
     .from('volunteer_programs')
     .select('id, code, name, icon, color, description, display_order, active')
+    .eq('active', true)
     .order('display_order', { ascending: true });
-  if (!error && data) {
-    // Filter active in JS — treats missing `active` column (null) as active
-    _allPrograms = data.filter(p => p.active !== false);
-    _programsLoaded = true;
-    console.log('[Programs] Loaded ' + _allPrograms.length + ' active program(s):', _allPrograms.map(p => p.code).join(', '));
-  } else if (error) {
-    console.log('[Programs] loadPrograms error:', error.message);
-    // If query failed entirely (e.g. table doesn't exist), _allPrograms stays
-    // as-is — do NOT overwrite with empty so FALLBACKS remain available
-  }
+  if (!error && data) _allPrograms = data;
+  else if (error) console.log('[WARN] loadPrograms error:', error.message);
 }
 
 async function loadAdminPrograms() {
@@ -7005,7 +7046,6 @@ async function loadAdminPrograms() {
 
   // Update the active cache too
   _allPrograms = allProgs.filter(p => p.active !== false);
-  _programsLoaded = true;
 
   el.innerHTML = allProgs.map(p => {
     const c = progColorStyle(p.color);
@@ -7120,7 +7160,7 @@ function clearProgForm() {
 
 /* Rebuild the source filter bar in the Users tab from _allPrograms */
 async function refreshProgramFilterBar() {
-  if (!_programsLoaded) await loadPrograms();
+  if (!_allPrograms.length) await loadPrograms();
   const programs = getProgramList();
   const bar = document.getElementById('source-filter-bar');
   if (!bar) return;
@@ -7133,17 +7173,12 @@ async function refreshProgramFilterBar() {
   bar.innerHTML = allBtn + progBtns;
 }
 
-/* getProgramList() — single source of truth for program options.
-   Returns _allPrograms (Supabase) once loaded, otherwise PROGRAM_FALLBACKS
-   as a safe offline/pre-load fallback. Never returns an empty array —
-   FALLBACKS always have at least the 3 seed programs. */
+/* Fix #6: getProgramList() — single source of truth for program options.
+   Returns _allPrograms if loaded (dynamic from Supabase), otherwise
+   falls back to PROGRAM_FALLBACKS. Use this everywhere program
+   options are needed instead of hard-coding strings. */
 function getProgramList() {
-  // Once Supabase has responded (even with 0 results), use that result.
-  // This means an admin who has deleted all programs sees an empty list
-  // rather than the stale FALLBACKS — intentional for correctness.
-  if (_programsLoaded) return _allPrograms;
-  // Before first load: show FALLBACKS so the UI isn't blank
-  return PROGRAM_FALLBACKS;
+  return _allPrograms.length ? _allPrograms : PROGRAM_FALLBACKS;
 }
 
 /* Fix #6: buildProgramOptions(selectedCode) — renders <option> elements
@@ -7156,7 +7191,7 @@ function buildProgramOptions(selectedCode) {
 
 /* Rebuild all ob-source / usource dropdowns from getProgramList() */
 async function refreshProgramDropdowns() {
-  if (!_programsLoaded) await loadPrograms();
+  if (!_allPrograms.length) await loadPrograms();
   const programs = getProgramList();
   const opts = programs.map(p =>
     `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)} — ${escHtml(p.name)}</option>`
@@ -7401,8 +7436,14 @@ async function adminSaveSettings() {
    ROLE DETAILS MODAL (volunteer-facing)
    ============================================================ */
 function openRoleDetails(roleId) {
-  // Find role data from cached roles if available, else do a targeted fetch
-  _openRoleDetailsForId(roleId);
+  // Try to use cached role data first (loaded with loadVolAvailableShifts)
+  // to avoid a second DB fetch
+  const cached = _cachedVolRoles.find(r => String(r.id) === String(roleId));
+  if (cached) {
+    _renderRoleDetailsFromData(cached);
+  } else {
+    _openRoleDetailsForId(roleId);
+  }
 }
 
 async function _openRoleDetailsForId(roleId) {
@@ -7437,6 +7478,21 @@ async function _openRoleDetailsForId(roleId) {
     return;
   }
 
+  _renderRoleDetailsFromData(role);
+}
+
+/* Render role details overlay from a role data object.
+   Works with both full DB fetch and cached volunteer_profiles join. */
+function _renderRoleDetailsFromData(role) {
+  const overlay = document.getElementById('role-details-overlay');
+  const titleEl = document.getElementById('rdo-title');
+  const metaEl  = document.getElementById('rdo-meta');
+  const bodyEl  = document.getElementById('rdo-body');
+  if (!overlay) return;
+
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
   titleEl.textContent = role.role_name || 'Role Details';
   const metaParts = [
     role.location ? '📍 ' + role.location : '',
@@ -7450,10 +7506,10 @@ async function _openRoleDetailsForId(roleId) {
   const coordPhone = coordProfile?.cell_phone || role.coordinator_phone || null;
 
   const sections = [
-    { icon: '📋', title: 'What You\'ll Be Doing',  key: 'role_details',           content: role.role_details },
-    { icon: '📍', title: 'Arrival Instructions',    key: 'arrival_instructions',   content: role.arrival_instructions },
-    { icon: '🎒', title: 'Supplies Needed',          key: 'supplies_needed',        content: role.supplies_needed },
-    { icon: '⚠️', title: 'Safety Notes',             key: 'safety_notes',           content: role.safety_notes },
+    { icon: '📋', title: 'What You\'ll Be Doing',  content: role.role_details },
+    { icon: '📍', title: 'Arrival Instructions',    content: role.arrival_instructions },
+    { icon: '🎒', title: 'Supplies Needed',          content: role.supplies_needed },
+    { icon: '⚠️', title: 'Safety Notes',             content: role.safety_notes },
   ];
 
   const hasDetails = sections.some(s => s.content);
@@ -7483,8 +7539,8 @@ async function _openRoleDetailsForId(roleId) {
       <div class="role-details-section-title">👤 Your Coordinator</div>
       <div class="role-details-section-body">
         <strong>${escHtml(coordName)}</strong>
-        ${coordPhone ? `<br>📱 <a href="tel:${escHtml(coordPhone.replace(/\D/g,''))}"
-           style="color:var(--cf-teal);">${escHtml(normalizePhone(coordPhone))}</a>` : ''}
+        ${coordPhone ? `<br>📱 <a href="tel:${coordPhone.replace(/\D/g,'')}"
+           style="color:var(--cf-teal);font-weight:600;">${escHtml(normalizePhone(coordPhone))}</a>` : ''}
       </div>
     </div>` : ''}
 
@@ -7493,6 +7549,8 @@ async function _openRoleDetailsForId(roleId) {
       <div class="role-details-section-title">📝 Requirements</div>
       <div class="role-details-section-body">${escHtml(role.requirements)}</div>
     </div>` : ''}
+
+    <button class="role-details-bottom-close" onclick="closeRoleDetails()">✕ Close &amp; Return to Shifts</button>
   `;
 }
 
@@ -8136,11 +8194,7 @@ function clearContactForm() {
   alter table volunteer_programs
     add column if not exists active boolean default true;
 
-  -- Treat any existing rows as active
   update volunteer_programs set active = true where active is null;
-
-  -- Reload schema cache after adding column
-  notify pgrst, 'reload schema';
 
   -- 2. Add coordinator_user_id to volunteer_roles (linked relationship)
   alter table volunteer_roles
