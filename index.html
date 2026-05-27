@@ -1317,7 +1317,8 @@ input, select, textarea {
       <p class="hero-subtitle" id="hero-subtitle">Explore performances, food, culture &amp; community — all in one place.</p>
       <div id="hero-datetime">
         <span>📅</span>
-        <span id="datetime-text">Loading date...</span>
+        <span id="hero-event-date"></span>
+        <span id="datetime-text" style="color:var(--text-muted);font-size:0.78rem;"></span>
       </div>
       <div id="hero-announcement" style="display:none;margin-bottom:12px;font-size:0.85rem;color:var(--cf-gold);font-weight:600;"></div>
       <div id="hero-badges" style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -3790,7 +3791,7 @@ async function submitOnboarding() {
 
   // Validate phone
   if (!phone) {
-    errEl.textContent = '📱 Your cell phone number is required — it's how we contact volunteers via WhatsApp.';
+    errEl.textContent = '📱 Your cell phone number is required — WhatsApp is how we contact volunteers.';
     errEl.style.display = 'block';
     document.getElementById('ob-phone').focus();
     return;
@@ -3878,8 +3879,8 @@ async function loadHomepageContent() {
   set('hero-subtitle',     data.event_description);
 
   if (data.event_datetime) {
-    const dtEl = document.getElementById('datetime-text');
-    if (dtEl) dtEl.textContent = data.event_datetime;
+    const dtEl = document.getElementById('hero-event-date');
+    if (dtEl) dtEl.textContent = data.event_datetime + '  ·  ';
   }
 
   if (data.announcement_text) {
