@@ -2048,38 +2048,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // ── Parse the URL hash that Supabase appends to email links ──────────
-    // Supabase puts tokens in the URL hash like:
-    //   #access_token=...&type=recovery   (password reset)
-    //   #access_token=...&type=invite     (first-time invite)
-    //   #error=access_denied&...          (expired/invalid link)
+    // ── URL hash handling ─────────────────────────────────────────────────
+    // Password reset and invite links now redirect to password.html, which
+    // handles all token exchange. This page only checks for mis-routed tokens
+    // (old links, wrong Supabase redirect config) and handles them gracefully.
     const hash = window.location.hash;
 
     if (hash) {
-      const params = new URLSearchParams(hash.replace(/^#/, ''));
-      const type   = params.get('type');
-      const error  = params.get('error');
-      const errorDesc = params.get('error_description') || '';
+      const params    = new URLSearchParams(hash.replace(/^#/, ''));
+      const hashType  = params.get('type');
+      const hashError = params.get('error');
+      const hashDesc  = params.get('error_description') || '';
 
-      // Clean the ugly hash from the browser address bar immediately
+      // Always clean the hash from the address bar on index.html
       window.history.replaceState(null, '', window.location.pathname);
 
-      if (error) {
-        // Link was expired or invalid — show login with a friendly message
+      if (hashError) {
+        // Expired or invalid link landed here — show friendly login error
         showPage('vol-login');
         const errEl = document.getElementById('vol-login-error');
         if (errEl) {
-          if (errorDesc.toLowerCase().includes('expired')) {
-            errEl.textContent = 'Your link has expired. Please request a new one below.';
-          } else {
-            errEl.textContent = 'That link is no longer valid. Please sign in or request a new reset link.';
-          }
+          errEl.textContent = hashDesc.toLowerCase().includes('expired')
+            ? 'Your link has expired. Please request a new reset link below.'
+            : 'That link is no longer valid. Please sign in or request a new reset link.';
           errEl.classList.add('visible');
         }
-      } else if (type === 'recovery' || type === 'invite') {
-        // Valid reset or first-time invite link — let Supabase exchange the token,
-        // then onAuthStateChange fires PASSWORD_RECOVERY and we show the set-password page.
-        // getSession() below will pick up the token from the hash automatically.
+      } else if (hashType === 'recovery' || hashType === 'invite') {
+        // A valid token landed on index.html instead of password.html.
+        // Redirect immediately to password.html with the hash intact so it can be exchanged there.
+        window.location.replace(
+          'https://youthairdrie.github.io/airdrie-culturefest-hub/password.html' +
+          window.location.hash
+        );
+        return; // halt further init on this page
       }
     }
 
@@ -2090,16 +2091,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Listen for auth state changes
+    // NOTE: PASSWORD_RECOVERY is now handled entirely on password.html.
+    // index.html only needs SIGNED_IN (normal login) and SIGNED_OUT.
     sb.auth.onAuthStateChange(async (_event, session) => {
-      if (_event === 'PASSWORD_RECOVERY') {
-        // User arrived via a valid reset or invite email link
-        showPage('reset-password');
-        return;
-      }
       if (_event === 'SIGNED_IN' && session) {
-        // Only redirect if we're sitting on a login/forgot/reset page
+        // Only auto-redirect if the user is sitting on a login/forgot page
         const activePage = document.querySelector('.page-view.active');
-        const onAuthPage = activePage && ['page-vol-login','page-forgot','page-reset-password']
+        const onAuthPage = activePage && ['page-vol-login','page-forgot']
           .includes(activePage.id);
         if (onAuthPage) {
           await handleAuthSession(session);
@@ -2224,8 +2222,7 @@ async function handleAuthSession(session) {
   currentUser = session.user;
 
   // Look up profile to get role.
-  // The trigger auto-creates a profile row on invite, so this should always exist.
-  // If somehow it doesn't (e.g. pre-trigger legacy user), we still let them in as volunteer.
+  // Trigger auto-creates a profile row on invite, so this should always exist.
   if (sb) {
     const { data: profile } = await sb
       .from('volunteer_profiles')
@@ -2240,9 +2237,14 @@ async function handleAuthSession(session) {
       if (currentRole === 'admin') {
         await loadAdminData();
       }
+      // Route to correct dashboard
+      if (currentRole === 'admin') {
+        showPage('admin');
+      } else {
+        showPage('volunteer');
+      }
     } else {
       // Profile not found — treat as basic volunteer so they aren't locked out.
-      // Admin can set their role_title / zone from the Admin → Volunteers tab later.
       currentRole = 'volunteer';
       setAuthUI(session.user.email, 'volunteer');
       updateNavTabs();
@@ -2324,7 +2326,7 @@ async function unifiedLogin() {
   }
 
   // Fetch profile to determine role.
-  // Trigger auto-creates the profile row, but we handle the edge case gracefully.
+  // Trigger auto-creates the profile row on invite — should always exist.
   const { data: profile } = await sb
     .from('volunteer_profiles')
     .select('*')
@@ -2332,8 +2334,7 @@ async function unifiedLogin() {
     .single();
 
   if (!profile) {
-    // No profile yet (pre-trigger legacy user or trigger failure).
-    // Let them in as volunteer; admin can complete their profile later.
+    // No profile yet — let them in as volunteer; admin can complete setup later.
     currentRole = 'volunteer';
     setAuthUI(email, 'volunteer');
     updateNavTabs();
@@ -2389,7 +2390,7 @@ async function sendPasswordReset() {
   btn.disabled = true;
 
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + window.location.pathname + '?reset=true'
+    redirectTo: 'https://youthairdrie.github.io/airdrie-culturefest-hub/password.html'
   });
 
   btn.textContent = 'Send Reset Link';
