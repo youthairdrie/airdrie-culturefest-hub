@@ -2715,7 +2715,7 @@ pre, code {
           <textarea class="input-field" id="sched-desc" rows="2" placeholder="Brief description..."></textarea>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveSchedule()">Save Performance</button>
+          <button class="btn btn-primary" id="sched-save-btn" onclick="adminSaveSchedule()">Save Performance</button>
           <button class="btn btn-ghost btn-sm" onclick="clearScheduleForm()">Clear</button>
         </div>
         <div id="sched-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -2764,7 +2764,7 @@ pre, code {
           <textarea class="input-field" id="booth-desc" rows="2" placeholder="What visitors will experience at this booth..."></textarea>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveBooth()">Save Booth</button>
+          <button class="btn btn-primary" id="booth-save-btn" onclick="adminSaveBooth()">Save Booth</button>
           <button class="btn btn-ghost btn-sm" onclick="clearBoothForm()">Clear</button>
         </div>
         <div id="booth-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -2814,7 +2814,7 @@ pre, code {
           <textarea class="input-field" id="food-desc" rows="2" placeholder="What they're serving..."></textarea>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveFood()">Save Vendor</button>
+          <button class="btn btn-primary" id="food-save-btn" onclick="adminSaveFood()">Save Vendor</button>
           <button class="btn btn-ghost btn-sm" onclick="clearFoodForm()">Clear</button>
         </div>
         <div id="food-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -2854,7 +2854,7 @@ pre, code {
           <textarea class="input-field" id="ann-body" rows="3" placeholder="Write your announcement here..."></textarea>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveAnnouncement()">Post Announcement</button>
+          <button class="btn btn-primary" id="ann-save-btn" onclick="adminSaveAnnouncement()">Post Announcement</button>
           <button class="btn btn-ghost btn-sm" onclick="clearAnnouncementForm()">Clear</button>
         </div>
         <div id="ann-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -2928,7 +2928,7 @@ pre, code {
           </label>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveRole()">Save Role</button>
+          <button class="btn btn-primary" id="sr-save-btn" onclick="adminSaveRole()">Save Role</button>
           <button class="btn btn-ghost btn-sm" onclick="clearRoleForm()">Clear</button>
         </div>
         <div id="sr-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -3036,7 +3036,7 @@ pre, code {
                  placeholder="e.g. Leads a team of 5 volunteers">
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="adminSaveDesignation()">💾 Save Designation</button>
+          <button class="btn btn-primary" id="desig-save-btn" onclick="adminSaveDesignation()">💾 Save Designation</button>
           <button class="btn btn-ghost btn-sm" onclick="clearDesigForm()">Clear</button>
           <div id="desig-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
         </div>
@@ -3100,7 +3100,7 @@ pre, code {
                    placeholder="e.g. Youth under 18 registered through Youth Airdrie">
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="adminSaveProgram()">💾 Save Program</button>
+            <button class="btn btn-primary" id="prog-save-btn" onclick="adminSaveProgram()">💾 Save Program</button>
             <button class="btn btn-ghost btn-sm" onclick="clearProgForm()">Clear</button>
             <div id="prog-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
           </div>
@@ -3172,7 +3172,7 @@ pre, code {
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="adminSaveHomepage()">💾 Save Home Page</button>
+          <button class="btn btn-primary" id="hp-save-btn" onclick="adminSaveHomepage()">💾 Save Home Page</button>
           <div id="hp-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
         </div>
       </div>
@@ -3195,7 +3195,7 @@ pre, code {
           </div>
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveChecklistItem()">Add Item</button>
+          <button class="btn btn-primary" id="cl-save-btn" onclick="adminSaveChecklistItem()">Add Item</button>
           <button class="btn btn-ghost btn-sm" onclick="clearChecklistForm()">Clear</button>
         </div>
         <div id="cl-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -3247,7 +3247,7 @@ pre, code {
           <input type="number" class="input-field" id="contact-order" placeholder="1" min="1" style="max-width:120px;">
         </div>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="adminSaveContact()">Save Contact</button>
+          <button class="btn btn-primary" id="contact-save-btn" onclick="adminSaveContact()">Save Contact</button>
           <button class="btn btn-ghost btn-sm" onclick="clearContactForm()">Clear</button>
         </div>
         <div id="contact-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
@@ -3336,6 +3336,8 @@ pre, code {
             <option value="YVC-Youth">🎓 YVC-Youth — Youth Volunteer Corps</option>
             <option value="VA-Adult">🙌 VA-Adult — Volunteer Airdrie Adult</option>
           </select>
+          <!-- Note: options above are defaults matching PROGRAM_FALLBACKS.
+               refreshProgramDropdowns() replaces them with live data from Supabase. -->
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">
             Select the program you registered through. Your coordinator can update this if needed.
           </div>
@@ -3431,11 +3433,61 @@ pre, code {
 const SUPABASE_URL  = 'https://evdxzhydpdjupwvppukj.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2ZHh6aHlkcGRqdXB3dnBwdWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTU0OTIsImV4cCI6MjA5NTI5MTQ5Mn0.I2CBtbEoydRwSOFQriGcy1_0jphG_01K0a29NlxxyMk';
 
+/* ── Core auth/session state ─────────────────────────────────── */
 let sb = null;
 let currentUser = null;
 let currentRole = null; // 'volunteer' | 'admin' | null
 
-// Tracker state (local, not persisted — use Supabase for real persistence)
+/* ── Auth deduplication guard (Fix #2) ───────────────────────────
+   Prevents onAuthStateChange SIGNED_IN from re-running dashboard
+   loads on every token refresh or tab-focus event. */
+let _authSessionHandled = false;
+
+/* ── Loading flags (Fix #1) ──────────────────────────────────────
+   Set to true while an async load is in flight; prevents
+   duplicate calls when a user clicks tabs rapidly. */
+const _loading = {
+  adminData:      false,
+  volunteerData:  false,
+  adminRoles:     false,
+  usersAdmin:     false,
+  volShifts:      false,
+  volAvailShifts: false,
+  shiftJoin:      false,
+  shiftLeave:     false,
+};
+
+/* ── Centralized program fallback list (Fix #6) ──────────────────
+   Used when _allPrograms has not loaded yet (Supabase down / demo).
+   Matches the default seed data in the SQL setup.
+   Single source of truth — do NOT hard-code these values elsewhere. */
+const PROGRAM_FALLBACKS = [
+  { code: 'YA-Youth',  name: 'Youth Airdrie Volunteer',  icon: '🌱', color: 'green'  },
+  { code: 'YVC-Youth', name: 'Youth Volunteer Corps',     icon: '🎓', color: 'gold'   },
+  { code: 'VA-Adult',  name: 'Volunteer Airdrie Adult',   icon: '🙌', color: 'purple' },
+];
+
+/* ── Active shift modal state (Fix #3) ───────────────────────────
+   Store shift context explicitly rather than scraping the DOM. */
+let _activeModalShiftId    = null;
+let _activeModalShiftLabel = null;
+
+/* ── Cached users array for filtering (Fix #5) ───────────────────
+   Populated on loadUsersAdmin(); filterUsersTable reads from here. */
+let _cachedUsers = [];
+
+/* ── Unsaved-changes guard (Fix #7) ──────────────────────────────
+   Tracks whether an admin form has been modified since last save. */
+let _adminFormDirty = false;
+
+/* ── Tracker state (Fix #8) ─────────────────────────────────────
+   LOCAL-ONLY: persisted to localStorage but NOT to Supabase.
+   ⚠  WARNING: counts will reset if localStorage is cleared,
+   the device changes, or the browser is in private mode.
+   TODO (post-event): migrate to a `tracker_sessions` Supabase table
+   with columns: gate_id, gate_name, count, session_date, updated_at.
+   Use upsert on gate_id+session_date so counts survive page reloads.
+   ──────────────────────────────────────────────────────────────── */
 let trackerGates = [
   { id: 1, name: 'Main Entrance (North)', count: 0 },
   { id: 2, name: 'East Gate',             count: 0 },
@@ -3450,6 +3502,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDateTime();
   renderTrackerGates();
   updateNavTabs();
+
+  // Fix #7: Attach delegated input listener on admin forms to track dirty state.
+  // Any input/change inside an .admin-form marks the form dirty.
+  document.addEventListener('input', (e) => {
+    if (e.target.closest('#page-admin .admin-form')) markAdminFormDirty();
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.closest('#page-admin .admin-form')) markAdminFormDirty();
+  });
 
   // Attempt to initialise Supabase
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
@@ -3491,23 +3552,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check for existing session (also exchanges hash token if present)
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
+      _authSessionHandled = true;
       await handleAuthSession(session);
     }
 
-    // Listen for auth state changes
+    // Listen for auth state changes.
+    // Guard: SIGNED_IN fires on every token refresh (every ~60 min) and on tab
+    // focus. We only run handleAuthSession when the session is genuinely new
+    // (i.e. not already handled this page-load) OR when coming from a login page.
     sb.auth.onAuthStateChange(async (_event, session) => {
       if (_event === 'SIGNED_IN' && session) {
         const activePage = document.querySelector('.page-view.active');
         const onAuthPage = activePage && ['page-vol-login','page-forgot'].includes(activePage.id);
-        if (onAuthPage) await handleAuthSession(session);
+        // Re-run full auth flow only if: coming from login page, or first time this session
+        if (onAuthPage || !_authSessionHandled) {
+          _authSessionHandled = true;
+          await handleAuthSession(session);
+        }
+        // Otherwise it's a token refresh — silently update currentUser but do NOT reload dashboards
+        else if (session?.user) {
+          currentUser = session.user;
+        }
       }
-      if (_event === 'SIGNED_OUT') clearAuthState();
+      if (_event === 'SIGNED_OUT') {
+        _authSessionHandled = false;
+        clearAuthState();
+      }
     });
 
     // Load all public data
     await loadPublicData();
   } catch (err) {
-    console.error('Supabase init error:', err);
+    console.log('[ERROR] Supabase init error:', err?.message || String(err));
     showToast('⚠️ Database connection failed — loading demo data', 'error');
     loadDemoData();
   }
@@ -3924,7 +4000,7 @@ async function loadPublicData() {
     loadFoodVendors(),
     loadFoodTrucks(),
     loadPublicAnnouncements(),
-  ]);
+  ]).catch(err => console.log('[ERROR] loadPublicData: error in one or more loaders', err?.message || String(err)));
 }
 
 async function loadStageSchedule() {
@@ -3938,6 +4014,7 @@ async function loadStageSchedule() {
   const body = document.getElementById('body-stage');
   const count = document.getElementById('count-stage');
 
+  if (error) console.log('[ERROR] loadStageSchedule error:', error.message);
   if (error || !data) { body.innerHTML = renderEmpty('No stage performances scheduled yet.'); count.textContent = '0'; return; }
   count.textContent = data.length;
   body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
@@ -4141,7 +4218,9 @@ function formatTime(t) {
    ============================================================ */
 async function loadVolunteerData(profile) {
   if (!sb || !profile) return;
-
+  if (_loading.volunteerData) { console.log('[WARN] loadVolunteerData: already loading, skipping duplicate call'); return; }
+  _loading.volunteerData = true;
+  try {
   document.getElementById('vol-display-name').textContent = `👋 Welcome, ${profile.full_name || 'Volunteer'}!`;
   document.getElementById('vol-role-display').textContent = `🙌 ${profile.role_title || profile.zone || 'Volunteer'}`;
 
@@ -4155,13 +4234,14 @@ async function loadVolunteerData(profile) {
   await loadVolAvailableShifts();
 
   // Volunteer announcements
-  const { data: anns } = await sb
+  const { data: anns, error: annErr } = await sb
     .from('announcements')
     .select('*')
     .in('audience', ['volunteer', 'public'])
     .eq('is_published', true)
     .order('created_at', { ascending: false });
 
+  if (annErr) console.log('[ERROR] loadVolunteerData: announcements error', annErr.message);
   const annList = document.getElementById('vol-announcements-list');
   if (anns && anns.length) {
     annList.innerHTML = anns.map(renderAnnouncement).join('');
@@ -4174,6 +4254,11 @@ async function loadVolunteerData(profile) {
 
   // Checklist — load from volunteer_checklist table
   await loadVolChecklist();
+  } catch(err) {
+    console.log('[ERROR] loadVolunteerData: unexpected error', err?.message || String(err));
+  } finally {
+    _loading.volunteerData = false;
+  }
 }
 
 async function loadVolChecklist() {
@@ -4240,6 +4325,9 @@ function switchVolTab(tab) {
    ============================================================ */
 async function loadAdminData() {
   if (!sb) return;
+  if (_loading.adminData) { console.log('[WARN] loadAdminData: already loading, skipping duplicate call'); return; }
+  _loading.adminData = true;
+  try {
   await Promise.all([
     loadAdminStats(),
     loadAdminScheduleTable(),
@@ -4253,6 +4341,11 @@ async function loadAdminData() {
     loadAdminRoles(),
     loadPrograms().then(refreshProgramFilterBar),
   ]);
+  } catch(err) {
+    console.log('[ERROR] loadAdminData: unexpected error', err?.message || String(err));
+  } finally {
+    _loading.adminData = false;
+  }
 }
 
 async function loadAdminStats() {
@@ -4260,7 +4353,10 @@ async function loadAdminStats() {
   const counts = await Promise.all(tables.map(t =>
     sb.from(t).select('*', { count: 'exact', head: true })
   ));
-  const [vols, perfs, booths, food] = counts.map(r => r.count || 0);
+  const [vols, perfs, booths, food] = counts.map((r, i) => {
+    if (r.error) console.log(`[ERROR] loadAdminStats: error counting ${tables[i]}:`, r.error.message);
+    return r.count || 0;
+  });
 
   document.getElementById('stat-volunteers').textContent  = vols;
   document.getElementById('stat-performers').textContent  = perfs;
@@ -4375,14 +4471,15 @@ async function adminSaveSchedule() {
   };
 
   if (!row.name) { showFeedback('sched-feedback', 'Name is required.', false); return; }
-
   if (!sb) { showFeedback('sched-feedback', '✅ Saved (demo — configure Supabase to persist)', true); clearScheduleForm(); return; }
 
+  setBtn('sched-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('stage_schedule').update(row).eq('id', id)
     : await sb.from('stage_schedule').insert(row);
+  setBtn('sched-save-btn', false);
 
-  if (error) { showFeedback('sched-feedback', error.message, false); }
+  if (error) { console.log('[ERROR] adminSaveSchedule error:', error.message); showFeedback('sched-feedback', error.message, false); }
   else { showFeedback('sched-feedback', '✅ Saved!', true); clearScheduleForm(); await loadAdminScheduleTable(); await loadAdminStats(); }
 }
 
@@ -4399,11 +4496,13 @@ async function adminSaveBooth() {
   if (!row.name) { showFeedback('booth-feedback', 'Name is required.', false); return; }
   if (!sb) { showFeedback('booth-feedback', '✅ Saved (demo)', true); clearBoothForm(); return; }
 
+  setBtn('booth-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('cultural_booths').update(row).eq('id', id)
     : await sb.from('cultural_booths').insert(row);
+  setBtn('booth-save-btn', false);
 
-  if (error) showFeedback('booth-feedback', error.message, false);
+  if (error) { console.log('[ERROR] adminSaveBooth error:', error.message); showFeedback('booth-feedback', error.message, false); }
   else { showFeedback('booth-feedback', '✅ Saved!', true); clearBoothForm(); await loadAdminBoothsTable(); await loadAdminStats(); }
 }
 
@@ -4420,11 +4519,13 @@ async function adminSaveFood() {
   if (!row.name) { showFeedback('food-feedback', 'Name is required.', false); return; }
   if (!sb) { showFeedback('food-feedback', '✅ Saved (demo)', true); clearFoodForm(); return; }
 
+  setBtn('food-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('food_vendors').update(row).eq('id', id)
     : await sb.from('food_vendors').insert(row);
+  setBtn('food-save-btn', false);
 
-  if (error) showFeedback('food-feedback', error.message, false);
+  if (error) { console.log('[ERROR] adminSaveFood error:', error.message); showFeedback('food-feedback', error.message, false); }
   else { showFeedback('food-feedback', '✅ Saved!', true); clearFoodForm(); await loadAdminFoodTable(); await loadAdminStats(); }
 }
 
@@ -4441,20 +4542,35 @@ async function adminSaveAnnouncement() {
   if (!row.title || !row.body) { showFeedback('ann-feedback', 'Title and message are required.', false); return; }
   if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
 
+  setBtn('ann-save-btn', true, 'Posting…');
   const { error } = id
     ? await sb.from('announcements').update(row).eq('id', id)
     : await sb.from('announcements').insert(row);
+  setBtn('ann-save-btn', false);
 
-  if (error) showFeedback('ann-feedback', error.message, false);
+  if (error) { console.log('[ERROR] adminSaveAnnouncement error:', error.message); showFeedback('ann-feedback', error.message, false); }
   else { showFeedback('ann-feedback', '✅ Posted!', true); clearAnnouncementForm(); await loadAdminAnnouncementsTable(); }
 }
 
+/* Fix #4: adminDeleteRow — standardized delete helper.
+   reloadFn must be a callable async function reference (not a string).
+   All callers already pass function references correctly. */
 async function adminDeleteRow(table, id, reloadFn) {
-  if (!confirm('Delete this item?')) return;
+  if (!confirm('Delete this item? This cannot be undone.')) return;
   if (!sb) { showToast('Demo mode — cannot delete', 'info'); return; }
+  if (typeof reloadFn !== 'function') {
+    console.log('[ERROR] adminDeleteRow: reloadFn is not a function for table', table, id);
+    showToast('❌ Internal error: reload function missing', 'error');
+    return;
+  }
   const { error } = await sb.from(table).delete().eq('id', id);
-  if (error) showToast('Error: ' + error.message, 'error');
-  else { showToast('Deleted', 'success'); await reloadFn(); }
+  if (error) {
+    console.log(`[ERROR] adminDeleteRow(${table}, ${id}):`, error.message);
+    showToast('❌ Delete failed: ' + error.message, 'error');
+  } else {
+    showToast('✅ Deleted', 'success');
+    try { await reloadFn(); } catch(e) { console.log('[ERROR] adminDeleteRow: reloadFn threw', e?.message || String(e)); }
+  }
 }
 
 function adminEditSchedule(r) {
@@ -4496,12 +4612,14 @@ function clearScheduleForm() {
   });
   document.getElementById('sched-section').value = 'stage';
   document.getElementById('sched-feedback').textContent = '';
+  clearAdminFormDirty();
 }
 function clearBoothForm() {
   ['booth-edit-id','booth-name','booth-culture','booth-location','booth-category','booth-desc'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('booth-feedback').textContent = '';
+  clearAdminFormDirty();
 }
 function clearFoodForm() {
   ['food-edit-id','food-name','food-category','food-location','food-desc'].forEach(id => {
@@ -4509,13 +4627,34 @@ function clearFoodForm() {
   });
   document.getElementById('food-type').value = 'vendor';
   document.getElementById('food-feedback').textContent = '';
+  clearAdminFormDirty();
 }
 function clearAnnouncementForm() {
   ['ann-edit-id','ann-title','ann-body'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('ann-feedback').textContent = '';
+  clearAdminFormDirty();
+}
+
+/* Fix #7: Track unsaved changes in admin forms.
+   Call markAdminFormDirty() from form input events (via oninput/onchange on
+   admin form fields) to set the dirty flag.
+   switchAdminTab warns before navigating away if dirty. */
+function markAdminFormDirty() {
+  _adminFormDirty = true;
+}
+
+function clearAdminFormDirty() {
+  _adminFormDirty = false;
 }
 
 function switchAdminTab(tab) {
+  // Warn if unsaved changes exist on the current panel (Fix #7)
+  if (_adminFormDirty) {
+    const go = confirm('You have unsaved changes in this form. Leave anyway? Your changes will be lost.');
+    if (!go) return;
+    clearAdminFormDirty();
+  }
+
   document.querySelectorAll('#page-admin .admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('#page-admin .admin-panel').forEach(p => p.classList.remove('active'));
   // Match tab button by onclick attribute for reliability
@@ -4535,6 +4674,17 @@ function switchAdminTab(tab) {
 /* ============================================================
    ATTENDANCE TRACKER
    ============================================================ */
+/* ============================================================
+   ATTENDANCE TRACKER
+   Fix #8: Tracker data is stored in localStorage ONLY.
+   ⚠ This means counts reset if:
+     - The admin opens the tracker in a different browser or device
+     - localStorage is cleared or the browser is in private/incognito mode
+     - The device is lost or swapped on event day
+   For true event-day reliability, migrate to Supabase persistence.
+   TODO: Add tracker_sessions table (see state variable block above).
+   The warning banner below surfaces this to admins at runtime.
+   ============================================================ */
 function renderTrackerGates() {
   const container = document.getElementById('tracker-gates-list');
   if (!container) return;
@@ -4549,6 +4699,30 @@ function renderTrackerGates() {
       </div>
     </div>`).join('');
   updateTrackerTotal();
+  // Show persistence warning banner (Fix #8)
+  _renderTrackerWarning();
+}
+
+function _renderTrackerWarning() {
+  // Only show inside the tracker panel
+  const panel = document.getElementById('admin-panel-tracker');
+  if (!panel) return;
+  const existing = document.getElementById('tracker-persist-warning');
+  if (existing) return; // already shown
+  const warn = document.createElement('div');
+  warn.id = 'tracker-persist-warning';
+  warn.style.cssText = `
+    background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);
+    border-radius:10px;padding:10px 14px;margin-bottom:14px;
+    font-size:0.78rem;color:var(--cf-gold);display:flex;gap:10px;align-items:flex-start;`;
+  warn.innerHTML = `
+    <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
+    <div>
+      <strong>Counts saved to this browser only.</strong>
+      Opening on a different device or browser will show 0.
+      Use <em>Copy Summary</em> to record totals before closing.
+    </div>`;
+  panel.insertBefore(warn, panel.firstChild);
 }
 
 function trackerAdjust(id, delta) {
@@ -4601,9 +4775,14 @@ function loadTrackerFromLocalStorage() {
   const saved = localStorage.getItem('cf_tracker');
   if (saved) {
     try {
-      trackerGates = JSON.parse(saved);
-      trackerNextId = Math.max(...trackerGates.map(g => g.id)) + 1;
-    } catch(e) {}
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length) {
+        trackerGates = parsed;
+        trackerNextId = Math.max(...trackerGates.map(g => g.id)) + 1;
+      }
+    } catch(e) {
+      console.log('[WARN] loadTrackerFromLocalStorage: could not parse saved tracker data, using defaults.', e?.message || String(e));
+    }
   }
 }
 
@@ -4780,6 +4959,24 @@ function loadDemoAdminData() {
 /* ============================================================
    UI HELPERS
    ============================================================ */
+/* Fix #1: setBtn(id, loading, label) — disable/re-enable a button during async ops.
+   loading=true: disables button, sets text to loading label.
+   loading=false: re-enables button, restores original label. */
+function setBtn(id, loading, loadingLabel) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (loading) {
+    el._origText = el.textContent;
+    el.disabled = true;
+    el.textContent = loadingLabel || 'Please wait…';
+    el.style.opacity = '0.7';
+  } else {
+    el.disabled = false;
+    el.textContent = el._origText || el.textContent;
+    el.style.opacity = '';
+  }
+}
+
 function showFeedback(id, msg, success) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -5027,17 +5224,25 @@ let currentUserProfile = null; // set after login, used for shift signups
 async function loadAdminRoles() {
   const el = document.getElementById('admin-roles-list');
   if (!el || !sb) return;
+  if (_loading.adminRoles) { console.log('[WARN] loadAdminRoles: already loading'); return; }
+  _loading.adminRoles = true;
   el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
-
+  try {
   const { data: roles, error } = await sb
     .from('volunteer_roles')
     .select('*')
     .order('display_order', { ascending: true });
 
-  if (error || !roles) { el.innerHTML = renderEmpty('Could not load roles.'); return; }
-  if (!roles.length)   { el.innerHTML = renderEmpty('No roles yet. Add one above.'); return; }
+  if (error) { console.log('[ERROR] loadAdminRoles error:', error.message); el.innerHTML = renderEmpty('Could not load roles.'); return; }
+  if (!roles || !roles.length)   { el.innerHTML = renderEmpty('No roles yet. Add one above.'); return; }
 
   el.innerHTML = roles.map(r => renderAdminRoleCard(r)).join('');
+  } catch(err) {
+    console.log('[ERROR] loadAdminRoles: unexpected error', err?.message || String(err));
+    el.innerHTML = renderEmpty('Could not load roles.');
+  } finally {
+    _loading.adminRoles = false;
+  }
 }
 
 function renderAdminRoleCard(r) {
@@ -5186,15 +5391,17 @@ async function adminSaveRole() {
   if (!row.role_name) { fb.style.color='var(--cf-coral)'; fb.textContent='Role name is required.'; return; }
   fb.textContent = 'Saving...';
 
+  setBtn('sr-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('volunteer_roles').update(row).eq('id', id)
     : await sb.from('volunteer_roles').insert(row);
+  setBtn('sr-save-btn', false);
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  if (error) { console.log('[ERROR] adminSaveRole error:', error.message); fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
   else {
     fb.style.color='var(--cf-green)'; fb.textContent = id ? '✅ Role updated!' : '✅ Role added!';
     clearRoleForm(); await loadAdminRoles();
-    setTimeout(() => fb.textContent='', 3000);
+    setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
   }
 }
 
@@ -5231,6 +5438,7 @@ function clearRoleForm() {
   const vis = document.getElementById('sr-visible'); if (vis) vis.checked = true;
   const ao  = document.getElementById('sr-admin-only'); if (ao) ao.checked = false;
   const act = document.getElementById('sr-active'); if (act) act.checked = true;
+  clearAdminFormDirty();
 }
 
 async function adminAddShiftTime(roleId) {
@@ -5265,28 +5473,43 @@ async function adminDeleteShift(shiftId, roleId) {
   else { showToast('Shift deleted', 'success'); await loadAdminShiftTimes(roleId); }
 }
 
-// ── Admin: view & manage assignments for a specific shift ─────
+/* Fix #3: Store active shift context in module-level variables so we never
+   need to scrape the DOM to recover it when refreshing the modal. */
 async function adminViewAssignments(shiftId, shiftLabel) {
+  // Store context explicitly — no DOM scraping
+  _activeModalShiftId    = shiftId;
+  _activeModalShiftLabel = shiftLabel;
+  await _renderAssignmentModal(shiftId, shiftLabel);
+}
+
+async function _renderAssignmentModal(shiftId, shiftLabel) {
   const existing = document.getElementById('assignment-modal');
   if (existing) existing.remove();
 
   // Fetch assignments with profile info
-  const { data: assignments } = await sb
+  const { data: assignments, error: aErr } = await sb
     .from('volunteer_shift_assignments')
     .select('*, volunteer_profiles!inner(full_name, email, cell_phone)')
     .eq('shift_id', shiftId);
 
+  if (aErr) console.log('[ERROR] adminViewAssignments: assignments fetch error', aErr.message);
+
   // Fetch all volunteer profiles for the assign picker
-  const { data: allProfiles } = await sb
+  const { data: allProfiles, error: pErr } = await sb
     .from('volunteer_profiles')
     .select('id, user_id, full_name, email')
     .eq('status', 'active')
     .order('full_name');
 
+  if (pErr) console.log('[ERROR] adminViewAssignments: profiles fetch error', pErr.message);
+
   const assignedUserIds = (assignments || []).map(a => a.user_id);
 
   const modal = document.createElement('div');
   modal.id = 'assignment-modal';
+  // Store shift context as data attributes for safe retrieval
+  modal.dataset.shiftId    = shiftId;
+  modal.dataset.shiftLabel = shiftLabel;
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(11,17,32,0.95);z-index:8888;overflow-y:auto;padding:24px 16px;';
 
   const assigneeOptions = (allProfiles || [])
@@ -5356,20 +5579,32 @@ async function adminAssignVolunteer(shiftId) {
   const fb = document.getElementById('assign-feedback');
   if (!userId) { fb.style.color='var(--cf-coral)'; fb.textContent='Select a volunteer first.'; return; }
 
+  const btn = document.querySelector('#assignment-modal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Assigning…'; }
+
   const { error } = await sb.from('volunteer_shift_assignments').insert({
     shift_id: shiftId, user_id: userId, assignment_status: status,
     signup_source: 'admin', assigned_by: currentUser?.id,
     updated_at: new Date().toISOString()
   });
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
-  else {
+  if (btn) { btn.disabled = false; btn.textContent = 'Assign'; }
+
+  if (error) {
+    console.log('[ERROR] adminAssignVolunteer error:', error.message);
+    fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message;
+  } else {
     fb.style.color='var(--cf-green)'; fb.textContent='✅ Assigned!';
-    // Refresh modal
-    const label = document.querySelector('#assignment-modal div div div:last-child')?.textContent || '';
+    // Use stored shift context — no DOM scraping (Fix #3)
+    const label = _activeModalShiftLabel || shiftId;
     document.getElementById('assignment-modal').remove();
-    await adminViewAssignments(shiftId, label);
-    await loadAdminShiftTimes(shiftId.split('-')[0]); // best-effort refresh
+    await _renderAssignmentModal(shiftId, label);
+    // Refresh the shift row capacity bar if visible
+    const roleCard = document.querySelector(`[id^="admin-shifts-"]`);
+    if (roleCard) {
+      const roleId = roleCard.id.replace('admin-shifts-', '');
+      await loadAdminShiftTimes(roleId);
+    }
   }
 }
 
@@ -5386,11 +5621,14 @@ async function adminUpdateAssignmentStatus(assignmentId, newStatus, shiftId, shi
 async function adminRemoveAssignment(assignmentId, shiftId, shiftLabel) {
   if (!confirm('Remove this volunteer from the shift?')) return;
   const { error } = await sb.from('volunteer_shift_assignments').delete().eq('id', assignmentId);
-  if (error) showToast('❌ '+error.message, 'error');
+  if (error) { console.log('[ERROR] adminRemoveAssignment error:', error.message); showToast('❌ '+error.message, 'error'); }
   else {
     showToast('Removed', 'success');
     document.getElementById('assignment-modal').remove();
-    await adminViewAssignments(shiftId, shiftLabel);
+    // Use stored context (Fix #3); fall back to passed-in args if somehow cleared
+    const sid   = _activeModalShiftId    || shiftId;
+    const label = _activeModalShiftLabel || shiftLabel;
+    await _renderAssignmentModal(sid, label);
   }
 }
 
@@ -5408,7 +5646,10 @@ function filterRoles(q) {
 async function loadVolAvailableShifts() {
   const el = document.getElementById('vol-available-shifts-list');
   if (!el || !sb || !currentUser) return;
+  if (_loading.volAvailShifts) return;
+  _loading.volAvailShifts = true;
   el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading...</div>';
+  try {
 
   // Load roles
   const { data: roles } = await sb
@@ -5513,11 +5754,24 @@ async function loadVolAvailableShifts() {
   if (!el.innerHTML.trim()) {
     el.innerHTML = renderEmpty('No open shifts available right now.');
   }
+  } catch(err) {
+    console.log('[ERROR] loadVolAvailableShifts: unexpected error', err?.message || String(err));
+    el.innerHTML = renderEmpty('Could not load available shifts.');
+  } finally {
+    _loading.volAvailShifts = false;
+  }
 }
 
 async function volJoinShift(shiftId, roleId) {
   if (!currentUser) { showToast('Please sign in first.', 'error'); return; }
+  if (_loading.shiftJoin) { showToast('Please wait…', 'info'); return; }
+  _loading.shiftJoin = true;
 
+  // Disable the button optimistically
+  const btn = document.querySelector(`[onclick="volJoinShift('${shiftId}','${roleId}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing up…'; }
+
+  try {
   const { error } = await sb.from('volunteer_shift_assignments').insert({
     shift_id: shiftId,
     user_id: currentUser.id,
@@ -5528,36 +5782,56 @@ async function volJoinShift(shiftId, roleId) {
 
   if (error) {
     if (error.code === '23505') showToast('You are already signed up for this shift.', 'info');
-    else showToast('❌ ' + error.message, 'error');
+    else { console.log('[ERROR] volJoinShift error:', error.message); showToast('❌ ' + error.message, 'error'); }
+    if (btn) { btn.disabled = false; btn.textContent = '✋ Sign Up'; }
     return;
   }
 
   showToast('✅ Signed up! See your shift in My Shifts.', 'success');
   await loadVolAvailableShifts();
   await loadVolMyShifts();
+  } catch(err) {
+    console.log('[ERROR] volJoinShift: unexpected error', err?.message || String(err));
+    showToast('❌ Could not sign up. Please try again.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '✋ Sign Up'; }
+  } finally {
+    _loading.shiftJoin = false;
+  }
 }
 
 async function volLeaveShift(shiftId) {
   if (!confirm('Remove yourself from this shift?')) return;
+  if (_loading.shiftLeave) { showToast('Please wait…', 'info'); return; }
+  _loading.shiftLeave = true;
 
+  try {
   const { error } = await sb
     .from('volunteer_shift_assignments')
     .update({ assignment_status: 'cancelled', updated_at: new Date().toISOString() })
     .eq('shift_id', shiftId)
     .eq('user_id', currentUser.id);
 
-  if (error) { showToast('❌ ' + error.message, 'error'); return; }
+  if (error) { console.log('[ERROR] volLeaveShift error:', error.message); showToast('❌ ' + error.message, 'error'); return; }
 
   showToast('Removed from shift.', 'info');
   await loadVolAvailableShifts();
   await loadVolMyShifts();
+  } catch(err) {
+    console.log('[ERROR] volLeaveShift: unexpected error', err?.message || String(err));
+    showToast('❌ Could not remove. Please try again.', 'error');
+  } finally {
+    _loading.shiftLeave = false;
+  }
 }
 
 async function loadVolMyShifts() {
   const el = document.getElementById('vol-shifts-list');
   if (!el || !sb || !currentUser) return;
+  if (_loading.volShifts) return;
+  _loading.volShifts = true;
   el.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading your shifts...</div>';
 
+  try {
   const { data: assignments, error } = await sb
     .from('volunteer_shift_assignments')
     .select(`
@@ -5571,7 +5845,12 @@ async function loadVolMyShifts() {
     .not('assignment_status', 'in', '("cancelled","no_show")')
     .order('created_at', { ascending: true });
 
-  if (error || !assignments || !assignments.length) {
+  if (error) {
+    console.log('[ERROR] loadVolMyShifts error:', error.message);
+    el.innerHTML = renderEmpty('Could not load shifts. Please try again.');
+    return;
+  }
+  if (!assignments || !assignments.length) {
     el.innerHTML = renderEmpty('No shifts yet. Check the Available Shifts tab to sign up!');
     return;
   }
@@ -5606,6 +5885,12 @@ async function loadVolMyShifts() {
         </div>
       </div>`;
   }).join('');
+  } catch(err) {
+    console.log('[ERROR] loadVolMyShifts: unexpected error', err?.message || String(err));
+    el.innerHTML = renderEmpty('Could not load shifts.');
+  } finally {
+    _loading.volShifts = false;
+  }
 }
 
 /* ============================================================
@@ -5687,16 +5972,20 @@ async function adminSaveHomepage() {
     badge_4:           document.getElementById('hp-badge4').value.trim(),
     updated_at:        new Date().toISOString(),
   };
+  setBtn('hp-save-btn', true, 'Saving…');
   // Upsert — always just one row (id=1)
   const { error } = await sb.from('home_page_content').upsert({ id: 1, ...row });
+  setBtn('hp-save-btn', false);
   if (error) {
+    console.log('[ERROR] adminSaveHomepage error:', error.message);
     fb.style.color = 'var(--cf-coral)';
     fb.textContent = '❌ ' + error.message;
   } else {
     fb.style.color = 'var(--cf-green)';
     fb.textContent = '✅ Home page saved!';
+    clearAdminFormDirty();
     await loadHomepageContent(); // refresh public hero
-    setTimeout(() => fb.textContent = '', 3000);
+    setTimeout(() => { if(fb) fb.textContent = ''; }, 3000);
   }
 }
 
@@ -5741,26 +6030,40 @@ function sourceBadgeClass(src) {
 async function loadUsersAdmin() {
   const wrap = document.getElementById('users-list-wrap');
   if (!wrap || !sb) return;
+  if (_loading.usersAdmin) { console.log('[WARN] loadUsersAdmin: already loading'); return; }
+  _loading.usersAdmin = true;
   wrap.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading users...</div>';
 
+  try {
   const { data: users, error } = await sb
     .from('volunteer_profiles')
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !users) {
-    wrap.innerHTML = renderEmpty('Could not load users.');
+  if (error) {
+    console.log('[ERROR] loadUsersAdmin error:', error.message);
+    wrap.innerHTML = renderEmpty('Could not load users. Check your connection and try again.');
     return;
   }
-  if (!users.length) {
+  if (!users || !users.length) {
     wrap.innerHTML = renderEmpty('No users yet.');
+    _cachedUsers = [];
     return;
   }
 
+  // Cache for filter reuse (Fix #5) — no more JSON.parse/stringify fallback
+  _cachedUsers = users;
+  // Keep dataset.users for legacy compatibility but _cachedUsers is authoritative
   wrap.dataset.users = JSON.stringify(users);
   renderUsersCards(users);
   // Hydrate designation tags + dropdowns asynchronously
   setTimeout(hydrateUserDesignations, 0);
+  } catch(err) {
+    console.log('[ERROR] loadUsersAdmin: unexpected error', err?.message || String(err));
+    wrap.innerHTML = renderEmpty('Could not load users.');
+  } finally {
+    _loading.usersAdmin = false;
+  }
 }
 
 function renderUsersCards(users) {
@@ -5860,9 +6163,7 @@ function renderUsersCards(users) {
           <div class="form-group" style="margin-bottom:0;">
             <label class="input-label" style="font-size:0.68rem;">Volunteer Program</label>
             <select class="input-field" id="usource-${u.id}" style="padding:8px 10px;font-size:0.83rem;">
-              <option value="YA-Youth"  ${src === 'YA-Youth'  ? 'selected' : ''}>🌱 YA-Youth</option>
-              <option value="YVC-Youth" ${src === 'YVC-Youth' ? 'selected' : ''}>🎓 YVC-Youth</option>
-              <option value="VA-Adult"  ${src === 'VA-Adult'  ? 'selected' : ''}>🙌 VA-Adult</option>
+              ${buildProgramOptions(src)}
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
@@ -5914,23 +6215,29 @@ async function adminSaveUser(id) {
   const status  = document.getElementById('ustatus-' + id)?.value;
   const onboard = document.getElementById('uonboard-' + id)?.value === 'true';
   const fbEl    = document.getElementById('usave-feedback-' + id);
+  const btn     = document.querySelector(`[onclick="adminSaveUser('${id}')"]`);
 
   const updates = {
     full_name:           name || null,
     cell_phone:          phone ? normalizePhone(phone) : null,
-    volunteer_source:    source || 'YA-Youth',
+    volunteer_source:    source || getProgramList()[0]?.code || 'YA-Youth',
     role,
     status,
     onboarding_complete: onboard,
     updated_at:          new Date().toISOString(),
   };
 
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
   const { error } = await sb
     .from('volunteer_profiles')
     .update(updates)
     .eq('id', id);
 
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Save'; }
+
   if (error) {
+    console.log('[ERROR] adminSaveUser error:', error.message);
     showToast('❌ ' + error.message, 'error');
     if (fbEl) { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = '❌ Save failed'; }
   } else {
@@ -5944,24 +6251,14 @@ async function adminSaveUser(id) {
   }
 }
 
+/* Fix #5: filterUsersTable now reads from _cachedUsers directly.
+   No JSON.parse try/catch fallback needed — _cachedUsers is always
+   a clean array populated by loadUsersAdmin(). Search and source
+   filter are combined here and always work together correctly. */
 function filterUsersTable(q) {
-  const wrap = document.getElementById('users-list-wrap');
-  if (!wrap) return;
-  // Re-render from cached data so source filter still works
-  try {
-    const users = JSON.parse(wrap.dataset.users || '[]');
-    renderUsersCards(users);
-    setTimeout(hydrateUserDesignations, 0);
-  } catch(e) {
-    // Fallback: show/hide existing cards
-    const query = q.toLowerCase().trim();
-    const src = _activeSourceFilter;
-    document.querySelectorAll('#users-list-wrap > .card').forEach(card => {
-      const matchSrc = src === 'all' || card.dataset.source === src;
-      const matchQ   = !query || (card.dataset.search || card.textContent).toLowerCase().includes(query);
-      card.style.display = (matchSrc && matchQ) ? '' : 'none';
-    });
-  }
+  if (!_cachedUsers.length) return; // nothing loaded yet
+  renderUsersCards(_cachedUsers);
+  setTimeout(hydrateUserDesignations, 0);
 }
 
 /* ============================================================
@@ -6043,11 +6340,13 @@ async function adminSaveDesignation() {
   fb.textContent = 'Saving…';
 
   const row = { label, icon: icon || null, color, display_order: order, description: desc || null };
+  setBtn('desig-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('volunteer_designations').update(row).eq('id', id)
     : await sb.from('volunteer_designations').insert(row);
+  setBtn('desig-save-btn', false);
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
+  if (error) { console.log('[ERROR] adminSaveDesignation error:', error.message); fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
   fb.style.color='var(--cf-green)';
   fb.textContent = id ? '✅ Updated!' : '✅ Designation added!';
   clearDesigForm();
@@ -6079,6 +6378,7 @@ function clearDesigForm() {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const c = document.getElementById('desig-color'); if (c) c.value = 'gold';
+  clearAdminFormDirty();
 }
 
 /* ── Load designations for a single volunteer (user card) ── */
@@ -6236,20 +6536,20 @@ async function adminSaveProgram() {
   const row = {
     name, code, icon: icon || null, color,
     description: desc || null,
-    display_order: id ? undefined : ((_allPrograms.length || 0) + 1),
   };
   if (!id) row.display_order = (_allPrograms.length || 0) + 1;
 
+  setBtn('prog-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('volunteer_programs').update(row).eq('id', id)
     : await sb.from('volunteer_programs').insert(row);
+  setBtn('prog-save-btn', false);
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
+  if (error) { console.log('[ERROR] adminSaveProgram error:', error.message); fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; return; }
   fb.style.color='var(--cf-green)';
   fb.textContent = id ? '✅ Updated!' : '✅ Program added!';
   clearProgForm();
   await loadAdminPrograms();
-  // Also refresh the source filter buttons
   await refreshProgramFilterBar();
   setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
 }
@@ -6282,6 +6582,7 @@ function clearProgForm() {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const c = document.getElementById('prog-color'); if (c) c.value = 'green';
+  clearAdminFormDirty();
 }
 
 /* Rebuild the source filter bar in the Users tab from _allPrograms */
@@ -6297,21 +6598,38 @@ async function refreshProgramFilterBar() {
   bar.innerHTML = allBtn + progBtns;
 }
 
-/* Rebuild all ob-source / usource dropdowns from _allPrograms */
+/* Fix #6: getProgramList() — single source of truth for program options.
+   Returns _allPrograms if loaded (dynamic from Supabase), otherwise
+   falls back to PROGRAM_FALLBACKS. Use this everywhere program
+   options are needed instead of hard-coding strings. */
+function getProgramList() {
+  return _allPrograms.length ? _allPrograms : PROGRAM_FALLBACKS;
+}
+
+/* Fix #6: buildProgramOptions(selectedCode) — renders <option> elements
+   for any program dropdown. */
+function buildProgramOptions(selectedCode) {
+  return getProgramList().map(p =>
+    `<option value="${escHtml(p.code)}" ${p.code === selectedCode ? 'selected' : ''}>${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)}</option>`
+  ).join('');
+}
+
+/* Rebuild all ob-source / usource dropdowns from getProgramList() */
 async function refreshProgramDropdowns() {
   if (!_allPrograms.length) await loadPrograms();
-  const opts = _allPrograms.map(p =>
+  const programs = getProgramList();
+  const opts = programs.map(p =>
     `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)} — ${escHtml(p.name)}</option>`
   ).join('');
 
   // Onboarding source select
   const obSrc = document.getElementById('ob-source');
-  if (obSrc) { const v = obSrc.value; obSrc.innerHTML = opts; obSrc.value = v || (_allPrograms[0]?.code ?? ''); }
+  if (obSrc) { const v = obSrc.value; obSrc.innerHTML = opts; obSrc.value = v || (programs[0]?.code ?? ''); }
 
   // All usource-* selects in the users list
   document.querySelectorAll('[id^="usource-"]').forEach(sel => {
     const v = sel.value;
-    sel.innerHTML = _allPrograms.map(p =>
+    sel.innerHTML = programs.map(p =>
       `<option value="${escHtml(p.code)}">${p.icon ? escHtml(p.icon) + ' ' : ''}${escHtml(p.code)}</option>`
     ).join('');
     sel.value = v;
@@ -6358,17 +6676,19 @@ async function adminSaveChecklistItem() {
   if (!text) { fb.style.color='var(--cf-coral)'; fb.textContent='Please enter checklist text.'; return; }
 
   const row = { checklist_text: text, display_order: order, active: true };
+  setBtn('cl-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('volunteer_checklist').update(row).eq('id', id)
     : await sb.from('volunteer_checklist').insert(row);
+  setBtn('cl-save-btn', false);
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  if (error) { console.log('[ERROR] adminSaveChecklistItem error:', error.message); fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
   else {
     fb.style.color='var(--cf-green)';
     fb.textContent = id ? '✅ Item updated!' : '✅ Item added!';
     clearChecklistForm();
     await loadAdminChecklist();
-    setTimeout(() => fb.textContent='', 3000);
+    setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
   }
 }
 
@@ -6396,6 +6716,7 @@ function clearChecklistForm() {
   document.getElementById('cl-text').value = '';
   document.getElementById('cl-text').dataset.editId = '';
   document.getElementById('cl-order').value = '';
+  clearAdminFormDirty();
 }
 
 /* ============================================================
@@ -6481,17 +6802,19 @@ async function adminSaveContact() {
   };
   if (!row.full_name) { fb.style.color='var(--cf-coral)'; fb.textContent='Please enter a name.'; return; }
 
+  setBtn('contact-save-btn', true, 'Saving…');
   const { error } = id
     ? await sb.from('coordinator_contacts').update(row).eq('id', id)
     : await sb.from('coordinator_contacts').insert(row);
+  setBtn('contact-save-btn', false);
 
-  if (error) { fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
+  if (error) { console.log('[ERROR] adminSaveContact error:', error.message); fb.style.color='var(--cf-coral)'; fb.textContent='❌ '+error.message; }
   else {
     fb.style.color='var(--cf-green)';
     fb.textContent = id ? '✅ Contact updated!' : '✅ Contact added!';
     clearContactForm();
     await loadAdminContacts();
-    setTimeout(() => fb.textContent='', 3000);
+    setTimeout(() => { if(fb) fb.textContent=''; }, 3000);
   }
 }
 
@@ -6524,6 +6847,7 @@ function clearContactForm() {
    'contact-email','contact-dept','contact-icon','contact-order'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  clearAdminFormDirty();
 }
 
 </script>
