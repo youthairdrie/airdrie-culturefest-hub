@@ -2456,16 +2456,13 @@ pre, code {
     <!-- Navigation Pills -->
     <div class="nav-pills-grid">
       <button class="nav-pill pill-stage" onclick="scrollToSection('sec-stage')">
-        <span class="pill-icon">🎤</span>Stage Performances
+        <span class="pill-icon">🎤</span>Main Stage
+      </button>
+      <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-secondary')">
+        <span class="pill-icon">🎵</span>Secondary Stage
       </button>
       <button class="nav-pill pill-grass" onclick="scrollToSection('sec-grass')">
         <span class="pill-icon">🌿</span>Grass Demos
-      </button>
-      <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-cultural-act')">
-        <span class="pill-icon">🎭</span>Cultural Activities
-      </button>
-      <button class="nav-pill pill-kids" onclick="scrollToSection('sec-kids')">
-        <span class="pill-icon">🎈</span>Kids Zone
       </button>
       <button class="nav-pill pill-booths" onclick="scrollToSection('sec-booths')">
         <span class="pill-icon">🏮</span>Cultural Booths
@@ -2483,12 +2480,12 @@ pre, code {
 
     <!-- ===================== ACCORDION SECTIONS ===================== -->
 
-    <!-- Stage Performance Schedule -->
+    <!-- Main Stage -->
     <div class="section-accordion" id="sec-stage" style="--section-color: var(--cf-gold)">
       <button class="accordion-header" onclick="toggleAccordion('sec-stage')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🎤</span>
-          <span>Stage Performance Schedule</span>
+          <span id="sec-stage-label">Main Stage</span>
           <span class="accordion-count" id="count-stage">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -2498,47 +2495,32 @@ pre, code {
       </div>
     </div>
 
-    <!-- Grass Performances -->
+    <!-- Secondary Stage -->
+    <div class="section-accordion" id="sec-secondary" style="--section-color: var(--cf-blue)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-secondary')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🎵</span>
+          <span id="sec-secondary-label">Secondary Stage</span>
+          <span class="accordion-count" id="count-secondary">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-secondary">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Demonstrations on the Grass -->
     <div class="section-accordion" id="sec-grass" style="--section-color: var(--cf-green)">
       <button class="accordion-header" onclick="toggleAccordion('sec-grass')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🌿</span>
-          <span>Grass Performances &amp; Demonstrations</span>
+          <span id="sec-grass-label">Demonstrations on the Grass</span>
           <span class="accordion-count" id="count-grass">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
       </button>
       <div class="accordion-body" id="body-grass">
-        <div class="loading-state"><div class="spinner"></div> Loading...</div>
-      </div>
-    </div>
-
-    <!-- Cultural Activities -->
-    <div class="section-accordion" id="sec-cultural-act" style="--section-color: var(--cf-purple)">
-      <button class="accordion-header" onclick="toggleAccordion('sec-cultural-act')">
-        <div class="accordion-title-wrap">
-          <span class="accordion-icon">🎭</span>
-          <span>Cultural Activities</span>
-          <span class="accordion-count" id="count-cultural-act">–</span>
-        </div>
-        <span class="accordion-chevron">▼</span>
-      </button>
-      <div class="accordion-body" id="body-cultural-act">
-        <div class="loading-state"><div class="spinner"></div> Loading...</div>
-      </div>
-    </div>
-
-    <!-- Kids Zone -->
-    <div class="section-accordion" id="sec-kids" style="--section-color: var(--cf-pink)">
-      <button class="accordion-header" onclick="toggleAccordion('sec-kids')">
-        <div class="accordion-title-wrap">
-          <span class="accordion-icon">🎈</span>
-          <span>Kids Zone Activities</span>
-          <span class="accordion-count" id="count-kids">–</span>
-        </div>
-        <span class="accordion-chevron">▼</span>
-      </button>
-      <div class="accordion-body" id="body-kids">
         <div class="loading-state"><div class="spinner"></div> Loading...</div>
       </div>
     </div>
@@ -2894,10 +2876,7 @@ pre, code {
         <div class="form-group">
           <label class="input-label">Section</label>
           <select class="input-field" id="sched-section">
-            <option value="stage">Stage Performance</option>
-            <option value="grass">Grass Performance / Demo</option>
-            <option value="cultural">Cultural Activity</option>
-            <option value="kids">Kids Zone</option>
+            <!-- Populated dynamically by buildSectionDropdown() -->
           </select>
         </div>
         <div class="form-group">
@@ -2922,6 +2901,31 @@ pre, code {
           </tbody>
         </table>
       </div>
+
+      <!-- ─── MANAGE SCHEDULE SECTIONS ─────────────────────────── -->
+      <div class="admin-form" id="sections-manager" style="margin-top:28px;border-top:1px solid rgba(255,255,255,0.07);padding-top:24px;">
+        <h4 style="color:var(--cf-teal);margin-bottom:4px;">🗂️ Manage Schedule Sections</h4>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px;line-height:1.55;">
+          These sections appear in the Section dropdown above and as accordions on the public home page.
+          Changes are saved locally and take effect immediately.
+        </p>
+        <div id="sections-list" style="margin-bottom:14px;"></div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;">
+            <label class="input-label">New Section Label</label>
+            <input type="text" class="input-field" id="new-section-label" placeholder="e.g. Workshop Tent"
+                   onkeydown="if(event.key==='Enter')addSection()">
+          </div>
+          <div style="min-width:120px;">
+            <label class="input-label">Section Key (no spaces)</label>
+            <input type="text" class="input-field" id="new-section-value" placeholder="e.g. workshop"
+                   oninput="this.value=this.value.replace(/\s+/g,'-').toLowerCase()">
+          </div>
+          <button class="btn btn-secondary" onclick="addSection()" style="flex-shrink:0;">＋ Add Section</button>
+        </div>
+        <div id="sections-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-coral);min-height:16px;"></div>
+      </div>
+
     </div>
 
     <!-- BOOTHS PANEL -->
@@ -4276,16 +4280,166 @@ async function handleLogout() {
 }
 
 /* ============================================================
+   SCHEDULE SECTIONS — stored in localStorage, editable by admin
+   ============================================================ */
+const SECTIONS_STORAGE_KEY = 'cf_schedule_sections';
+
+const DEFAULT_SECTIONS = [
+  { value: 'stage',     label: 'Main Stage',                  icon: '🎤', color: 'gold',   deletable: false },
+  { value: 'secondary', label: 'Secondary Stage',             icon: '🎵', color: 'blue',   deletable: true  },
+  { value: 'grass',     label: 'Demonstrations on the Grass', icon: '🌿', color: 'green',  deletable: true  },
+];
+
+function getSectionsList() {
+  try {
+    const stored = localStorage.getItem(SECTIONS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch(e) {}
+  return DEFAULT_SECTIONS.map(s => ({ ...s }));
+}
+
+function saveSectionsList(sections) {
+  localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(sections));
+}
+
+/* Build the Section <select> dropdown from stored sections.
+   Optionally pre-selects a value. */
+function buildSectionDropdown(selectedValue) {
+  const sel = document.getElementById('sched-section');
+  if (!sel) return;
+  const sections = getSectionsList();
+  sel.innerHTML = sections.map(s =>
+    `<option value="${escHtml(s.value)}">${escHtml(s.icon ? s.icon + ' ' : '')}${escHtml(s.label)}</option>`
+  ).join('');
+  if (selectedValue) sel.value = selectedValue;
+}
+
+/* Sync public-page accordion labels to match stored sections */
+function syncPublicSectionLabels() {
+  const sections = getSectionsList();
+  const labelMap = { stage: 'sec-stage-label', secondary: 'sec-secondary-label', grass: 'sec-grass-label' };
+  sections.forEach(s => {
+    const elId = labelMap[s.value];
+    if (elId) {
+      const el = document.getElementById(elId);
+      if (el) el.textContent = s.label;
+    }
+  });
+}
+
+/* Render the sections list in the admin panel */
+function renderSectionsList() {
+  const el = document.getElementById('sections-list');
+  if (!el) return;
+  const sections = getSectionsList();
+  if (!sections.length) {
+    el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);">No sections defined.</p>';
+    return;
+  }
+  el.innerHTML = sections.map((s, i) => `
+    <div class="desig-pill-row" style="align-items:center;gap:8px;margin-bottom:6px;" id="sec-row-${escHtml(s.value)}">
+      <span style="font-size:1rem;min-width:22px;text-align:center;">${escHtml(s.icon || '📋')}</span>
+      <div style="flex:1;min-width:0;">
+        <span id="sec-label-display-${escHtml(s.value)}" style="font-weight:600;font-size:0.88rem;">${escHtml(s.label)}</span>
+        <span style="font-size:0.72rem;color:var(--text-muted);margin-left:6px;">(${escHtml(s.value)})</span>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+        ${i > 0 ? `<button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:0.75rem;" title="Move up" onclick="moveSectionUp(${i})">↑</button>` : '<span style="width:38px;"></span>'}
+        ${i < sections.length-1 ? `<button class="btn btn-ghost btn-sm" style="padding:4px 8px;font-size:0.75rem;" title="Move down" onclick="moveSectionDown(${i})">↓</button>` : '<span style="width:38px;"></span>'}
+        <button class="btn btn-ghost btn-sm" style="padding:4px 10px;" title="Rename" onclick="promptRenameSection(${i})">✏️</button>
+        ${s.deletable !== false ? `<button class="btn btn-danger btn-sm" style="padding:4px 10px;" onclick="deleteSection(${i})">🗑</button>` : `<span class="badge badge-teal" style="font-size:0.6rem;padding:2px 7px;">Core</span>`}
+      </div>
+    </div>`).join('');
+}
+
+function promptRenameSection(idx) {
+  const sections = getSectionsList();
+  const s = sections[idx];
+  if (!s) return;
+  const newLabel = prompt('Rename section "' + s.label + '" to:', s.label);
+  if (!newLabel || !newLabel.trim()) return;
+  const newIcon  = prompt('Icon/emoji (optional, leave blank to keep "' + (s.icon || '') + '"):', s.icon || '');
+  sections[idx].label = newLabel.trim();
+  if (newIcon !== null) sections[idx].icon = newIcon.trim() || s.icon || '';
+  saveSectionsList(sections);
+  renderSectionsList();
+  buildSectionDropdown();
+  syncPublicSectionLabels();
+  showToast('✅ Section renamed', 'success');
+}
+
+function moveSectionUp(idx) {
+  const sections = getSectionsList();
+  if (idx <= 0) return;
+  [sections[idx-1], sections[idx]] = [sections[idx], sections[idx-1]];
+  saveSectionsList(sections);
+  renderSectionsList();
+  buildSectionDropdown();
+  showToast('Section moved up', 'info');
+}
+
+function moveSectionDown(idx) {
+  const sections = getSectionsList();
+  if (idx >= sections.length-1) return;
+  [sections[idx], sections[idx+1]] = [sections[idx+1], sections[idx]];
+  saveSectionsList(sections);
+  renderSectionsList();
+  buildSectionDropdown();
+  showToast('Section moved down', 'info');
+}
+
+function deleteSection(idx) {
+  const sections = getSectionsList();
+  const s = sections[idx];
+  if (!s || s.deletable === false) { showToast('This section cannot be deleted.', 'error'); return; }
+  if (!confirm('Delete section "' + s.label + '"?\n\nExisting schedule items with this section value will still be stored but will not appear on the public page until re-assigned.')) return;
+  sections.splice(idx, 1);
+  saveSectionsList(sections);
+  renderSectionsList();
+  buildSectionDropdown();
+  showToast('Section deleted', 'success');
+}
+
+function addSection() {
+  const labelEl = document.getElementById('new-section-label');
+  const valueEl = document.getElementById('new-section-value');
+  const fb      = document.getElementById('sections-feedback');
+  const label = labelEl.value.trim();
+  const value = valueEl.value.trim().toLowerCase().replace(/\s+/g,'-');
+
+  fb.textContent = '';
+  if (!label) { fb.textContent = 'Please enter a label for the section.'; return; }
+  if (!value) { fb.textContent = 'Please enter a unique key (no spaces).'; return; }
+
+  const sections = getSectionsList();
+  if (sections.find(s => s.value === value)) {
+    fb.textContent = 'A section with key "' + value + '" already exists.'; return;
+  }
+
+  sections.push({ value, label, icon: '', color: 'blue', deletable: true });
+  saveSectionsList(sections);
+  renderSectionsList();
+  buildSectionDropdown();
+  labelEl.value = '';
+  valueEl.value = '';
+  showToast('✅ Section "' + label + '" added', 'success');
+}
+
+/* ============================================================
    PUBLIC DATA LOADING
    ============================================================ */
 async function loadPublicData() {
   if (!sb) return;
+  // Sync section labels from stored sections before loading
+  syncPublicSectionLabels();
   await Promise.all([
     loadHomepageContent(),
     loadStageSchedule(),
+    loadSecondaryStage(),
     loadGrassPerformances(),
-    loadCulturalActivities(),
-    loadKidsZone(),
     loadCulturalBooths(),
     loadFoodVendors(),
     loadFoodTrucks(),
@@ -4310,7 +4464,26 @@ async function loadStageSchedule() {
   body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
 }
 
+async function loadSecondaryStage() {
+  const secs = getSectionsList();
+  const sec = secs.find(s => s.value === 'secondary') || { label: 'Secondary Stage' };
+  const { data, error } = await sb
+    .from('stage_schedule')
+    .select('*')
+    .eq('section', 'secondary')
+    .eq('is_published', true)
+    .order('start_time');
+
+  const body  = document.getElementById('body-secondary');
+  const count = document.getElementById('count-secondary');
+  if (error || !data) { body.innerHTML = renderEmpty('No ' + sec.label + ' performances listed yet.'); count.textContent = '0'; return; }
+  count.textContent = data.length;
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' performances listed yet.');
+}
+
 async function loadGrassPerformances() {
+  const secs = getSectionsList();
+  const sec = secs.find(s => s.value === 'grass') || { label: 'Demonstrations on the Grass' };
   const { data, error } = await sb
     .from('stage_schedule')
     .select('*')
@@ -4320,39 +4493,9 @@ async function loadGrassPerformances() {
 
   const body  = document.getElementById('body-grass');
   const count = document.getElementById('count-grass');
-  if (error || !data) { body.innerHTML = renderEmpty('No grass performances listed yet.'); count.textContent = '0'; return; }
+  if (error || !data) { body.innerHTML = renderEmpty('No ' + sec.label + ' listed yet.'); count.textContent = '0'; return; }
   count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No grass performances listed yet.');
-}
-
-async function loadCulturalActivities() {
-  const { data, error } = await sb
-    .from('stage_schedule')
-    .select('*')
-    .eq('section', 'cultural')
-    .eq('is_published', true)
-    .order('start_time');
-
-  const body  = document.getElementById('body-cultural-act');
-  const count = document.getElementById('count-cultural-act');
-  if (error || !data) { body.innerHTML = renderEmpty('No cultural activities listed yet.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No cultural activities listed yet.');
-}
-
-async function loadKidsZone() {
-  const { data, error } = await sb
-    .from('stage_schedule')
-    .select('*')
-    .eq('section', 'kids')
-    .eq('is_published', true)
-    .order('start_time');
-
-  const body  = document.getElementById('body-kids');
-  const count = document.getElementById('count-kids');
-  if (error || !data) { body.innerHTML = renderEmpty('Kids Zone activities coming soon!'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('Kids Zone activities coming soon!');
+  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
 }
 
 async function loadCulturalBooths() {
@@ -4623,6 +4766,7 @@ async function loadAdminData() {
   if (!sb) return;
   if (_loading.adminData) { console.log('[WARN] loadAdminData: already loading, skipping duplicate call'); return; }
   _loading.adminData = true;
+  buildSectionDropdown(); // ensure section dropdown is current
   try {
   await Promise.all([
     loadAdminStats(),
@@ -4878,7 +5022,7 @@ function adminEditSchedule(r) {
   document.getElementById('sched-start').value     = r.start_time ? r.start_time.slice(0,5) : '';
   document.getElementById('sched-end').value       = r.end_time   ? r.end_time.slice(0,5)   : '';
   document.getElementById('sched-stage').value     = r.stage_location || '';
-  document.getElementById('sched-section').value   = r.section || 'stage';
+  buildSectionDropdown(r.section || 'stage'); // rebuild dropdown and pre-select saved section
   document.getElementById('sched-desc').value      = r.description || '';
   switchAdminTab('schedule');
   document.getElementById('sched-name').focus();
@@ -4908,7 +5052,7 @@ function clearScheduleForm() {
   ['sched-edit-id','sched-name','sched-category','sched-start','sched-end','sched-stage','sched-desc'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  document.getElementById('sched-section').value = 'stage';
+  buildSectionDropdown(); // rebuild and reset to first option
   document.getElementById('sched-feedback').textContent = '';
   clearAdminFormDirty();
 }
@@ -4975,6 +5119,11 @@ function switchAdminTab(tab) {
   // Refresh coordinator dropdown when shifts tab opens
   if (tab === 'shifts-admin' && _allCoordinators.length) {
     populateCoordDropdown('');
+  }
+  // Rebuild section dropdown + manager list when Schedule tab opens
+  if (tab === 'schedule') {
+    buildSectionDropdown();
+    renderSectionsList();
   }
 }
 
@@ -5132,21 +5281,15 @@ function loadDemoData() {
     { name: 'Celtic Step Dancers',         cultural_category: 'Irish / Celtic',        start_time: hhmm(3),  end_time: hhmm(4), stage_location: 'Main Stage', section: 'stage', description: 'Skilled step dancers performing traditional Irish jigs and reels.' },
   ];
 
+  const secondaryItems = [
+    { name: 'Capoeira Demo — Grupo Axé',   cultural_category: 'Brazilian', start_time: hhmm(0), end_time: hhmm(1), stage_location: 'Secondary Stage', section: 'secondary', description: 'Interactive capoeira demonstration — try it yourself!' },
+    { name: 'Hoop Dance Demonstration',    cultural_category: 'Indigenous', start_time: hhmm(2), end_time: hhmm(3), stage_location: 'Secondary Stage', section: 'secondary', description: 'Traditional Indigenous hoop dancing — a storytelling tradition.' },
+  ];
+
   const grassItems = [
-    { name: 'Capoeira Demo — Grupo Axé',   cultural_category: 'Brazilian', start_time: hhmm(0), end_time: hhmm(1), stage_location: 'Grass Area A', section: 'grass', description: 'Interactive capoeira demonstration — try it yourself!' },
-    { name: 'Hoop Dance Demonstration',    cultural_category: 'Indigenous', start_time: hhmm(2), end_time: hhmm(3), stage_location: 'Grass Area B', section: 'grass', description: 'Traditional Indigenous hoop dancing — a storytelling tradition.' },
-  ];
-
-  const culturalItems = [
-    { name: 'Henna Art Workshop',     cultural_category: 'South Asian / Middle Eastern', start_time: '10:00', end_time: '16:00', stage_location: 'Activity Tent A', section: 'cultural', description: 'Get beautiful henna art applied by skilled artists.' },
-    { name: 'Origami Corner',         cultural_category: 'Japanese',                     start_time: '10:00', end_time: '15:00', stage_location: 'Activity Tent B', section: 'cultural', description: 'Learn the ancient art of paper folding.' },
-    { name: 'Traditional Weaving',    cultural_category: 'West African',                 start_time: '11:00', end_time: '14:00', stage_location: 'Activity Tent C', section: 'cultural', description: 'Watch and participate in West African kente cloth weaving.' },
-  ];
-
-  const kidsItems = [
-    { name: 'World Flag Face Painting', cultural_category: 'All Cultures', start_time: '10:00', end_time: '17:00', stage_location: 'Kids Zone', section: 'kids', description: 'Get your face painted with flags from around the world!' },
-    { name: 'Global Storytime',          cultural_category: 'All Cultures', start_time: '11:00', end_time: '11:30', stage_location: 'Kids Zone Tent', section: 'kids', description: 'Stories from around the world read aloud for little ones.' },
-    { name: 'International Craft Corner',cultural_category: 'All Cultures', start_time: '10:00', end_time: '16:00', stage_location: 'Kids Zone Tent', section: 'kids', description: 'Create crafts inspired by different countries and cultures.' },
+    { name: 'Henna Art Workshop',     cultural_category: 'South Asian / Middle Eastern', start_time: '10:00', end_time: '16:00', stage_location: 'Grass Area A', section: 'grass', description: 'Get beautiful henna art applied by skilled artists.' },
+    { name: 'Origami Corner',         cultural_category: 'Japanese',                     start_time: '10:00', end_time: '15:00', stage_location: 'Grass Area B', section: 'grass', description: 'Learn the ancient art of paper folding.' },
+    { name: 'Traditional Weaving',    cultural_category: 'West African',                 start_time: '11:00', end_time: '14:00', stage_location: 'Grass Area C', section: 'grass', description: 'Watch and participate in West African kente cloth weaving.' },
   ];
 
   const booths = [
@@ -5177,18 +5320,17 @@ function loadDemoData() {
     { title: 'Lost & Found at Info Tent',             audience: 'public', body: 'Lost something? Our Lost & Found is located at the Information Tent near the main entrance. Staff are there to help.' },
   ];
 
-  // Render
+  // Render schedule sections
+  syncPublicSectionLabels();
+
   setCount('count-stage', stageItems.length);
   document.getElementById('body-stage').innerHTML = stageItems.map(renderScheduleItem).join('');
 
+  setCount('count-secondary', secondaryItems.length);
+  document.getElementById('body-secondary').innerHTML = secondaryItems.map(renderScheduleItem).join('');
+
   setCount('count-grass', grassItems.length);
   document.getElementById('body-grass').innerHTML = grassItems.map(renderScheduleItem).join('');
-
-  setCount('count-cultural-act', culturalItems.length);
-  document.getElementById('body-cultural-act').innerHTML = culturalItems.map(renderScheduleItem).join('');
-
-  setCount('count-kids', kidsItems.length);
-  document.getElementById('body-kids').innerHTML = kidsItems.map(renderScheduleItem).join('');
 
   setCount('count-booths', booths.length);
   document.getElementById('body-booths').innerHTML = `<div class="vendor-grid">${booths.map(renderBoothCard).join('')}</div>`;
