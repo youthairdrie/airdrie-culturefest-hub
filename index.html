@@ -2404,7 +2404,7 @@ pre, code {
   <div class="header-right">
     <!-- Navigation tabs (desktop; mobile uses pills) -->
     <nav id="nav-tabs">
-      <button class="nav-tab active" onclick="showPage('public')">🏠 Home</button>
+      <button class="nav-tab active" onclick="showPage('public'); if(sb) loadPublicData();">🏠 Home</button>
       <button class="nav-tab hidden" id="vol-tab" onclick="showPage('volunteer')">🙌 Volunteer</button>
       <button class="nav-tab hidden" id="admin-tab" onclick="showPage('admin')">⚙️ Admin</button>
       <button class="nav-tab" id="login-tab" onclick="showPage('vol-login')">🔑 Sign In</button>
@@ -4063,6 +4063,8 @@ function clearAuthState() {
   hideOnboarding();
   updateNavTabs();
   showPage('public');
+  // Reload public data so the home page shows live Supabase content after logout
+  if (sb) loadPublicData();
 }
 
 async function unifiedLogin() {
@@ -4431,136 +4433,176 @@ function addSection() {
 /* ============================================================
    PUBLIC DATA LOADING
    ============================================================ */
+/* ============================================================
+   PUBLIC DATA LOADING
+   Uses direct fetch() to Supabase REST API to avoid a known
+   DataCloneError in the Supabase JS client's postMessage cache.
+   All public tables use is_published=true RLS policies, so the
+   anon key is safe to use here.
+   ============================================================ */
+
+// Core fetch helper — bypasses Supabase JS client entirely for public reads
+async function sbFetch(table, params) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  url.searchParams.set('select', '*');
+  const res = await fetch(url.toString(), {
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Accept': 'application/json',
+    }
+  });
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(`${table}: ${res.status} ${msg}`);
+  }
+  return res.json();
+}
+
 async function loadPublicData() {
-  if (!sb) return;
-  // Sync section labels from stored sections before loading
-  syncPublicSectionLabels();
-  await Promise.all([
-    loadHomepageContent(),
-    loadStageSchedule(),
-    loadSecondaryStage(),
-    loadGrassPerformances(),
-    loadCulturalBooths(),
-    loadFoodVendors(),
-    loadFoodTrucks(),
-    loadPublicAnnouncements(),
-  ]).catch(err => console.log('[ERROR] loadPublicData: error in one or more loaders', err?.message || String(err)));
+  if (!SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
+    syncPublicSectionLabels();
+    await Promise.all([
+      loadHomepageContent(),
+      loadStageSchedule(),
+      loadSecondaryStage(),
+      loadGrassPerformances(),
+      loadCulturalBooths(),
+      loadFoodVendors(),
+      loadFoodTrucks(),
+      loadPublicAnnouncements(),
+    ]).catch(err => console.log('[ERROR] loadPublicData:', err?.message || String(err)));
+  }
 }
 
 async function loadStageSchedule() {
-  const { data, error } = await sb
-    .from('stage_schedule')
-    .select('*')
-    .eq('section', 'stage')
-    .eq('is_published', true)
-    .order('start_time');
-
-  const body = document.getElementById('body-stage');
+  const body  = document.getElementById('body-stage');
   const count = document.getElementById('count-stage');
-
-  if (error) console.log('[ERROR] loadStageSchedule error:', error.message);
-  if (error || !data) { body.innerHTML = renderEmpty('No stage performances scheduled yet.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
+  try {
+    const data = await sbFetch('stage_schedule', {
+      'section': 'eq.stage',
+      'is_published': 'eq.true',
+      'order': 'start_time.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
+  } catch(e) {
+    console.log('[ERROR] loadStageSchedule:', e.message);
+    body.innerHTML = renderEmpty('No stage performances scheduled yet.');
+    count.textContent = '0';
+  }
 }
 
 async function loadSecondaryStage() {
   const secs = getSectionsList();
-  const sec = secs.find(s => s.value === 'secondary') || { label: 'Secondary Stage' };
-  const { data, error } = await sb
-    .from('stage_schedule')
-    .select('*')
-    .eq('section', 'secondary')
-    .eq('is_published', true)
-    .order('start_time');
-
+  const sec  = secs.find(s => s.value === 'secondary') || { label: 'Secondary Stage' };
   const body  = document.getElementById('body-secondary');
   const count = document.getElementById('count-secondary');
-  if (error || !data) { body.innerHTML = renderEmpty('No ' + sec.label + ' performances listed yet.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' performances listed yet.');
+  try {
+    const data = await sbFetch('stage_schedule', {
+      'section': 'eq.secondary',
+      'is_published': 'eq.true',
+      'order': 'start_time.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' performances listed yet.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('No ' + sec.label + ' performances listed yet.');
+    count.textContent = '0';
+  }
 }
 
 async function loadGrassPerformances() {
   const secs = getSectionsList();
-  const sec = secs.find(s => s.value === 'grass') || { label: 'Demonstrations on the Grass' };
-  const { data, error } = await sb
-    .from('stage_schedule')
-    .select('*')
-    .eq('section', 'grass')
-    .eq('is_published', true)
-    .order('start_time');
-
+  const sec  = secs.find(s => s.value === 'grass') || { label: 'Demonstrations on the Grass' };
   const body  = document.getElementById('body-grass');
   const count = document.getElementById('count-grass');
-  if (error || !data) { body.innerHTML = renderEmpty('No ' + sec.label + ' listed yet.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
+  try {
+    const data = await sbFetch('stage_schedule', {
+      'section': 'eq.grass',
+      'is_published': 'eq.true',
+      'order': 'start_time.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('No ' + sec.label + ' listed yet.');
+    count.textContent = '0';
+  }
 }
 
 async function loadCulturalBooths() {
-  const { data, error } = await sb
-    .from('cultural_booths')
-    .select('*')
-    .eq('is_published', true)
-    .order('location');
-
   const body  = document.getElementById('body-booths');
   const count = document.getElementById('count-booths');
-  if (error || !data) { body.innerHTML = renderEmpty('Booth listings coming soon.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length
-    ? `<div class="vendor-grid">${data.map(renderBoothCard).join('')}</div>`
-    : renderEmpty('Booth listings coming soon.');
+  try {
+    const data = await sbFetch('cultural_booths', {
+      'is_published': 'eq.true',
+      'order': 'location.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length
+      ? `<div class="vendor-grid">${data.map(renderBoothCard).join('')}</div>`
+      : renderEmpty('Booth listings coming soon.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('Booth listings coming soon.');
+    count.textContent = '0';
+  }
 }
 
 async function loadFoodVendors() {
-  const { data, error } = await sb
-    .from('food_vendors')
-    .select('*')
-    .eq('vendor_type', 'vendor')
-    .eq('is_published', true)
-    .order('name');
-
   const body  = document.getElementById('body-food');
   const count = document.getElementById('count-food');
-  if (error || !data) { body.innerHTML = renderEmpty('Food vendor listings coming soon.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length
-    ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
-    : renderEmpty('Food vendor listings coming soon.');
+  try {
+    const data = await sbFetch('food_vendors', {
+      'vendor_type': 'eq.vendor',
+      'is_published': 'eq.true',
+      'order': 'name.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length
+      ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
+      : renderEmpty('Food vendor listings coming soon.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('Food vendor listings coming soon.');
+    count.textContent = '0';
+  }
 }
 
 async function loadFoodTrucks() {
-  const { data, error } = await sb
-    .from('food_vendors')
-    .select('*')
-    .eq('vendor_type', 'truck')
-    .eq('is_published', true)
-    .order('name');
-
   const body  = document.getElementById('body-trucks');
   const count = document.getElementById('count-trucks');
-  if (error || !data) { body.innerHTML = renderEmpty('Food truck listings coming soon.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length
-    ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
-    : renderEmpty('Food truck listings coming soon.');
+  try {
+    const data = await sbFetch('food_vendors', {
+      'vendor_type': 'eq.truck',
+      'is_published': 'eq.true',
+      'order': 'name.asc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length
+      ? `<div class="vendor-grid">${data.map(renderVendorCard).join('')}</div>`
+      : renderEmpty('Food truck listings coming soon.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('Food truck listings coming soon.');
+    count.textContent = '0';
+  }
 }
 
 async function loadPublicAnnouncements() {
-  const { data, error } = await sb
-    .from('announcements')
-    .select('*')
-    .eq('audience', 'public')
-    .eq('is_published', true)
-    .order('created_at', { ascending: false });
-
   const body  = document.getElementById('body-announce');
   const count = document.getElementById('count-announce');
-  if (error || !data) { body.innerHTML = renderEmpty('No announcements yet.'); count.textContent = '0'; return; }
-  count.textContent = data.length;
-  body.innerHTML = data.length ? data.map(renderAnnouncement).join('') : renderEmpty('No announcements yet.');
+  try {
+    const data = await sbFetch('announcements', {
+      'audience': 'eq.public',
+      'is_published': 'eq.true',
+      'order': 'created_at.desc'
+    });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderAnnouncement).join('') : renderEmpty('No announcements yet.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('No announcements yet.');
+    count.textContent = '0';
+  }
 }
 
 /* ============================================================
