@@ -2835,6 +2835,7 @@ pre, code {
       <button class="admin-tab" onclick="switchAdminTab('shifts-admin')">📋 Volunteer Shifts</button>
       <button class="admin-tab" onclick="switchAdminTab('tracker')">🚪 Attendance</button>
       <button class="admin-tab" onclick="switchAdminTab('settings-admin')">⚙️ Settings</button>
+      <button class="admin-tab" onclick="switchAdminTab('csv-import')">📥 Import CSV</button>
     </div>
 
     <!-- OVERVIEW PANEL -->
@@ -3527,6 +3528,98 @@ pre, code {
       </div>
       <div id="settings-feedback" style="font-size:0.78rem;margin-top:8px;color:var(--cf-green);min-height:16px;"></div>
     </div>
+
+
+    <!-- CSV IMPORT PANEL -->
+    <div id="admin-panel-csv-import" class="admin-panel">
+      <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--cf-teal)">📥 Import Vendors from CSV</h3>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:18px;line-height:1.6;">
+        Import your Corsizio vendor export directly. Remove the title rows at the top and totals rows at the bottom so row 1 is the column header row starting with <strong>Vendor Name</strong>.
+      </p>
+
+      <!-- Upload area -->
+      <div id="csv-drop-zone"
+           style="border:2px dashed rgba(0,201,177,0.3);border-radius:var(--radius-md);padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;"
+           onclick="document.getElementById('csv-file-input').click()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--cf-teal)'"
+           ondragleave="this.style.borderColor='rgba(0,201,177,0.3)'"
+           ondrop="handleCsvDrop(event)">
+        <div style="font-size:2.5rem;margin-bottom:8px;">📄</div>
+        <div style="font-weight:700;color:var(--cf-teal);margin-bottom:4px;">Click or drag to upload CSV</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);">Corsizio export format &nbsp;·&nbsp; .csv files only</div>
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCsvFile(this.files[0])">
+      </div>
+
+      <!-- Mapping legend -->
+      <div style="background:rgba(0,201,177,0.06);border:1px solid rgba(0,201,177,0.15);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;font-size:0.78rem;color:var(--text-secondary);line-height:1.9;">
+        <strong style="color:var(--cf-teal);">CSV column → App field:</strong><br>
+        Vendor Name → Name &nbsp;·&nbsp; Country/Region → Cultural Background / Cuisine &nbsp;·&nbsp; Notes → Description &nbsp;·&nbsp; Social Media → appended to Description<br>
+        <strong style="color:var(--cf-gold);">Vendor type routing:</strong><br>
+        Artisan / Non-Profit / Artisan Services → <span class="badge badge-teal">🏮 Cultural Booth</span> &nbsp;
+        Artisan &amp; Food / Food / Food Product → <span class="badge badge-coral">🍽️ Food Vendor (tent)</span><br>
+        Food Pavillion / Food Pavilion → <span class="badge badge-gold">🏗️ Food Pavilion</span> &nbsp;
+        Food Truck → <span class="badge badge-orange">🚚 Food Truck</span><br>
+        <span style="font-size:0.71rem;color:var(--text-muted);">Artisan &amp; Food → Food Vendor (tent) due to AHS requirements</span>
+      </div>
+
+      <!-- Conflict handling -->
+      <div class="admin-form" style="margin-bottom:16px;padding:14px 16px;">
+        <div style="font-weight:700;font-size:0.82rem;color:var(--text-secondary);margin-bottom:10px;">If a vendor name already exists in the database:</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.82rem;cursor:pointer;">
+            <input type="radio" name="csv-conflict" value="skip" checked style="accent-color:var(--cf-teal);"> Skip (keep existing)
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.82rem;cursor:pointer;">
+            <input type="radio" name="csv-conflict" value="overwrite" style="accent-color:var(--cf-teal);"> Overwrite with CSV data
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.82rem;cursor:pointer;">
+            <input type="radio" name="csv-conflict" value="add" style="accent-color:var(--cf-teal);"> Add anyway (allow duplicates)
+          </label>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div id="csv-preview-wrap" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div>
+            <span style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;">Preview</span>
+            <span id="csv-preview-summary" style="font-size:0.78rem;color:var(--text-muted);margin-left:10px;"></span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="csv-import-btn" onclick="runCsvImport()">📥 Import All</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearCsvImport()">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Type filter pills -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;" id="csv-type-filters"></div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:28px;"><input type="checkbox" id="csv-select-all" onchange="toggleAllCsvRows(this.checked)" style="accent-color:var(--cf-teal);"></th>
+                <th>Vendor Name</th>
+                <th>Destination</th>
+                <th>Country / Region</th>
+                <th>Description Preview</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="csv-preview-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="csv-import-progress" style="display:none;margin-top:14px;">
+          <div style="background:rgba(255,255,255,0.06);border-radius:9999px;height:8px;overflow:hidden;margin-bottom:8px;">
+            <div id="csv-progress-bar" style="height:100%;width:0%;background:var(--cf-teal);border-radius:9999px;transition:width 0.3s;"></div>
+          </div>
+          <div id="csv-progress-label" style="font-size:0.78rem;color:var(--text-muted);text-align:center;"></div>
+        </div>
+
+        <div id="csv-import-result" style="display:none;margin-top:14px;"></div>
+      </div>
+    </div><!-- /csv-import panel -->
 
   </div><!-- /page-admin -->
 
@@ -7966,6 +8059,243 @@ function clearContactForm() {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   clearAdminFormDirty();
+}
+
+
+/* ============================================================
+   CSV IMPORT — Corsizio vendor export parser & uploader
+   ============================================================ */
+const CSV_TYPE_MAP = {
+  'artisan':          { table: 'cultural_booths', label: 'Cultural Booth',      badge: 'badge-teal',   icon: '🏮' },
+  'artisan services': { table: 'cultural_booths', label: 'Cultural Booth',      badge: 'badge-teal',   icon: '🏮' },
+  'non-profit':       { table: 'cultural_booths', label: 'Cultural Booth',      badge: 'badge-purple', icon: '🏮' },
+  'artisan & food':   { table: 'food_vendors',    label: 'Food Vendor (tent)',  badge: 'badge-coral',  icon: '🍽️', vendor_type: 'vendor' },
+  'food':             { table: 'food_vendors',    label: 'Food Vendor (tent)',  badge: 'badge-coral',  icon: '🍽️', vendor_type: 'vendor' },
+  'food product':     { table: 'food_vendors',    label: 'Food Vendor (tent)',  badge: 'badge-coral',  icon: '🍽️', vendor_type: 'vendor' },
+  'food pavillion':   { table: 'food_vendors',    label: 'Food Pavilion',       badge: 'badge-gold',   icon: '🏗️', vendor_type: 'pavilion' },
+  'food pavilion':    { table: 'food_vendors',    label: 'Food Pavilion',       badge: 'badge-gold',   icon: '🏗️', vendor_type: 'pavilion' },
+  'food truck':       { table: 'food_vendors',    label: 'Food Truck',          badge: 'badge-orange', icon: '🚚', vendor_type: 'truck' },
+};
+
+let csvParsedRows = [];
+let csvExistingNames = { cultural_booths: new Set(), food_vendors: new Set() };
+let csvActiveFilter  = 'all';
+
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csv-drop-zone').style.borderColor = 'rgba(0,201,177,0.3)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleCsvFile(file);
+}
+
+function handleCsvFile(file) {
+  if (!file || !file.name.endsWith('.csv')) { showToast('Please select a .csv file', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const rows = parseCorsizioCSV(e.target.result);
+      if (!rows.length) { showToast('No vendor rows found in CSV', 'error'); return; }
+      await fetchExistingNamesForCsv();
+      csvParsedRows = rows.map(r => ({ ...r, selected: true, status: getCsvConflictStatus(r) }));
+      renderCsvPreview();
+      document.getElementById('csv-preview-wrap').style.display = 'block';
+      showToast('✅ Parsed ' + rows.length + ' vendors from CSV', 'success');
+    } catch(err) {
+      showToast('Error parsing CSV: ' + err.message, 'error');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseCorsizioCSV(text) {
+  // Split into lines respecting quoted newlines
+  const lines = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') { inQ = !inQ; cur += ch; }
+    else if (ch === '\n' && !inQ) { lines.push(cur); cur = ''; }
+    else { cur += ch; }
+  }
+  if (cur.trim()) lines.push(cur);
+
+  // Find header row
+  let headerIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('Vendor Name') && lines[i].includes('Type of Vendor')) { headerIdx = i; break; }
+  }
+  if (headerIdx === -1) throw new Error('Could not find header row. Make sure row 1 is the column header row (Vendor Name, Type of Vendor, etc.)');
+
+  const headers  = parseCsvLine(lines[headerIdx]).map(h => h.trim().toLowerCase());
+  const idxName    = headers.findIndex(h => h.includes('vendor name'));
+  const idxType    = headers.findIndex(h => h.includes('type of vendor'));
+  const idxCountry = headers.findIndex(h => h.includes('country'));
+  const idxNotes   = headers.findIndex(h => h.includes('notes') && !h.includes('other'));
+  const idxSocial  = headers.findIndex(h => h.includes('social'));
+
+  const rows = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]);
+    if (!cols.length || !cols[idxName] || !cols[idxName].trim()) continue;
+    const vendorName = cols[idxName].trim();
+    if (vendorName.toUpperCase().startsWith('TOTAL') || vendorName === 'g') continue;
+
+    const rawType = (cols[idxType] || '').trim();
+    const country = (cols[idxCountry] || '').trim();
+    const notes   = (cols[idxNotes] || '').trim();
+    const social  = idxSocial >= 0 ? (cols[idxSocial] || '').trim() : '';
+    let desc = notes;
+    if (social && social.toLowerCase() !== 'n/a' && social !== '') {
+      desc += (desc ? ' | ' : '') + '🌐 ' + social;
+    }
+    const dest = CSV_TYPE_MAP[rawType.toLowerCase()] || null;
+    rows.push({ vendor_name: vendorName, raw_type: rawType, country, description: desc, dest });
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += ch; }
+  }
+  result.push(cur);
+  return result;
+}
+
+async function fetchExistingNamesForCsv() {
+  if (!sb) return;
+  try {
+    const [b, f] = await Promise.all([
+      publicQuery('cultural_booths', {}),
+      publicQuery('food_vendors', {}),
+    ]);
+    csvExistingNames.cultural_booths = new Set(b.map(r => r.name.toLowerCase().trim()));
+    csvExistingNames.food_vendors    = new Set(f.map(r => r.name.toLowerCase().trim()));
+  } catch(e) { console.log('Could not prefetch names:', e.message); }
+}
+
+function getCsvConflictStatus(row) {
+  if (!row.dest) return 'unmapped';
+  const ex = csvExistingNames[row.dest.table];
+  return (ex && ex.has(row.vendor_name.toLowerCase().trim())) ? 'exists' : 'new';
+}
+
+function renderCsvPreview() {
+  // Type filter buttons
+  const typeCounts = {};
+  csvParsedRows.forEach(r => { const k = r.dest ? r.dest.label : 'Unmapped'; typeCounts[k] = (typeCounts[k]||0)+1; });
+  const filterWrap = document.getElementById('csv-type-filters');
+  const allFilters = [['all', 'All (' + csvParsedRows.length + ')'], ...Object.entries(typeCounts).map(([k,v]) => [k, k + ' (' + v + ')'])];
+  filterWrap.innerHTML = allFilters.map(([val, label]) => {
+    const active = csvActiveFilter === val;
+    return '<button onclick="setCsvFilter(' + JSON.stringify(val) + ')" style="padding:5px 12px;border-radius:9999px;font-size:0.75rem;font-weight:600;cursor:pointer;border:1px solid ' + (active?'var(--cf-teal)':'var(--card-border)') + ';background:' + (active?'rgba(0,201,177,0.12)':'rgba(255,255,255,0.04)') + ';color:' + (active?'var(--cf-teal)':'var(--text-muted)') + ';">' + escHtml(label) + '</button>';
+  }).join('');
+
+  // Summary
+  const nNew = csvParsedRows.filter(r=>r.status==='new').length;
+  const nEx  = csvParsedRows.filter(r=>r.status==='exists').length;
+  const nUn  = csvParsedRows.filter(r=>r.status==='unmapped').length;
+  document.getElementById('csv-preview-summary').textContent = nNew + ' new · ' + nEx + ' already exist · ' + nUn + ' unmapped';
+
+  const visible = csvActiveFilter === 'all' ? csvParsedRows
+    : csvParsedRows.filter(r => (r.dest ? r.dest.label : 'Unmapped') === csvActiveFilter);
+
+  const tbody = document.getElementById('csv-preview-tbody');
+  tbody.innerHTML = visible.map(r => {
+    const gi = csvParsedRows.indexOf(r);
+    const destBadge = r.dest
+      ? '<span class="badge ' + r.dest.badge + '">' + r.dest.icon + ' ' + escHtml(r.dest.label) + '</span>'
+      : '<span class="badge" style="background:rgba(255,255,255,0.07);color:var(--text-muted);">⚠️ ' + escHtml(r.raw_type||'Unknown') + '</span>';
+    const statusBadge = r.status==='new' ? '<span class="badge badge-green">New</span>'
+      : r.status==='exists' ? '<span class="badge badge-gold">Exists</span>'
+      : '<span class="badge" style="background:rgba(255,107,107,0.12);color:var(--cf-coral);">Unmapped</span>';
+    const desc = r.description ? escHtml(r.description.slice(0,80)) + (r.description.length>80?'…':'') : '–';
+    return '<tr style="opacity:' + (r.dest?1:0.5) + '">'
+      + '<td><input type="checkbox"' + (r.selected?' checked':'') + (r.dest?'':' disabled') + ' onchange="toggleCsvRow(' + gi + ',this.checked)" style="accent-color:var(--cf-teal);"></td>'
+      + '<td style="font-weight:600;">' + escHtml(r.vendor_name) + '</td>'
+      + '<td>' + destBadge + '</td>'
+      + '<td style="font-size:0.78rem;color:var(--text-muted);">' + escHtml(r.country||'–') + '</td>'
+      + '<td style="font-size:0.75rem;color:var(--text-secondary);">' + desc + '</td>'
+      + '<td>' + statusBadge + '</td>'
+      + '</tr>';
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No rows in this category.</td></tr>';
+}
+
+function setCsvFilter(val) { csvActiveFilter = val; renderCsvPreview(); }
+function toggleCsvRow(idx, checked) { if (csvParsedRows[idx]) csvParsedRows[idx].selected = checked; }
+function toggleAllCsvRows(checked) { csvParsedRows.forEach(r => { if (r.dest) r.selected = checked; }); renderCsvPreview(); }
+
+async function runCsvImport() {
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+  const conflictMode = document.querySelector('input[name="csv-conflict"]:checked')?.value || 'skip';
+  const toImport = csvParsedRows.filter(r => r.selected && r.dest);
+  if (!toImport.length) { showToast('No rows selected to import', 'error'); return; }
+  if (!confirm('Import ' + toImport.length + ' vendors?\n\nConflict mode: ' + conflictMode.toUpperCase())) return;
+
+  const btn = document.getElementById('csv-import-btn');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  const progress = document.getElementById('csv-import-progress');
+  const bar = document.getElementById('csv-progress-bar');
+  const lbl = document.getElementById('csv-progress-label');
+  progress.style.display = 'block';
+
+  const results = { booths: 0, food: 0, skipped: 0, errors: 0 };
+
+  for (let i = 0; i < toImport.length; i++) {
+    const r = toImport[i];
+    bar.style.width = Math.round(((i+1)/toImport.length)*100) + '%';
+    lbl.textContent = (i+1) + ' of ' + toImport.length + ': ' + r.vendor_name;
+    try {
+      const exists = r.status === 'exists';
+      if (exists && conflictMode === 'skip') { results.skipped++; continue; }
+
+      if (r.dest.table === 'cultural_booths') {
+        const row = { name: r.vendor_name, cultural_background: r.country||'', description: r.description||'', is_published: true };
+        if (exists && conflictMode === 'overwrite') {
+          const { data: ex } = await sb.from('cultural_booths').select('id').ilike('name', r.vendor_name).single();
+          if (ex) await sb.from('cultural_booths').update(row).eq('id', ex.id);
+        } else { await sb.from('cultural_booths').insert(row); }
+        results.booths++;
+      } else if (r.dest.table === 'food_vendors') {
+        const row = { name: r.vendor_name, vendor_type: r.dest.vendor_type, cuisine_category: r.country||'', description: r.description||'', is_published: true };
+        if (exists && conflictMode === 'overwrite') {
+          const { data: ex } = await sb.from('food_vendors').select('id').ilike('name', r.vendor_name).single();
+          if (ex) await sb.from('food_vendors').update(row).eq('id', ex.id);
+        } else { await sb.from('food_vendors').insert(row); }
+        results.food++;
+      }
+    } catch(err) { console.error('Import error:', r.vendor_name, err.message); results.errors++; }
+  }
+
+  btn.disabled = false; btn.textContent = '📥 Import All';
+  const resultEl = document.getElementById('csv-import-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);border-radius:var(--radius-sm);padding:16px 18px;">'
+    + '<div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--cf-green);margin-bottom:8px;">✅ Import Complete</div>'
+    + '<div style="font-size:0.83rem;color:var(--text-secondary);line-height:1.8;">'
+    + '🏮 Cultural Booths added: <strong>' + results.booths + '</strong><br>'
+    + '🍽️ Food Vendors / Trucks / Pavilion added: <strong>' + results.food + '</strong><br>'
+    + '⏭️ Skipped (already exist): <strong>' + results.skipped + '</strong><br>'
+    + (results.errors ? '❌ Errors: <strong style="color:var(--cf-coral)">' + results.errors + '</strong> — check browser console<br>' : '')
+    + '</div>'
+    + '<div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">Booth/location numbers still need to be assigned manually in the Booths and Food panels.</div>'
+    + '</div>';
+
+  await Promise.all([loadAdminBoothsTable(), loadAdminFoodTable(), loadAdminStats()]);
+  showToast('✅ Imported ' + (results.booths + results.food) + ' vendors', 'success');
+}
+
+function clearCsvImport() {
+  csvParsedRows = []; csvActiveFilter = 'all';
+  document.getElementById('csv-preview-wrap').style.display = 'none';
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-import-result').style.display = 'none';
+  document.getElementById('csv-import-progress').style.display = 'none';
 }
 
 </script>
