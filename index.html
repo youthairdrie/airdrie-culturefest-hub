@@ -3933,6 +3933,11 @@ let trackerNextId = 4;
    INITIALISATION
    ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
+  // Run section localStorage migration FIRST, before any dropdown is built.
+  // This repairs stale keys (stage -> main_stage, secondary -> secondary_stage)
+  // so every subsequent call to getSectionsList() returns clean data.
+  getSectionsList();
+
   initDateTime();
   renderTrackerGates();
   updateNavTabs();
@@ -4447,15 +4452,60 @@ const DEFAULT_SECTIONS = [
   { value: 'kids',            label: 'Kids Zone Activity',             icon: '🎠', color: 'pink',   deletable: false },
 ];
 
+// Keys that are invalid for the DB. If ANY appear in localStorage we nuke and rebuild.
+const STALE_SECTION_KEYS = ['stage', 'secondary'];
+
 function getSectionsList() {
   try {
     const stored = localStorage.getItem(SECTIONS_STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length) return parsed;
+      let parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length) {
+
+        // If ANY stale key is present, discard the whole stored list and rebuild
+        // from DEFAULT_SECTIONS, preserving only label/icon customisations for
+        // entries whose value is already valid.
+        const hasStaleKey = parsed.some(function(s) { return STALE_SECTION_KEYS.includes(s.value); });
+        if (hasStaleKey) {
+          console.log('[Sections] Stale keys detected in localStorage — rebuilding from defaults.');
+          // Build a map of valid stored customisations (label/icon overrides)
+          const customMap = {};
+          parsed.forEach(function(s) {
+            if (VALID_SECTIONS.includes(s.value)) customMap[s.value] = s;
+          });
+          // Rebuild from DEFAULT_SECTIONS, applying any valid customisations
+          const fresh = DEFAULT_SECTIONS.map(function(def) {
+            return customMap[def.value]
+              ? { ...def, label: customMap[def.value].label, icon: customMap[def.value].icon }
+              : { ...def };
+          });
+          localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(fresh));
+          console.log('[Sections] localStorage rebuilt:', fresh.map(function(s){ return s.value; }).join(', '));
+          return fresh;
+        }
+
+        // No stale keys — check for any missing core sections and add them
+        let merged = false;
+        DEFAULT_SECTIONS.forEach(function(def) {
+          if (!parsed.find(function(s) { return s.value === def.value; })) {
+            console.log('[Sections] Adding missing core section: ' + def.value);
+            parsed.push({ ...def });
+            merged = true;
+          }
+        });
+        if (merged) {
+          localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(parsed));
+        }
+        return parsed;
+      }
     }
-  } catch(e) {}
-  return DEFAULT_SECTIONS.map(s => ({ ...s }));
+  } catch(e) {
+    console.warn('[Sections] Could not read localStorage, using defaults.', e);
+  }
+  // No stored data — seed defaults
+  const defaults = DEFAULT_SECTIONS.map(function(s) { return { ...s }; });
+  localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(defaults));
+  return defaults;
 }
 
 function saveSectionsList(sections) {
@@ -4468,10 +4518,14 @@ function buildSectionDropdown(selectedValue) {
   const sel = document.getElementById('sched-section');
   if (!sel) return;
   const sections = getSectionsList();
-  sel.innerHTML = sections.map(s =>
-    `<option value="${escHtml(s.value)}">${escHtml(s.icon ? s.icon + ' ' : '')}${escHtml(s.label)}</option>`
-  ).join('');
+  console.log('[Dropdown] Building section dropdown with values:',
+    sections.map(function(s){ return s.value; }).join(', '));
+  sel.innerHTML = sections.map(function(s) {
+    return '<option value="' + escHtml(s.value) + '">' +
+      escHtml(s.icon ? s.icon + ' ' : '') + escHtml(s.label) + '</option>';
+  }).join('');
   if (selectedValue) sel.value = selectedValue;
+  console.log('[Dropdown] Active value after build:', sel.value);
 }
 
 /* Sync public-page accordion labels to match stored sections */
@@ -5142,16 +5196,30 @@ async function adminSaveSchedule() {
 
   if (!row.name) { showFeedback('sched-feedback', 'Name is required.', false); return; }
 
-  // Defensive validation: ensure section value is allowed by DB constraint
+  // Defensive validation: validate against both VALID_SECTIONS (DB constraint)
+  // AND the live sections list (catches any stale localStorage keys)
+  const liveSections = getSectionsList().map(s => s.value);
+  console.log('[Save] section value being submitted:', row.section);
+  console.log('[Save] live sections list:', liveSections);
+  console.log('[Save] VALID_SECTIONS:', VALID_SECTIONS);
+
   if (!VALID_SECTIONS.includes(row.section)) {
     showFeedback('sched-feedback',
-      `Invalid section value "${row.section}". Must be one of: ${VALID_SECTIONS.join(', ')}.`, false);
+      'Invalid section "' + row.section + '". Must be one of: ' + VALID_SECTIONS.join(', ') + '. Check the Section dropdown — it may contain a stale key. Try refreshing the page.', false);
+    console.error('[Save] BLOCKED: section "' + row.section + '" not in VALID_SECTIONS');
+    return;
+  }
+  if (!liveSections.includes(row.section)) {
+    showFeedback('sched-feedback',
+      'Section "' + row.section + '" exists in the DB constraint but is missing from the local sections list. Refresh the page to re-sync.', false);
+    console.error('[Save] BLOCKED: section "' + row.section + '" not in liveSections');
     return;
   }
 
   if (!sb) { showFeedback('sched-feedback', '✅ Saved (demo — configure Supabase to persist)', true); clearScheduleForm(); return; }
 
   setBtn('sched-save-btn', true, 'Saving…');
+  console.log('[Save] Sending to Supabase — section:', row.section, '| full row:', JSON.stringify(row));
   const { error } = id
     ? await sb.from('stage_schedule').update(row).eq('id', id)
     : await sb.from('stage_schedule').insert(row);
