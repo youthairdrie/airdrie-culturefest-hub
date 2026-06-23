@@ -665,6 +665,7 @@ select.input-field option:focus {
 .nav-pill.pill-grass     { --pill-color: var(--cf-green); }
 .nav-pill.pill-cultural  { --pill-color: var(--cf-purple); }
 .nav-pill.pill-kids      { --pill-color: var(--cf-pink); }
+.nav-pill.pill-blue      { --pill-color: var(--cf-blue); }
 .nav-pill.pill-booths    { --pill-color: var(--cf-teal); }
 .nav-pill.pill-food      { --pill-color: var(--cf-coral); }
 .nav-pill.pill-trucks    { --pill-color: var(--cf-orange); }
@@ -2459,11 +2460,17 @@ pre, code {
       <button class="nav-pill pill-stage" onclick="scrollToSection('sec-stage')">
         <span class="pill-icon">🎤</span>Main Stage
       </button>
-      <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-secondary')">
+      <button class="nav-pill pill-blue" onclick="scrollToSection('sec-secondary')">
         <span class="pill-icon">🎵</span>Secondary Stage
       </button>
       <button class="nav-pill pill-grass" onclick="scrollToSection('sec-grass')">
         <span class="pill-icon">🌿</span>Grass Demos
+      </button>
+      <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-cultural')">
+        <span class="pill-icon">🏮</span>Cultural
+      </button>
+      <button class="nav-pill pill-kids" onclick="scrollToSection('sec-kids')">
+        <span class="pill-icon">🎠</span>Kids Zone
       </button>
       <button class="nav-pill pill-booths" onclick="scrollToSection('sec-booths')">
         <span class="pill-icon">🏮</span>Cultural Booths
@@ -2519,12 +2526,42 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-grass')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🌿</span>
-          <span id="sec-grass-label">Demonstrations on the Grass</span>
+          <span id="sec-grass-label">Grass Performance / Demonstration</span>
           <span class="accordion-count" id="count-grass">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
       </button>
       <div class="accordion-body" id="body-grass">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Cultural Activities -->
+    <div class="section-accordion" id="sec-cultural" style="--section-color: var(--cf-purple)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-cultural')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🏮</span>
+          <span id="sec-cultural-label">Cultural Activities</span>
+          <span class="accordion-count" id="count-cultural">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-cultural">
+        <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Kids Zone -->
+    <div class="section-accordion" id="sec-kids" style="--section-color: var(--cf-pink)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-kids')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🎠</span>
+          <span id="sec-kids-label">Kids Zone Activities</span>
+          <span class="accordion-count" id="count-kids">–</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-kids">
         <div class="loading-state"><div class="spinner"></div> Loading...</div>
       </div>
     </div>
@@ -4398,10 +4435,16 @@ async function handleLogout() {
    ============================================================ */
 const SECTIONS_STORAGE_KEY = 'cf_schedule_sections';
 
+// VALID_SECTIONS must match the Supabase check constraint exactly:
+// CHECK (section IN ('main_stage','secondary_stage','grass','cultural','kids'))
+const VALID_SECTIONS = ['main_stage', 'secondary_stage', 'grass', 'cultural', 'kids'];
+
 const DEFAULT_SECTIONS = [
-  { value: 'stage',     label: 'Main Stage',                  icon: '🎤', color: 'gold',   deletable: false },
-  { value: 'secondary', label: 'Secondary Stage',             icon: '🎵', color: 'blue',   deletable: true  },
-  { value: 'grass',     label: 'Demonstrations on the Grass', icon: '🌿', color: 'green',  deletable: true  },
+  { value: 'main_stage',      label: 'Main Stage Performance',         icon: '🎤', color: 'gold',   deletable: false },
+  { value: 'secondary_stage', label: 'Secondary Stage Performance',    icon: '🎵', color: 'blue',   deletable: false },
+  { value: 'grass',           label: 'Grass Performance / Demonstration', icon: '🌿', color: 'green',  deletable: false },
+  { value: 'cultural',        label: 'Cultural Activity',              icon: '🏮', color: 'purple', deletable: false },
+  { value: 'kids',            label: 'Kids Zone Activity',             icon: '🎠', color: 'pink',   deletable: false },
 ];
 
 function getSectionsList() {
@@ -4434,7 +4477,13 @@ function buildSectionDropdown(selectedValue) {
 /* Sync public-page accordion labels to match stored sections */
 function syncPublicSectionLabels() {
   const sections = getSectionsList();
-  const labelMap = { stage: 'sec-stage-label', secondary: 'sec-secondary-label', grass: 'sec-grass-label' };
+  const labelMap = {
+    main_stage:      'sec-stage-label',
+    secondary_stage: 'sec-secondary-label',
+    grass:           'sec-grass-label',
+    cultural:        'sec-cultural-label',
+    kids:            'sec-kids-label',
+  };
   sections.forEach(s => {
     const elId = labelMap[s.value];
     if (elId) {
@@ -4582,6 +4631,8 @@ async function loadPublicData() {
     loadStageSchedule(),
     loadSecondaryStage(),
     loadGrassPerformances(),
+    loadCulturalActivities(),
+    loadKidsZone(),
     loadCulturalBooths(),
     loadFoodVendors(),
     loadFoodTrucks(),
@@ -4594,7 +4645,7 @@ async function loadStageSchedule() {
   const body = document.getElementById('body-stage');
   const count = document.getElementById('count-stage');
   try {
-    const data = await publicQuery('stage_schedule', { section: 'eq.stage', is_published: 'eq.true', order: 'start_time.asc' });
+    const data = await publicQuery('stage_schedule', { section: 'eq.main_stage', is_published: 'eq.true', order: 'start_time.asc' });
     count.textContent = data.length;
     body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No stage performances scheduled yet.');
   } catch(e) {
@@ -4606,11 +4657,11 @@ async function loadStageSchedule() {
 
 async function loadSecondaryStage() {
   const secs = getSectionsList();
-  const sec  = secs.find(s => s.value === 'secondary') || { label: 'Secondary Stage' };
+  const sec  = secs.find(s => s.value === 'secondary_stage') || { label: 'Secondary Stage' };
   const body  = document.getElementById('body-secondary');
   const count = document.getElementById('count-secondary');
   try {
-    const data = await publicQuery('stage_schedule', { section: 'eq.secondary', is_published: 'eq.true', order: 'start_time.asc' });
+    const data = await publicQuery('stage_schedule', { section: 'eq.secondary_stage', is_published: 'eq.true', order: 'start_time.asc' });
     count.textContent = data.length;
     body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' performances listed yet.');
   } catch(e) {
@@ -4621,11 +4672,43 @@ async function loadSecondaryStage() {
 
 async function loadGrassPerformances() {
   const secs = getSectionsList();
-  const sec  = secs.find(s => s.value === 'grass') || { label: 'Demonstrations on the Grass' };
+  const sec  = secs.find(s => s.value === 'grass') || { label: 'Grass Performance / Demonstration' };
   const body  = document.getElementById('body-grass');
   const count = document.getElementById('count-grass');
   try {
     const data = await publicQuery('stage_schedule', { section: 'eq.grass', is_published: 'eq.true', order: 'start_time.asc' });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('No ' + sec.label + ' listed yet.');
+    count.textContent = '0';
+  }
+}
+
+async function loadCulturalActivities() {
+  const secs = getSectionsList();
+  const sec  = secs.find(s => s.value === 'cultural') || { label: 'Cultural Activities' };
+  const body  = document.getElementById('body-cultural');
+  const count = document.getElementById('count-cultural');
+  if (!body) return; // accordion not present
+  try {
+    const data = await publicQuery('stage_schedule', { section: 'eq.cultural', is_published: 'eq.true', order: 'start_time.asc' });
+    count.textContent = data.length;
+    body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
+  } catch(e) {
+    body.innerHTML = renderEmpty('No ' + sec.label + ' listed yet.');
+    count.textContent = '0';
+  }
+}
+
+async function loadKidsZone() {
+  const secs = getSectionsList();
+  const sec  = secs.find(s => s.value === 'kids') || { label: 'Kids Zone Activities' };
+  const body  = document.getElementById('body-kids');
+  const count = document.getElementById('count-kids');
+  if (!body) return; // accordion not present
+  try {
+    const data = await publicQuery('stage_schedule', { section: 'eq.kids', is_published: 'eq.true', order: 'start_time.asc' });
     count.textContent = data.length;
     body.innerHTML = data.length ? data.map(renderScheduleItem).join('') : renderEmpty('No ' + sec.label + ' listed yet.');
   } catch(e) {
@@ -5058,6 +5141,14 @@ async function adminSaveSchedule() {
   };
 
   if (!row.name) { showFeedback('sched-feedback', 'Name is required.', false); return; }
+
+  // Defensive validation: ensure section value is allowed by DB constraint
+  if (!VALID_SECTIONS.includes(row.section)) {
+    showFeedback('sched-feedback',
+      `Invalid section value "${row.section}". Must be one of: ${VALID_SECTIONS.join(', ')}.`, false);
+    return;
+  }
+
   if (!sb) { showFeedback('sched-feedback', '✅ Saved (demo — configure Supabase to persist)', true); clearScheduleForm(); return; }
 
   setBtn('sched-save-btn', true, 'Saving…');
@@ -5167,7 +5258,7 @@ function adminEditSchedule(r) {
   document.getElementById('sched-start').value     = r.start_time ? r.start_time.slice(0,5) : '';
   document.getElementById('sched-end').value       = r.end_time   ? r.end_time.slice(0,5)   : '';
   document.getElementById('sched-stage').value     = r.stage_location || '';
-  buildSectionDropdown(r.section || 'stage'); // rebuild dropdown and pre-select saved section
+  buildSectionDropdown(r.section || 'main_stage'); // rebuild dropdown and pre-select saved section
   document.getElementById('sched-desc').value      = r.description || '';
   switchAdminTab('schedule');
   document.getElementById('sched-name').focus();
@@ -5420,15 +5511,15 @@ function loadDemoData() {
   const hhmm = t => `${String(now.getHours() + t).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
   const stageItems = [
-    { name: 'Airdrie Bhangra Collective', cultural_category: 'Punjabi / South Asian', start_time: hhmm(-1), end_time: hhmm(0), stage_location: 'Main Stage', section: 'stage', description: 'High-energy traditional Bhangra dancing and live dhol drumming.' },
-    { name: 'Mariachi Fiesta Airdrie',    cultural_category: 'Mexican',               start_time: hhmm(1),  end_time: hhmm(2), stage_location: 'Main Stage', section: 'stage', description: 'Celebrating the rich musical heritage of Mexico.' },
-    { name: 'Dragon Dance Troupe',         cultural_category: 'Chinese',               start_time: hhmm(2),  end_time: hhmm(3), stage_location: 'Main Stage', section: 'stage', description: 'Traditional Chinese Dragon Dance with live percussion.' },
-    { name: 'Celtic Step Dancers',         cultural_category: 'Irish / Celtic',        start_time: hhmm(3),  end_time: hhmm(4), stage_location: 'Main Stage', section: 'stage', description: 'Skilled step dancers performing traditional Irish jigs and reels.' },
+    { name: 'Airdrie Bhangra Collective', cultural_category: 'Punjabi / South Asian', start_time: hhmm(-1), end_time: hhmm(0), stage_location: 'Main Stage', section: 'main_stage', description: 'High-energy traditional Bhangra dancing and live dhol drumming.' },
+    { name: 'Mariachi Fiesta Airdrie',    cultural_category: 'Mexican',               start_time: hhmm(1),  end_time: hhmm(2), stage_location: 'Main Stage', section: 'main_stage', description: 'Celebrating the rich musical heritage of Mexico.' },
+    { name: 'Dragon Dance Troupe',         cultural_category: 'Chinese',               start_time: hhmm(2),  end_time: hhmm(3), stage_location: 'Main Stage', section: 'main_stage', description: 'Traditional Chinese Dragon Dance with live percussion.' },
+    { name: 'Celtic Step Dancers',         cultural_category: 'Irish / Celtic',        start_time: hhmm(3),  end_time: hhmm(4), stage_location: 'Main Stage', section: 'main_stage', description: 'Skilled step dancers performing traditional Irish jigs and reels.' },
   ];
 
   const secondaryItems = [
-    { name: 'Capoeira Demo — Grupo Axé',   cultural_category: 'Brazilian', start_time: hhmm(0), end_time: hhmm(1), stage_location: 'Secondary Stage', section: 'secondary', description: 'Interactive capoeira demonstration — try it yourself!' },
-    { name: 'Hoop Dance Demonstration',    cultural_category: 'Indigenous', start_time: hhmm(2), end_time: hhmm(3), stage_location: 'Secondary Stage', section: 'secondary', description: 'Traditional Indigenous hoop dancing — a storytelling tradition.' },
+    { name: 'Capoeira Demo — Grupo Axé',   cultural_category: 'Brazilian', start_time: hhmm(0), end_time: hhmm(1), stage_location: 'Secondary Stage', section: 'secondary_stage', description: 'Interactive capoeira demonstration — try it yourself!' },
+    { name: 'Hoop Dance Demonstration',    cultural_category: 'Indigenous', start_time: hhmm(2), end_time: hhmm(3), stage_location: 'Secondary Stage', section: 'secondary_stage', description: 'Traditional Indigenous hoop dancing — a storytelling tradition.' },
   ];
 
   const grassItems = [
@@ -8529,7 +8620,7 @@ function clearCsvImport() {
     start_time       time,
     end_time         time,
     stage_location   text,
-    section          text default 'stage' check (section in ('stage','grass','cultural','kids')),
+    section          text default 'main_stage' check (section in ('main_stage','secondary_stage','grass','cultural','kids')),
     description      text,
     is_published     boolean default true,
     created_at       timestamptz default now()
@@ -8846,9 +8937,9 @@ function clearCsvImport() {
   ============================================================
 
   insert into stage_schedule (name, cultural_category, start_time, end_time, stage_location, section, description) values
-    ('Airdrie Bhangra Collective', 'Punjabi / South Asian', '11:00', '11:45', 'Main Stage', 'stage', 'High-energy traditional Bhangra with live dhol drumming'),
-    ('Mariachi Fiesta Airdrie',    'Mexican',               '12:00', '12:45', 'Main Stage', 'stage', 'Traditional Mexican folk music and costumes'),
-    ('Capoeira Demo',              'Brazilian',             '13:00', '13:30', 'Grass Area A', 'grass', 'Interactive Brazilian martial art demonstration'),
+    ('Airdrie Bhangra Collective', 'Punjabi / South Asian', '11:00', '11:45', 'Main Stage', 'main_stage', 'High-energy traditional Bhangra with live dhol drumming'),
+    ('Mariachi Fiesta Airdrie',    'Mexican',               '12:00', '12:45', 'Main Stage', 'main_stage', 'Traditional Mexican folk music and costumes'),
+    ('Capoeira Demo',              'Brazilian',             '13:00', '13:30', 'Secondary Stage', 'secondary_stage', 'Interactive Brazilian martial art demonstration'),
     ('Henna Art Workshop',         'South Asian',           '10:00', '16:00', 'Activity Tent', 'cultural', 'Get beautiful henna art applied by skilled artists'),
     ('Face Painting — World Flags','All Cultures',          '10:00', '17:00', 'Kids Zone', 'kids', 'Get your face painted with your favourite flag');
 
