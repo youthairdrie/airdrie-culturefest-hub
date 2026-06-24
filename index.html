@@ -4065,6 +4065,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target.closest('#page-admin .admin-form')) markAdminFormDirty();
   });
 
+  // Delegated click handler for attendance action buttons (data-att-action).
+  // Using data-* attributes avoids broken HTML from JSON.stringify inside onclick="...".
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-att-action]');
+    if (!btn) return;
+    const action = btn.dataset.attAction;
+    const locId   = btn.dataset.locId;
+    const locName = btn.dataset.locName || '';
+    if (action === 'record')        openAttRecordModal(locId);
+    else if (action === 'rename')   renameAttLocation(locId, locName);
+    else if (action === 'deactivate') deactivateAttLocation(locId, locName);
+    else if (action === 'deactivate-mgr') setAttLocationActive(locId, false);
+    else if (action === 'reactivate')     setAttLocationActive(locId, true);
+  });
+
   // Attempt to initialise Supabase
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
     showToast('⚙️ Supabase not configured — loading demo data', 'info');
@@ -5610,9 +5625,9 @@ async function _loadAttLocations() {
         '</div>' +
         '<div class="att-location-meta">Last count: <strong>' + lastAmt + '</strong> &nbsp;·&nbsp; ' + escHtml(lastTs) + '</div>' +
         '<div class="att-location-actions">' +
-          '<button class="att-record-btn" onclick="openAttRecordModal(' + JSON.stringify(loc.id) + ')">＋ Record Count</button>' +
-          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;" onclick="renameAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✏️</button>' +
-          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;color:var(--cf-coral);" onclick="deactivateAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✕</button>' +
+          '<button class="att-record-btn" data-att-action="record" data-loc-id="' + escHtml(loc.id) + '">\uff0b Record Count</button>' +
+          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;" data-att-action="rename" data-loc-id="' + escHtml(loc.id) + '" data-loc-name="' + escHtml(loc.location_name) + '" title="Rename">\u270f\ufe0f</button>' +
+          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;color:var(--cf-coral);" data-att-action="deactivate" data-loc-id="' + escHtml(loc.id) + '" data-loc-name="' + escHtml(loc.location_name) + '" title="Deactivate">\u2715</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -5750,12 +5765,12 @@ async function _renderAttLocationsList() {
       ? '<span class="badge badge-teal" style="font-size:0.65rem;padding:2px 7px;">Active</span>'
       : '<span class="badge" style="font-size:0.65rem;padding:2px 7px;background:rgba(255,255,255,0.06);color:var(--text-muted);">Inactive</span>';
     const toggleBtn = loc.active
-      ? '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-coral);" onclick="setAttLocationActive(' + JSON.stringify(loc.id) + ',false)">Deactivate</button>'
-      : '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-green);" onclick="setAttLocationActive(' + JSON.stringify(loc.id) + ',true)">Reactivate</button>';
+      ? '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-coral);" data-att-action="deactivate-mgr" data-loc-id="' + escHtml(loc.id) + '" data-loc-name="' + escHtml(loc.location_name) + '">Deactivate</button>'
+      : '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-green);" data-att-action="reactivate" data-loc-id="' + escHtml(loc.id) + '">Reactivate</button>';
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--card-border);">' +
       '<div style="flex:1;font-size:0.85rem;font-weight:600;">' + escHtml(loc.location_name) + ' ' + activeLabel + '</div>' +
       '<div style="display:flex;gap:6px;flex-shrink:0;">' +
-        '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;" onclick="renameAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✏️ Rename</button>' +
+          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;" data-att-action="rename" data-loc-id="' + escHtml(loc.id) + '" data-loc-name="' + escHtml(loc.location_name) + '" title="Rename">\u270f\ufe0f</button>' +
         toggleBtn +
       '</div>' +
     '</div>';
