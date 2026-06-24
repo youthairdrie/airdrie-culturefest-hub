@@ -1211,54 +1211,12 @@ select.input-field option:focus {
 /* ============================================================
    PARTICIPANT TRACKER
    ============================================================ */
-.tracker-card {
-  background: var(--bg-card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  margin-bottom: 12px;
-}
-.tracker-gate-name {
-  font-weight: 700;
-  font-size: 0.92rem;
-  margin-bottom: 10px;
-}
-.tracker-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.tracker-count {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--cf-gold);
-  min-width: 50px;
-  text-align: center;
-}
-.tracker-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  font-size: 1.4rem;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-.tracker-add { background: rgba(74,222,128,0.15); color: var(--cf-green); border: 1px solid rgba(74,222,128,0.3); }
-.tracker-add:hover { background: rgba(74,222,128,0.25); }
-.tracker-sub { background: rgba(255,107,107,0.1); color: var(--cf-coral); border: 1px solid rgba(255,107,107,0.2); }
-.tracker-sub:hover { background: rgba(255,107,107,0.2); }
+/* ── Attendance tracker (Supabase-backed) ────────────────────── */
 .tracker-total-card {
   background: linear-gradient(135deg, rgba(245,166,35,0.1), rgba(255,107,107,0.1));
   border: 1px solid rgba(245,166,35,0.2);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: 22px 18px;
   text-align: center;
   margin-bottom: 20px;
 }
@@ -1277,6 +1235,86 @@ select.input-field option:focus {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+.att-location-card {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.att-location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.att-location-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.att-location-subtotal {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--cf-teal);
+}
+.att-location-meta {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.att-location-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.att-record-btn {
+  flex: 1;
+  min-width: 120px;
+  background: linear-gradient(135deg, var(--cf-teal), var(--cf-blue));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.att-record-btn:hover { opacity: 0.88; }
+.att-entries-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.att-entries-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--card-border);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.att-entries-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+}
+.att-entries-table tr:last-child td { border-bottom: none; }
+.att-count-badge {
+  background: rgba(20,184,166,0.15);
+  color: var(--cf-teal);
+  border: 1px solid rgba(20,184,166,0.25);
+  border-radius: 8px;
+  padding: 2px 9px;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 /* ============================================================
@@ -1428,7 +1466,7 @@ body {
 
 /* ─── MINIMUM TAP TARGET SIZE ─────────────────────────────── */
 button, .btn, .nav-tab, .nav-pill, .admin-tab, .signup-btn,
-.accordion-header, .tracker-btn, .modal-close, .checklist-cb {
+.accordion-header, .modal-close, .checklist-cb {
   min-height: 44px;
   min-width: 44px;
   -webkit-tap-highlight-color: rgba(245,166,35,0.15);
@@ -1855,15 +1893,9 @@ textarea.input-field {
   padding: 12px 14px;
 }
 
-/* ─── TRACKER BUTTONS — MOBILE ────────────────────────────── */
-.tracker-btn {
-  width: 52px;
-  height: 52px;
-  font-size: 1.5rem;
-}
-
-.tracker-count { font-size: 2.2rem; }
+/* ─── ATTENDANCE — MOBILE ─────────────────────────────────── */
 .tracker-total-num { font-size: 2.6rem; }
+.att-record-btn { padding: 14px 16px; font-size: 1rem; }
 
 /* ─── ASSIGNMENT ROWS — MOBILE ────────────────────────────── */
 .assignment-row {
@@ -2049,7 +2081,7 @@ pre, code {
 }
 
 /* ─── CARD CONTENT — NO OVERFLOW ──────────────────────────── */
-.card, .vendor-card, .shift-card, .tracker-card,
+.card, .vendor-card, .shift-card, .att-location-card,
 .role-card, .announcement-item, .stat-card {
   overflow: hidden;
   min-width: 0;
@@ -3243,19 +3275,100 @@ pre, code {
 
     </div><!-- /shifts-admin panel -->
 
-    <!-- ATTENDANCE TRACKER PANEL -->
+    <!-- ATTENDANCE TRACKER PANEL (Supabase-backed) -->
     <div id="admin-panel-tracker" class="admin-panel">
+
+      <!-- Grand Total -->
       <div class="tracker-total-card">
-        <div class="tracker-total-num" id="tracker-grand-total">0</div>
+        <div class="tracker-total-num" id="tracker-grand-total">–</div>
         <div class="tracker-total-label">Total Attendees Counted</div>
+        <div style="margin-top:10px;">
+          <button class="att-record-btn" style="flex:none;padding:12px 28px;font-size:1rem;"
+                  onclick="openAttRecordModal()">＋ Record Count</button>
+        </div>
       </div>
-      <div id="tracker-gates-list">
-        <!-- Gates populated dynamically -->
+
+      <!-- Location Cards -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <h4 style="font-family:var(--font-display);font-weight:700;color:var(--cf-teal);font-size:0.9rem;">📍 By Location</h4>
+        <button class="btn btn-ghost btn-sm" onclick="openAttLocationMgr()" style="font-size:0.75rem;">⚙️ Manage Locations</button>
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-        <button class="btn btn-secondary" onclick="addTrackerGate()">＋ Add Entry Point</button>
-        <button class="btn btn-ghost btn-sm" onclick="resetTrackerConfirm()">Reset All Counts</button>
-        <button class="btn btn-ghost btn-sm" onclick="copyTrackerData()">Copy Summary</button>
+      <div id="att-location-cards">
+        <div class="loading-state"><div class="spinner"></div> Loading…</div>
+      </div>
+
+      <!-- Recent Entries -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px;flex-wrap:wrap;gap:8px;">
+        <h4 style="font-family:var(--font-display);font-weight:700;color:var(--cf-blue);font-size:0.9rem;">🕐 Recent Count Entries</h4>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="exportAttendanceCSV()" style="font-size:0.75rem;">⬇️ Export CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadAttendanceDashboard()" style="font-size:0.75rem;">🔄 Refresh</button>
+        </div>
+      </div>
+      <div id="att-recent-entries">
+        <div class="loading-state"><div class="spinner"></div> Loading…</div>
+      </div>
+    </div>
+
+    <!-- RECORD COUNT MODAL -->
+    <div class="modal-overlay" id="att-record-modal">
+      <div class="modal-box" style="max-width:420px;">
+        <div class="modal-header">
+          <span class="modal-title">📝 Record Count</span>
+          <button class="modal-close" onclick="closeAttRecordModal()">✕</button>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Location <span style="color:var(--cf-coral)">*</span></label>
+          <select class="input-field" id="att-modal-location" style="font-size:1rem;padding:12px;">
+            <option value="">Select location…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Count Amount <span style="color:var(--cf-coral)">*</span></label>
+          <input type="number" class="input-field" id="att-modal-count"
+                 min="0" placeholder="e.g. 247" style="font-size:1.5rem;padding:14px;text-align:center;"
+                 inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Notes (optional)</label>
+          <input type="text" class="input-field" id="att-modal-notes"
+                 placeholder="e.g. 11am–1pm volunteer shift, handheld counter">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="att-record-btn" id="att-save-btn" onclick="saveAttCount()">Save Count</button>
+          <button class="btn btn-ghost" onclick="closeAttRecordModal()" style="flex:0 0 auto;">Cancel</button>
+        </div>
+        <div id="att-modal-feedback" style="margin-top:10px;font-size:0.8rem;min-height:18px;"></div>
+      </div>
+    </div>
+
+    <!-- LOCATION MANAGER MODAL -->
+    <div class="modal-overlay" id="att-location-modal">
+      <div class="modal-box" style="max-width:480px;">
+        <div class="modal-header">
+          <span class="modal-title">📍 Manage Locations</span>
+          <button class="modal-close" onclick="closeAttLocationMgr()">✕</button>
+        </div>
+        <!-- Add location form -->
+        <div class="admin-form" style="margin-bottom:16px;">
+          <div class="form-row form-row-2">
+            <div class="form-group">
+              <label class="input-label">Location Name</label>
+              <input type="text" class="input-field" id="att-new-loc-name" placeholder="e.g. West Gate">
+            </div>
+            <div class="form-group">
+              <label class="input-label">Display Order</label>
+              <input type="number" class="input-field" id="att-new-loc-order" min="1" value="10" style="max-width:80px;">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-primary btn-sm" id="att-add-loc-btn" onclick="addAttLocation()">＋ Add Location</button>
+            <div id="att-loc-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+          </div>
+        </div>
+        <div id="att-locations-list">
+          <div class="loading-state"><div class="spinner"></div> Loading…</div>
+        </div>
       </div>
     </div>
 
@@ -3916,18 +4029,10 @@ let _adminFormDirty = false;
 
 /* ── Tracker state (Fix #8) ─────────────────────────────────────
    LOCAL-ONLY: persisted to localStorage but NOT to Supabase.
-   ⚠  WARNING: counts will reset if localStorage is cleared,
-   the device changes, or the browser is in private mode.
-   TODO (post-event): migrate to a `tracker_sessions` Supabase table
-   with columns: gate_id, gate_name, count, session_date, updated_at.
-   Use upsert on gate_id+session_date so counts survive page reloads.
+   Attendance counts are now stored in Supabase (attendance_count_entries table).
    ──────────────────────────────────────────────────────────────── */
-let trackerGates = [
-  { id: 1, name: 'Main Entrance (North)', count: 0 },
-  { id: 2, name: 'East Gate',             count: 0 },
-  { id: 3, name: 'Parking Lot Entry',     count: 0 },
-];
-let trackerNextId = 4;
+// Attendance state (Supabase-backed — no local state needed)
+let _attLocations = []; // cache of attendance_locations rows
 
 /* ============================================================
    INITIALISATION
@@ -3939,7 +4044,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   getSectionsList();
 
   initDateTime();
-  renderTrackerGates();
   updateNavTabs();
 
   // Seed ob-source immediately from PROGRAM_FALLBACKS so it's never blank
@@ -5429,121 +5533,341 @@ function switchAdminTab(tab) {
     buildSectionDropdown();
     renderSectionsList();
   }
-}
-
-/* ============================================================
-   ATTENDANCE TRACKER
-   ============================================================ */
-/* ============================================================
-   ATTENDANCE TRACKER
-   Fix #8: Tracker data is stored in localStorage ONLY.
-   ⚠ This means counts reset if:
-     - The admin opens the tracker in a different browser or device
-     - localStorage is cleared or the browser is in private/incognito mode
-     - The device is lost or swapped on event day
-   For true event-day reliability, migrate to Supabase persistence.
-   TODO: Add tracker_sessions table (see state variable block above).
-   The warning banner below surfaces this to admins at runtime.
-   ============================================================ */
-function renderTrackerGates() {
-  const container = document.getElementById('tracker-gates-list');
-  if (!container) return;
-  container.innerHTML = trackerGates.map(gate => `
-    <div class="tracker-card" id="gate-card-${gate.id}">
-      <div class="tracker-gate-name">🚪 ${escHtml(gate.name)}</div>
-      <div class="tracker-controls">
-        <button class="tracker-btn tracker-sub" onclick="trackerAdjust(${gate.id}, -1)">−</button>
-        <div class="tracker-count" id="gate-count-${gate.id}">${gate.count}</div>
-        <button class="tracker-btn tracker-add" onclick="trackerAdjust(${gate.id}, 1)">+</button>
-        <div style="flex:1;font-size:0.75rem;color:var(--text-muted);padding-left:4px;">counted at<br>this gate</div>
-      </div>
-    </div>`).join('');
-  updateTrackerTotal();
-  // Show persistence warning banner (Fix #8)
-  _renderTrackerWarning();
-}
-
-function _renderTrackerWarning() {
-  // Only show inside the tracker panel
-  const panel = document.getElementById('admin-panel-tracker');
-  if (!panel) return;
-  const existing = document.getElementById('tracker-persist-warning');
-  if (existing) return; // already shown
-  const warn = document.createElement('div');
-  warn.id = 'tracker-persist-warning';
-  warn.style.cssText = `
-    background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);
-    border-radius:10px;padding:10px 14px;margin-bottom:14px;
-    font-size:0.78rem;color:var(--cf-gold);display:flex;gap:10px;align-items:flex-start;`;
-  warn.innerHTML = `
-    <span style="font-size:1.1rem;flex-shrink:0;">⚠️</span>
-    <div>
-      <strong>Counts saved to this browser only.</strong>
-      Opening on a different device or browser will show 0.
-      Use <em>Copy Summary</em> to record totals before closing.
-    </div>`;
-  panel.insertBefore(warn, panel.firstChild);
-}
-
-function trackerAdjust(id, delta) {
-  const gate = trackerGates.find(g => g.id === id);
-  if (!gate) return;
-  gate.count = Math.max(0, gate.count + delta);
-  const el = document.getElementById('gate-count-' + id);
-  if (el) el.textContent = gate.count;
-  updateTrackerTotal();
-  saveTrackerToLocalStorage();
-}
-
-function updateTrackerTotal() {
-  const total = trackerGates.reduce((s, g) => s + g.count, 0);
-  const el = document.getElementById('tracker-grand-total');
-  if (el) el.textContent = total.toLocaleString();
-  const statEl = document.getElementById('stat-participants');
-  if (statEl) statEl.textContent = total.toLocaleString();
-}
-
-function addTrackerGate() {
-  const name = prompt('Entry point name (e.g. "West Gate"):');
-  if (!name) return;
-  trackerGates.push({ id: trackerNextId++, name: name.trim(), count: 0 });
-  renderTrackerGates();
-  saveTrackerToLocalStorage();
-}
-
-function resetTrackerConfirm() {
-  if (!confirm('Reset all attendance counts to 0?')) return;
-  trackerGates.forEach(g => g.count = 0);
-  renderTrackerGates();
-  saveTrackerToLocalStorage();
-}
-
-function copyTrackerData() {
-  const total = trackerGates.reduce((s, g) => s + g.count, 0);
-  const lines = trackerGates.map(g => `${g.name}: ${g.count}`);
-  lines.push(`\nTOTAL: ${total}`);
-  navigator.clipboard.writeText(lines.join('\n'))
-    .then(() => showToast('✅ Copied to clipboard!', 'success'))
-    .catch(() => showToast('Could not copy — check permissions', 'error'));
-}
-
-function saveTrackerToLocalStorage() {
-  localStorage.setItem('cf_tracker', JSON.stringify(trackerGates));
-}
-
-function loadTrackerFromLocalStorage() {
-  const saved = localStorage.getItem('cf_tracker');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length) {
-        trackerGates = parsed;
-        trackerNextId = Math.max(...trackerGates.map(g => g.id)) + 1;
-      }
-    } catch(e) {
-      console.log('[WARN] loadTrackerFromLocalStorage: could not parse saved tracker data, using defaults.', e?.message || String(e));
-    }
+  // Load Supabase attendance data when Attendance tab opens
+  if (tab === 'tracker') {
+    loadAttendanceDashboard();
   }
+}
+
+/* ============================================================
+   ATTENDANCE (Supabase-backed)
+   ============================================================ */
+
+/* ── Load full attendance dashboard ───────────────────────── */
+async function loadAttendanceDashboard() {
+  if (!sb) {
+    document.getElementById('att-location-cards').innerHTML =
+      '<p style="font-size:0.82rem;color:var(--text-muted);">Configure Supabase to use attendance tracking.</p>';
+    document.getElementById('att-recent-entries').innerHTML = '';
+    document.getElementById('tracker-grand-total').textContent = '–';
+    return;
+  }
+  await Promise.all([
+    _loadAttLocations(),
+    _loadAttRecentEntries(),
+  ]);
+}
+
+async function _loadAttLocations() {
+  const cardsEl = document.getElementById('att-location-cards');
+  try {
+    // Fetch active locations
+    const { data: locs, error: locErr } = await sb
+      .from('attendance_locations')
+      .select('*')
+      .eq('active', true)
+      .order('display_order', { ascending: true });
+    if (locErr) throw locErr;
+    _attLocations = locs || [];
+
+    // Fetch all entry subtotals via summing
+    const { data: entries, error: entErr } = await sb
+      .from('attendance_count_entries')
+      .select('location_id, count_amount, recorded_at');
+    if (entErr) throw entErr;
+
+    // Build per-location subtotals and last-entry info
+    const subtotals = {};
+    const lastEntry = {};
+    (entries || []).forEach(function(e) {
+      subtotals[e.location_id] = (subtotals[e.location_id] || 0) + (e.count_amount || 0);
+      if (!lastEntry[e.location_id] || e.recorded_at > lastEntry[e.location_id].recorded_at) {
+        lastEntry[e.location_id] = e;
+      }
+    });
+
+    // Grand total
+    const grand = Object.values(subtotals).reduce(function(s, v) { return s + v; }, 0);
+    const grandEl = document.getElementById('tracker-grand-total');
+    if (grandEl) grandEl.textContent = grand.toLocaleString();
+    const statEl = document.getElementById('stat-participants');
+    if (statEl) statEl.textContent = grand.toLocaleString();
+
+    // Render location cards
+    if (!_attLocations.length) {
+      cardsEl.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);">No active locations. Add one via Manage Locations.</p>';
+      return;
+    }
+    cardsEl.innerHTML = _attLocations.map(function(loc) {
+      const sub = subtotals[loc.id] || 0;
+      const last = lastEntry[loc.id];
+      const lastTs = last ? _fmtTs(last.recorded_at) : 'No entries yet';
+      const lastAmt = last ? last.count_amount : '–';
+      return '<div class="att-location-card">' +
+        '<div class="att-location-header">' +
+          '<span class="att-location-name">📍 ' + escHtml(loc.location_name) + '</span>' +
+          '<span class="att-location-subtotal">' + sub.toLocaleString() + '</span>' +
+        '</div>' +
+        '<div class="att-location-meta">Last count: <strong>' + lastAmt + '</strong> &nbsp;·&nbsp; ' + escHtml(lastTs) + '</div>' +
+        '<div class="att-location-actions">' +
+          '<button class="att-record-btn" onclick="openAttRecordModal(' + JSON.stringify(loc.id) + ')">＋ Record Count</button>' +
+          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;" onclick="renameAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✏️</button>' +
+          '<button class="btn btn-ghost btn-sm" style="flex:0 0 auto;color:var(--cf-coral);" onclick="deactivateAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    console.log('[ERROR] _loadAttLocations:', e?.message || String(e));
+    cardsEl.innerHTML = '<p style="color:var(--cf-coral);font-size:0.82rem;">Failed to load locations: ' + escHtml(e?.message || '') + '</p>';
+  }
+}
+
+async function _loadAttRecentEntries() {
+  const el = document.getElementById('att-recent-entries');
+  try {
+    const { data, error } = await sb
+      .from('attendance_count_entries')
+      .select('id, count_amount, recorded_at, notes, location_id, recorded_by')
+      .order('recorded_at', { ascending: false })
+      .limit(30);
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);">No count entries yet.</p>';
+      return;
+    }
+
+    // Build location name map
+    const locMap = {};
+    _attLocations.forEach(function(l) { locMap[l.id] = l.location_name; });
+
+    el.innerHTML = '<div style="overflow-x:auto;"><table class="att-entries-table">' +
+      '<thead><tr>' +
+        '<th>Time</th><th>Location</th><th>Count</th><th>Notes</th><th></th>' +
+      '</tr></thead><tbody>' +
+      data.map(function(r) {
+        const locName = locMap[r.location_id] || '–';
+        return '<tr>' +
+          '<td style="white-space:nowrap;">' + escHtml(_fmtTs(r.recorded_at)) + '</td>' +
+          '<td>' + escHtml(locName) + '</td>' +
+          '<td><span class="att-count-badge">' + (r.count_amount || 0).toLocaleString() + '</span></td>' +
+          '<td style="color:var(--text-muted);font-size:0.75rem;">' + escHtml(r.notes || '') + '</td>' +
+          '<td><button class="btn btn-ghost btn-sm" style="font-size:0.7rem;color:var(--cf-coral);padding:3px 8px;" ' +
+            'onclick="deleteAttEntry(' + JSON.stringify(r.id) + ')">🗑</button></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  } catch(e) {
+    console.log('[ERROR] _loadAttRecentEntries:', e?.message || String(e));
+    el.innerHTML = '<p style="color:var(--cf-coral);font-size:0.82rem;">Failed to load entries.</p>';
+  }
+}
+
+/* ── Record Count Modal ────────────────────────────────────── */
+function openAttRecordModal(preselectedLocationId) {
+  // Populate location dropdown
+  const sel = document.getElementById('att-modal-location');
+  sel.innerHTML = '<option value="">Select location…</option>' +
+    _attLocations.map(function(l) {
+      const sel_ = (l.id === preselectedLocationId) ? ' selected' : '';
+      return '<option value="' + escHtml(l.id) + '"' + sel_ + '>' + escHtml(l.location_name) + '</option>';
+    }).join('');
+  document.getElementById('att-modal-count').value = '';
+  document.getElementById('att-modal-notes').value = '';
+  document.getElementById('att-modal-feedback').textContent = '';
+  document.getElementById('att-record-modal').classList.add('open');
+  setTimeout(function() { document.getElementById('att-modal-count').focus(); }, 120);
+}
+
+function closeAttRecordModal() {
+  document.getElementById('att-record-modal').classList.remove('open');
+}
+
+async function saveAttCount() {
+  const locId   = document.getElementById('att-modal-location').value;
+  const countRaw = document.getElementById('att-modal-count').value;
+  const notes   = document.getElementById('att-modal-notes').value.trim();
+  const fbEl    = document.getElementById('att-modal-feedback');
+
+  fbEl.textContent = '';
+  if (!locId)        { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = 'Please select a location.'; return; }
+  if (countRaw === '') { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = 'Please enter a count.'; return; }
+  const countAmt = parseInt(countRaw, 10);
+  if (isNaN(countAmt) || countAmt < 0) { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = 'Count must be 0 or more.'; return; }
+
+  if (!sb) { fbEl.style.color = 'var(--cf-coral)'; fbEl.textContent = 'Supabase not configured.'; return; }
+
+  setBtn('att-save-btn', true, 'Saving…');
+  const row = {
+    location_id:  locId,
+    count_amount: countAmt,
+    notes:        notes || null,
+    recorded_by:  currentUser ? currentUser.id : null,
+  };
+  const { error } = await sb.from('attendance_count_entries').insert(row);
+  setBtn('att-save-btn', false, 'Save Count');
+
+  if (error) {
+    fbEl.style.color = 'var(--cf-coral)';
+    fbEl.textContent = error.message;
+    console.log('[ERROR] saveAttCount:', error.message);
+  } else {
+    closeAttRecordModal();
+    showToast('✅ Count recorded!', 'success');
+    await loadAttendanceDashboard();
+  }
+}
+
+async function deleteAttEntry(id) {
+  if (!confirm('Delete this count entry? This cannot be undone.\n\nFor corrections, consider adding a new entry with a corrective note instead.')) return;
+  const { error } = await sb.from('attendance_count_entries').delete().eq('id', id);
+  if (error) { showToast('Delete failed: ' + error.message, 'error'); return; }
+  showToast('Entry deleted.', 'success');
+  await loadAttendanceDashboard();
+}
+
+/* ── Location Management Modal ────────────────────────────── */
+async function openAttLocationMgr() {
+  document.getElementById('att-location-modal').classList.add('open');
+  await _renderAttLocationsList();
+}
+
+function closeAttLocationMgr() {
+  document.getElementById('att-location-modal').classList.remove('open');
+}
+
+async function _renderAttLocationsList() {
+  const el = document.getElementById('att-locations-list');
+  if (!sb) { el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);">Supabase not configured.</p>'; return; }
+  const { data, error } = await sb
+    .from('attendance_locations')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (error || !data) { el.innerHTML = '<p style="color:var(--cf-coral);">Failed to load.</p>'; return; }
+  if (!data.length) { el.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);">No locations defined.</p>'; return; }
+  el.innerHTML = data.map(function(loc) {
+    const activeLabel = loc.active
+      ? '<span class="badge badge-teal" style="font-size:0.65rem;padding:2px 7px;">Active</span>'
+      : '<span class="badge" style="font-size:0.65rem;padding:2px 7px;background:rgba(255,255,255,0.06);color:var(--text-muted);">Inactive</span>';
+    const toggleBtn = loc.active
+      ? '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-coral);" onclick="setAttLocationActive(' + JSON.stringify(loc.id) + ',false)">Deactivate</button>'
+      : '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;color:var(--cf-green);" onclick="setAttLocationActive(' + JSON.stringify(loc.id) + ',true)">Reactivate</button>';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--card-border);">' +
+      '<div style="flex:1;font-size:0.85rem;font-weight:600;">' + escHtml(loc.location_name) + ' ' + activeLabel + '</div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0;">' +
+        '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem;" onclick="renameAttLocation(' + JSON.stringify(loc.id) + ',' + JSON.stringify(loc.location_name) + ')">✏️ Rename</button>' +
+        toggleBtn +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function addAttLocation() {
+  const nameEl  = document.getElementById('att-new-loc-name');
+  const orderEl = document.getElementById('att-new-loc-order');
+  const fbEl    = document.getElementById('att-loc-feedback');
+  const name = nameEl.value.trim();
+  const order = parseInt(orderEl.value, 10) || 10;
+  fbEl.textContent = '';
+  if (!name) { fbEl.style.color='var(--cf-coral)'; fbEl.textContent='Name required.'; return; }
+  if (!sb)   { fbEl.style.color='var(--cf-coral)'; fbEl.textContent='Supabase not configured.'; return; }
+  setBtn('att-add-loc-btn', true, 'Adding…');
+  const { error } = await sb.from('attendance_locations').insert({ location_name: name, display_order: order });
+  setBtn('att-add-loc-btn', false, '＋ Add Location');
+  if (error) { fbEl.style.color='var(--cf-coral)'; fbEl.textContent=error.message; return; }
+  nameEl.value = '';
+  fbEl.style.color='var(--cf-green)'; fbEl.textContent='✅ Added!';
+  await _renderAttLocationsList();
+  await _loadAttLocations();
+}
+
+async function renameAttLocation(id, currentName) {
+  const newName = prompt('Rename location:', currentName);
+  if (!newName || !newName.trim() || newName.trim() === currentName) return;
+  const { error } = await sb.from('attendance_locations').update({ location_name: newName.trim(), updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast('Rename failed: ' + error.message, 'error'); return; }
+  showToast('✅ Location renamed', 'success');
+  await _renderAttLocationsList();
+  await _loadAttLocations();
+}
+
+async function setAttLocationActive(id, active) {
+  const { error } = await sb.from('attendance_locations').update({ active: active, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { showToast((active ? 'Reactivate' : 'Deactivate') + ' failed: ' + error.message, 'error'); return; }
+  showToast(active ? '✅ Location reactivated' : 'Location deactivated', 'success');
+  await _renderAttLocationsList();
+  await _loadAttLocations();
+}
+
+async function deactivateAttLocation(id, name) {
+  if (!confirm('Deactivate "' + name + '"?\n\nHistorical count data will be preserved. You can reactivate it from Manage Locations.')) return;
+  await setAttLocationActive(id, false);
+}
+
+/* ── Helpers ───────────────────────────────────────────────── */
+function _fmtTs(ts) {
+  if (!ts) return '–';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + ' ' +
+         d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+/* ── Export CSV ────────────────────────────────────────────── */
+async function exportAttendanceCSV() {
+  if (!sb) { showToast('Configure Supabase to export', 'info'); return; }
+
+  // Fetch entries
+  const { data: entries, error } = await sb
+    .from('attendance_count_entries')
+    .select('recorded_at, location_id, count_amount, recorded_by, notes')
+    .order('recorded_at', { ascending: false });
+  if (error || !entries) { showToast('Export failed: ' + (error?.message || 'no data'), 'error'); return; }
+
+  // Fetch all locations for name lookup
+  const { data: locs } = await sb.from('attendance_locations').select('id, location_name');
+  const locMap = {};
+  (locs || []).forEach(function(l) { locMap[l.id] = l.location_name; });
+
+  // Detailed entries CSV
+  const headers = ['recorded_at', 'location_name', 'count_amount', 'recorded_by', 'notes'];
+  const rows = entries.map(function(r) {
+    return [
+      r.recorded_at || '',
+      locMap[r.location_id] || r.location_id || '',
+      r.count_amount || 0,
+      r.recorded_by || '',
+      r.notes || '',
+    ].map(function(v) { return JSON.stringify(String(v)); }).join(',');
+  });
+  const csv = headers.join(',') + '\n' + rows.join('\n');
+  _downloadCSV(csv, 'attendance_entries_' + _csvDate() + '.csv');
+
+  // Summary CSV
+  const subMap = {};
+  entries.forEach(function(r) {
+    const n = locMap[r.location_id] || r.location_id;
+    subMap[n] = (subMap[n] || 0) + (r.count_amount || 0);
+  });
+  const grand = Object.values(subMap).reduce(function(s,v){return s+v;},0);
+  const sumRows = Object.entries(subMap).map(function(kv) {
+    return JSON.stringify(kv[0]) + ',' + kv[1] + ',' + grand;
+  });
+  const sumCSV = 'location_name,subtotal,grand_total\n' + sumRows.join('\n');
+  setTimeout(function() { _downloadCSV(sumCSV, 'attendance_summary_' + _csvDate() + '.csv'); }, 400);
+
+  showToast('✅ Exported 2 CSV files', 'success');
+}
+
+function _downloadCSV(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function _csvDate() {
+  return new Date().toISOString().slice(0,10);
 }
 
 /* ============================================================
@@ -5648,9 +5972,7 @@ function loadDemoData() {
   setCount('count-announce', announcements.length);
   document.getElementById('body-announce').innerHTML = announcements.map(renderAnnouncement).join('');
 
-  // Load tracker from localStorage
-  loadTrackerFromLocalStorage();
-  renderTrackerGates();
+  // Attendance is Supabase-backed; no demo data for tracker
 }
 
 function setCount(id, val) {
