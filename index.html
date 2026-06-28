@@ -9,20 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CultureFest App">
-
-<!-- ============================================================
-     PWA — Web App Manifest & Icons
-     ============================================================
-     start_url in manifest.json is currently set to './index.html'
-     which works on GitHub Pages (relative to the repo root).
-     When migrating to airdrieculturefest.com, update start_url
-     in manifest.json to '/' or the canonical path as needed.
-     ============================================================ -->
-<link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="CultureFest">
 
 <!-- ============================================================
      AIRDRIE CULTUREFEST HUB
@@ -2512,7 +2499,7 @@ pre, code {
         <span class="pill-icon">🌿</span>Grass Demos
       </button>
       <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-cultural')">
-        <span class="pill-icon">🏮</span>Cultural
+        <span class="pill-icon">🪇</span>Cultural Activities
       </button>
       <button class="nav-pill pill-kids" onclick="scrollToSection('sec-kids')">
         <span class="pill-icon">🎠</span>Kids Zone
@@ -2585,7 +2572,7 @@ pre, code {
     <div class="section-accordion" id="sec-cultural" style="--section-color: var(--cf-purple)">
       <button class="accordion-header" onclick="toggleAccordion('sec-cultural')">
         <div class="accordion-title-wrap">
-          <span class="accordion-icon">🏮</span>
+          <span class="accordion-icon">🪇</span>
           <span id="sec-cultural-label">Cultural Activities</span>
           <span class="accordion-count" id="count-cultural">–</span>
         </div>
@@ -4580,7 +4567,7 @@ const DEFAULT_SECTIONS = [
   { value: 'main_stage',      label: 'Main Stage Performance',         icon: '🎤', color: 'gold',   deletable: false },
   { value: 'secondary_stage', label: 'Secondary Stage Performance',    icon: '🎵', color: 'blue',   deletable: false },
   { value: 'grass',           label: 'Grass Performance / Demonstration', icon: '🌿', color: 'green',  deletable: false },
-  { value: 'cultural',        label: 'Cultural Activity',              icon: '🏮', color: 'purple', deletable: false },
+  { value: 'cultural',        label: 'Cultural Activities',            icon: '🪇', color: 'purple', deletable: false },
   { value: 'kids',            label: 'Kids Zone Activity',             icon: '🎠', color: 'pink',   deletable: false },
 ];
 
@@ -9419,18 +9406,5 @@ function clearCsvImport() {
   - Print-friendly schedule view
 
   ============================================================ -->
-
-<!-- ============================================================
-     PWA — Service Worker Registration, Install Banner & Offline
-     File: pwa-install.js  (repo root, alongside index.html)
-     ============================================================
-     This script:
-       • Registers service-worker.js (caches static assets only).
-       • Shows a slide-up install banner for Android and iPhone.
-       • Shows an offline notice bar when connectivity is lost.
-       • Adds .cf-offline to <body> when offline.
-     Supabase auth, password.html, and API calls are unaffected.
-     ============================================================ -->
-<script src="./pwa-install.js"></script>
 </body>
 </html>
