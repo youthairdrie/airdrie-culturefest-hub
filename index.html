@@ -9,7 +9,20 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CultureFest">
+<meta name="apple-mobile-web-app-title" content="CultureFest App">
+
+<!-- ============================================================
+     PWA — Web App Manifest & Icons
+     ============================================================
+     start_url in manifest.json is currently set to './index.html'
+     which works on GitHub Pages (relative to the repo root).
+     When migrating to airdrieculturefest.com, update start_url
+     in manifest.json to '/' or the canonical path as needed.
+     ============================================================ -->
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 
 <!-- ============================================================
      AIRDRIE CULTUREFEST HUB
@@ -9406,5 +9419,18 @@ function clearCsvImport() {
   - Print-friendly schedule view
 
   ============================================================ -->
+
+<!-- ============================================================
+     PWA — Service Worker Registration, Install Banner & Offline
+     File: pwa-install.js  (repo root, alongside index.html)
+     ============================================================
+     This script:
+       • Registers service-worker.js (caches static assets only).
+       • Shows a slide-up install banner for Android and iPhone.
+       • Shows an offline notice bar when connectivity is lost.
+       • Adds .cf-offline to <body> when offline.
+     Supabase auth, password.html, and API calls are unaffected.
+     ============================================================ -->
+<script src="./pwa-install.js"></script>
 </body>
 </html>
