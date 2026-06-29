@@ -3128,7 +3128,7 @@ pre, code {
       <button class="nav-tab hidden" id="vol-tab" onclick="showPage('volunteer')">🙌 Volunteer</button>
       <button class="nav-tab hidden" id="admin-tab" onclick="showPage('admin')">⚙️ Admin</button>
       <button class="nav-tab" id="login-tab" onclick="showPage('vol-login')">🔑 Sign In</button>
-      <button class="nav-tab hidden" id="pwa-install-btn" onclick="triggerPwaInstall()" title="Add to Home Screen">📲 Install</button>
+      <button class="nav-tab" id="pwa-install-btn" onclick="triggerPwaInstall()" title="Add to Home Screen">📲 Install</button>
     </nav>
 
     <!-- User chip (shown when logged in) -->
@@ -4883,9 +4883,7 @@ let _pwaInstallPrompt = null; // holds the deferred BeforeInstallPromptEvent
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault(); // stop the browser's default mini-infobar
   _pwaInstallPrompt = e;
-  // Show our Install nav button
-  const btn = document.getElementById('pwa-install-btn');
-  if (btn) btn.classList.remove('hidden');
+  // Prompt is now available — button is already visible
 });
 
 // If the user installs the app, hide our button
