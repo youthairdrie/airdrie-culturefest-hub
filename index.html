@@ -2404,6 +2404,203 @@ pre, code {
   text-align: right;
 }
 
+/* ============================================================
+   MAP LIGHTBOX
+   ============================================================ */
+#map-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0,0,0,0.96);
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  touch-action: none; /* we manage all touch ourselves */
+}
+#map-lightbox.open { display: flex; }
+
+/* Top bar */
+#map-lightbox-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: env(safe-area-inset-top, 8px) 16px 10px;
+  padding-top: max(env(safe-area-inset-top), 12px);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+  pointer-events: none; /* pass touches through except the button */
+}
+#map-lightbox-close {
+  pointer-events: all;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+#map-lightbox-close:hover { background: rgba(255,255,255,0.22); }
+
+#map-lightbox-hint {
+  pointer-events: none;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+}
+
+/* The scrollable/zoomable container */
+#map-lightbox-viewport {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+#map-lightbox-viewport:active { cursor: grabbing; }
+
+#map-lightbox-img {
+  /* transform is applied via JS — do NOT set width/height here */
+  display: block;
+  max-width: none; /* JS controls sizing */
+  transform-origin: 0 0;
+  transition: none; /* smoothness handled by JS on gesture end */
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none; /* touches go to viewport */
+}
+
+/* Tap-to-zoom hint on the public map thumbnail */
+.map-tap-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  width: fit-content;
+}
+
+.map-updated-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Clickable map wrapper */
+.map-img-wrap {
+  position: relative;
+  cursor: zoom-in;
+  display: block;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+}
+.map-img-wrap img {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-sm);
+}
+.map-img-wrap::after {
+  content: '🔍';
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  font-size: 1.1rem;
+  background: rgba(0,0,0,0.55);
+  border-radius: 8px;
+  padding: 4px 8px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* ============================================================
+   PARKING BULLET LIST
+   ============================================================ */
+.parking-content { padding: 8px 0; }
+.parking-content p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.parking-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+.parking-content ul li {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  padding: 5px 0 5px 22px;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.parking-content ul li:last-child { border-bottom: none; }
+.parking-content ul li::before {
+  content: '🅿️';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+/* Headings within parking content */
+.parking-content .parking-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--cf-blue);
+  margin: 14px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(56,189,248,0.15);
+}
+
+/* ============================================================
+   ANNOUNCEMENT LINK BUTTON
+   ============================================================ */
+.ann-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(56,189,248,0.1);
+  border: 1px solid rgba(56,189,248,0.25);
+  color: var(--cf-blue);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+  word-break: break-word;
+}
+.ann-link-btn:hover { background: rgba(56,189,248,0.18); }
+
 /* ─── VERY SMALL SCREENS (iPhone SE: 375px) ───────────────── */
 @media (max-width: 390px) {
   .hero-title { font-size: 1.4rem; }
@@ -3183,6 +3380,16 @@ pre, code {
           </div>
           <input type="hidden" id="ann-existing-image-url">
         </div>
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="input-label">Link Text (optional)</label>
+            <input type="text" class="input-field" id="ann-link-text" placeholder="e.g. View full details">
+          </div>
+          <div class="form-group">
+            <label class="input-label">Link URL (optional)</label>
+            <input type="url" class="input-field" id="ann-link-url" placeholder="https://...">
+          </div>
+        </div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-primary" id="ann-save-btn" onclick="adminSaveAnnouncement()">Post Announcement</button>
           <button class="btn btn-ghost btn-sm" onclick="clearAnnouncementForm()">Clear</button>
@@ -3659,7 +3866,9 @@ pre, code {
       <!-- Parking Info -->
       <div class="admin-form">
         <h4>🅿️ Parking Information</h4>
-        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">Enter parking details for festival visitors. Supports line breaks.</p>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">
+          Enter parking details for festival visitors. Use <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;">-&nbsp;item</code> on its own line to create a bullet point, and <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;">## Heading</code> to add a section heading. Regular lines become paragraphs.
+        </p>
         <div class="form-group">
           <label class="input-label">Parking Details</label>
           <textarea class="input-field" id="parking-text" rows="6" placeholder="e.g. Free parking is available at the field east of the main entrance..."></textarea>
@@ -4032,6 +4241,19 @@ pre, code {
   </div><!-- /onboarding-overlay -->
 
 </main><!-- /main-content -->
+
+<!-- ============================================================
+     MAP LIGHTBOX (full-screen pinch-to-zoom)
+     ============================================================ -->
+<div id="map-lightbox" role="dialog" aria-modal="true" aria-label="Festival Map full screen">
+  <div id="map-lightbox-bar">
+    <button id="map-lightbox-close" onclick="closeMapLightbox()" aria-label="Close map">✕ Close</button>
+    <span id="map-lightbox-hint">Pinch to zoom · Double-tap to reset</span>
+  </div>
+  <div id="map-lightbox-viewport">
+    <img id="map-lightbox-img" src="" alt="Festival Map full size">
+  </div>
+</div>
 
 <!-- Toast container -->
 <div id="toast-container"></div>
@@ -5061,11 +5283,20 @@ async function loadFestivalMap() {
     const data = await publicQuery('public_info', { setting_key: 'eq.festival_map_url' });
     const row = data && data[0];
     if (row && row.setting_value) {
-      body.innerHTML = `<div style="padding:8px 0;">
-        <img src="${escHtml(row.setting_value)}" alt="Festival Map"
-             style="width:100%;max-width:100%;border-radius:var(--radius-sm);display:block;"
-             onerror="this.parentElement.innerHTML='<p style=&quot;color:var(--text-muted);font-size:0.85rem;&quot;>Map image could not be loaded.</p>'">
-      </div>`;
+      const updatedStr = row.updated_at
+        ? new Date(row.updated_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })
+        : '';
+      body.innerHTML = `
+        <div style="padding:8px 0;">
+          <div class="map-img-wrap" onclick="openMapLightbox(${JSON.stringify(escHtml(row.setting_value))})"
+               role="button" tabindex="0" aria-label="View festival map full screen"
+               onkeydown="if(event.key==='Enter'||event.key===' ')openMapLightbox(${JSON.stringify(escHtml(row.setting_value))})">
+            <img src="${escHtml(row.setting_value)}" alt="Festival Map"
+                 onerror="this.closest('.map-img-wrap').outerHTML='<p style=&quot;color:var(--text-muted);font-size:0.85rem;&quot;>Map image could not be loaded.</p>'">
+          </div>
+          <div class="map-tap-hint">🔍 Tap map to view full screen &amp; zoom</div>
+          ${updatedStr ? `<div class="map-updated-date">🗓 Updated ${escHtml(updatedStr)}</div>` : ''}
+        </div>`;
     } else {
       body.innerHTML = renderEmpty('No festival map uploaded yet. Check back soon!');
     }
@@ -5082,11 +5313,7 @@ async function loadParkingInfo() {
     const data = await publicQuery('public_info', { setting_key: 'eq.parking_info' });
     const row = data && data[0];
     if (row && row.setting_value && row.setting_value.trim()) {
-      const html = row.setting_value
-        .split('\n')
-        .map(line => line.trim() ? `<p style="margin-bottom:10px;font-size:0.9rem;color:var(--text-secondary);line-height:1.65;">${escHtml(line)}</p>` : '<br>')
-        .join('');
-      body.innerHTML = `<div style="padding:8px 0;">${html}</div>`;
+      body.innerHTML = `<div class="parking-content">${renderParkingMarkdown(row.setting_value)}</div>`;
     } else {
       body.innerHTML = renderEmpty('Parking information coming soon.');
     }
@@ -5094,6 +5321,47 @@ async function loadParkingInfo() {
     body.innerHTML = renderEmpty('Parking information coming soon.');
     console.log('[ERROR] loadParkingInfo:', e?.message || String(e));
   }
+}
+
+/* Mini-markdown renderer for parking info.
+   Supports:
+     ## Heading text          → styled heading
+     - Bullet item            → bullet list item (consecutive - lines grouped)
+     regular text             → paragraph
+   Blank lines are ignored between blocks. */
+function renderParkingMarkdown(text) {
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+
+  lines.forEach(function(rawLine) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      // Blank line — close any open list
+      if (inList) { html += '</ul>'; inList = false; }
+      return;
+    }
+
+    if (line.startsWith('## ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<div class="parking-heading">${escHtml(line.slice(3).trim())}</div>`;
+      return;
+    }
+
+    if (line.startsWith('- ')) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += `<li>${escHtml(line.slice(2).trim())}</li>`;
+      return;
+    }
+
+    // Regular paragraph line
+    if (inList) { html += '</ul>'; inList = false; }
+    html += `<p>${escHtml(line)}</p>`;
+  });
+
+  if (inList) html += '</ul>';
+  return html;
 }
 
 /* ============================================================
@@ -5147,11 +5415,18 @@ function renderAnnouncement(ann) {
            style="width:100%;max-width:100%;border-radius:var(--radius-sm);margin-bottom:10px;display:block;"
            onerror="this.style.display='none'">`
     : '';
+  // Link button — only shown when both link_url and link_text are present; link_url alone also works
+  const linkHtml = ann.link_url
+    ? `<a class="ann-link-btn" href="${escHtml(ann.link_url)}" target="_blank" rel="noopener noreferrer">
+         🔗 ${escHtml(ann.link_text || 'Learn more')}
+       </a>`
+    : '';
   return `
     <div class="announcement-item">
       ${imgHtml}
       <div class="announcement-title">📢 ${escHtml(ann.title || 'Announcement')}</div>
       <div class="announcement-body">${escHtml(ann.body || ann.message || '')}</div>
+      ${linkHtml}
       ${time ? `<div class="announcement-time">${time}</div>` : ''}
     </div>`;
 }
@@ -5541,12 +5816,48 @@ async function adminSaveAnnouncement() {
     audience:    document.getElementById('ann-audience').value,
     body:        document.getElementById('ann-body').value.trim(),
     is_published:true,
+    link_text:   document.getElementById('ann-link-text').value.trim() || null,
+    link_url:    document.getElementById('ann-link-url').value.trim()  || null,
   };
   if (!row.title || !row.body) { showFeedback('ann-feedback', 'Title and message are required.', false); return; }
 
   // Handle image
-  const imageFile = document.getElementById('ann-image').files[0];
+  const imageFile  = document.getElementById('ann-image').files[0];
   const existingUrl = document.getElementById('ann-existing-image-url').value;
+
+  if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
+
+  setBtn('ann-save-btn', true, 'Posting…');
+
+  // Upload new image if provided
+  if (imageFile) {
+    try {
+      const ext  = imageFile.name.split('.').pop().toLowerCase();
+      const path = `announcements/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await sb.storage
+        .from('culturefest-public')
+        .upload(path, imageFile, { contentType: imageFile.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: urlData } = sb.storage.from('culturefest-public').getPublicUrl(path);
+      row.image_url = urlData.publicUrl;
+    } catch(e) {
+      setBtn('ann-save-btn', false);
+      showFeedback('ann-feedback', '❌ Image upload failed: ' + (e.message || 'Unknown error'), false);
+      return;
+    }
+  } else if (existingUrl) {
+    row.image_url = existingUrl; // keep existing image on edit
+  }
+  // If no image and no existing, image_url stays undefined (null in DB)
+
+  const { error } = id
+    ? await sb.from('announcements').update(row).eq('id', id)
+    : await sb.from('announcements').insert(row);
+  setBtn('ann-save-btn', false);
+
+  if (error) { console.log('[ERROR] adminSaveAnnouncement error:', error.message); showFeedback('ann-feedback', error.message, false); }
+  else { showFeedback('ann-feedback', '✅ Posted!', true); clearAnnouncementForm(); await loadAdminAnnouncementsTable(); }
+}
 
   if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
 
@@ -5660,7 +5971,9 @@ function clearFoodForm() {
   clearAdminFormDirty();
 }
 function clearAnnouncementForm() {
-  ['ann-edit-id','ann-title','ann-body','ann-existing-image-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['ann-edit-id','ann-title','ann-body','ann-existing-image-url','ann-link-text','ann-link-url'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   const imgInput = document.getElementById('ann-image');
   if (imgInput) imgInput.value = '';
   const preview = document.getElementById('ann-image-preview');
@@ -5786,6 +6099,245 @@ async function adminSaveParking() {
   if (error) { showFeedback('parking-feedback', '❌ ' + error.message, false); }
   else { showFeedback('parking-feedback', '✅ Parking info saved!', true); loadParkingInfo(); }
 }
+
+/* ============================================================
+   MAP LIGHTBOX — pinch-to-zoom, drag-to-pan, double-tap reset
+   ============================================================ */
+(function() {
+  /* State */
+  var _open   = false;
+  var _imgSrc = '';
+  var _scale  = 1;
+  var _minScale = 1;
+  var _maxScale = 8;
+  var _originX = 0; // pan offset in CSS px
+  var _originY = 0;
+  var _imgNatW = 0;
+  var _imgNatH = 0;
+
+  /* Touch tracking */
+  var _lastTap   = 0;
+  var _pointers  = []; // active pointer events
+  var _lastDist  = null;
+  var _lastMidX  = null;
+  var _lastMidY  = null;
+  var _dragStartX = null;
+  var _dragStartY = null;
+  var _dragOriginX = null;
+  var _dragOriginY = null;
+
+  function _el(id) { return document.getElementById(id); }
+
+  function _applyTransform(smooth) {
+    var img = _el('map-lightbox-img');
+    if (!img) return;
+    if (smooth) img.style.transition = 'transform 0.22s ease';
+    else        img.style.transition = 'none';
+    img.style.transform = 'translate(' + _originX + 'px,' + _originY + 'px) scale(' + _scale + ')';
+  }
+
+  function _clampPan() {
+    /* After scaling, the image may be smaller than the viewport — clamp
+       so that the image never drifts off-screen entirely. */
+    var vp  = _el('map-lightbox-viewport');
+    if (!vp || !_imgNatW) return;
+    var vpW = vp.clientWidth;
+    var vpH = vp.clientHeight;
+    var iW  = _imgNatW * _scale;  // displayed image size
+    var iH  = _imgNatH * _scale;
+
+    /* The image is positioned with transform-origin 0 0 relative to
+       the top-left of the viewport centred container. We need to
+       compute how much slack we have. */
+    var imgBaseX = (vpW - _imgNatW) / 2; // where image left edge sits at scale=1
+    var imgBaseY = (vpH - _imgNatH) / 2;
+
+    /* Extra space added by scaling */
+    var extraW = (iW - _imgNatW) / 2;
+    var extraH = (iH - _imgNatH) / 2;
+
+    var maxPanX = extraW + Math.max(0, (iW - vpW) / 2);
+    var maxPanY = extraH + Math.max(0, (iH - vpH) / 2);
+
+    _originX = Math.max(-maxPanX, Math.min(maxPanX, _originX));
+    _originY = Math.max(-maxPanY, Math.min(maxPanY, _originY));
+  }
+
+  function _resetView(smooth) {
+    _scale   = _minScale;
+    _originX = 0;
+    _originY = 0;
+    _applyTransform(smooth !== false);
+  }
+
+  /* ── Public API ─────────────────────────────────────────── */
+  window.openMapLightbox = function(src) {
+    var lb  = _el('map-lightbox');
+    var img = _el('map-lightbox-img');
+    if (!lb || !img) return;
+    _imgSrc = src;
+    _open   = true;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    /* Load image, then size it to fit the viewport */
+    img.onload = function() {
+      _imgNatW = img.naturalWidth  || img.width  || 800;
+      _imgNatH = img.naturalHeight || img.height || 600;
+      var vp  = _el('map-lightbox-viewport');
+      var vpW = vp ? vp.clientWidth  : window.innerWidth;
+      var vpH = vp ? vp.clientHeight : window.innerHeight;
+      /* Set the rendered size of the image to fill the viewport */
+      var fitScale = Math.min(vpW / _imgNatW, vpH / _imgNatH, 1);
+      img.style.width  = (_imgNatW * fitScale) + 'px';
+      img.style.height = (_imgNatH * fitScale) + 'px';
+      /* Now that the CSS size IS fitScale × natural, scale=1 fits correctly */
+      _imgNatW = _imgNatW * fitScale; // redefine "natural" as the CSS size
+      _imgNatH = _imgNatH * fitScale;
+      _minScale = 1;
+      _resetView(false);
+    };
+    img.src = src;
+  };
+
+  window.closeMapLightbox = function() {
+    var lb = _el('map-lightbox');
+    if (!lb) return;
+    _open = false;
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    _pointers  = [];
+    _lastDist  = null;
+    /* Don't clear img.src — keeps it cached for next open */
+  };
+
+  /* Keyboard close */
+  document.addEventListener('keydown', function(e) {
+    if (_open && (e.key === 'Escape' || e.key === 'Esc')) closeMapLightbox();
+  });
+
+  /* ── Pointer events on the viewport ─────────────────────── */
+  function _getViewportEl() { return _el('map-lightbox-viewport'); }
+
+  function _updatePointer(e) {
+    for (var i = 0; i < _pointers.length; i++) {
+      if (_pointers[i].pointerId === e.pointerId) { _pointers[i] = e; return; }
+    }
+  }
+  function _removePointer(e) {
+    _pointers = _pointers.filter(function(p) { return p.pointerId !== e.pointerId; });
+  }
+
+  function _dist(a, b) {
+    return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+  }
+  function _mid(a, b) {
+    return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+  }
+
+  function _onPointerDown(e) {
+    if (!_open) return;
+    e.preventDefault();
+    _pointers.push(e);
+    if (_pointers.length === 1) {
+      /* Single finger — could be drag or double-tap */
+      _dragStartX  = e.clientX;
+      _dragStartY  = e.clientY;
+      _dragOriginX = _originX;
+      _dragOriginY = _originY;
+
+      /* Double-tap detection */
+      var now = Date.now();
+      if (now - _lastTap < 280) {
+        e.stopPropagation();
+        _resetView(true);
+        _lastTap = 0;
+        return;
+      }
+      _lastTap = now;
+    } else if (_pointers.length === 2) {
+      /* Two fingers starting — record initial distance and midpoint */
+      _lastDist = _dist(_pointers[0], _pointers[1]);
+      var m = _mid(_pointers[0], _pointers[1]);
+      _lastMidX = m.x;
+      _lastMidY = m.y;
+    }
+  }
+
+  function _onPointerMove(e) {
+    if (!_open) return;
+    e.preventDefault();
+    _updatePointer(e);
+
+    if (_pointers.length === 2) {
+      /* Pinch-to-zoom */
+      var newDist = _dist(_pointers[0], _pointers[1]);
+      var m       = _mid(_pointers[0], _pointers[1]);
+
+      if (_lastDist !== null) {
+        var ratio    = newDist / _lastDist;
+        var newScale = Math.max(_minScale, Math.min(_maxScale, _scale * ratio));
+
+        /* Pan: track midpoint movement */
+        var dx = m.x - _lastMidX;
+        var dy = m.y - _lastMidY;
+        _originX = _originX * (newScale / _scale) + dx;
+        _originY = _originY * (newScale / _scale) + dy;
+        _scale   = newScale;
+        _clampPan();
+        _applyTransform(false);
+      }
+
+      _lastDist = newDist;
+      _lastMidX = m.x;
+      _lastMidY = m.y;
+
+    } else if (_pointers.length === 1 && _dragStartX !== null) {
+      /* Single-finger pan (only if zoomed in) */
+      if (_scale <= _minScale + 0.01) return;
+      _originX = _dragOriginX + (e.clientX - _dragStartX);
+      _originY = _dragOriginY + (e.clientY - _dragStartY);
+      _clampPan();
+      _applyTransform(false);
+    }
+  }
+
+  function _onPointerUp(e) {
+    if (!_open) return;
+    _removePointer(e);
+    if (_pointers.length < 2) { _lastDist = null; }
+    if (_pointers.length === 0) {
+      _dragStartX = null;
+      _dragStartY = null;
+      /* Snap scale back to minScale if over-zoomed out */
+      if (_scale < _minScale) { _scale = _minScale; _clampPan(); _applyTransform(true); }
+    }
+  }
+
+  /* Mouse-wheel zoom for desktop */
+  function _onWheel(e) {
+    if (!_open) return;
+    e.preventDefault();
+    var delta    = e.deltaY > 0 ? 0.85 : 1.18;
+    var newScale = Math.max(_minScale, Math.min(_maxScale, _scale * delta));
+    _scale       = newScale;
+    _clampPan();
+    _applyTransform(false);
+  }
+
+  /* Attach once DOM is ready */
+  document.addEventListener('DOMContentLoaded', function() {
+    var vp = _el('map-lightbox-viewport');
+    if (!vp) return;
+    vp.addEventListener('pointerdown', _onPointerDown, { passive: false });
+    vp.addEventListener('pointermove', _onPointerMove, { passive: false });
+    vp.addEventListener('pointerup',   _onPointerUp,   { passive: true  });
+    vp.addEventListener('pointercancel',_onPointerUp,  { passive: true  });
+    vp.addEventListener('wheel',       _onWheel,       { passive: false });
+    /* Prevent context menu on long-press on mobile */
+    vp.addEventListener('contextmenu', function(e) { if (_open) e.preventDefault(); });
+  });
+})();
 
 /* Fix #7: Track unsaved changes in admin forms.
    Call markAdminFormDirty() from form input events (via oninput/onchange on
