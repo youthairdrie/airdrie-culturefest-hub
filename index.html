@@ -2781,6 +2781,322 @@ pre, code {
 
   .stat-number { font-size: 1.4rem; }
 }
+
+/* ============================================================
+   DATA GRID — inline-editable spreadsheet panel
+   ============================================================ */
+#admin-panel-datagrid {
+  padding: 0;
+}
+
+.dg-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 4px 12px;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 0;
+}
+
+.dg-table-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dg-table-tab {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.dg-table-tab:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+.dg-table-tab.active {
+  background: rgba(245,166,35,0.15);
+  border-color: rgba(245,166,35,0.4);
+  color: var(--cf-gold);
+}
+
+.dg-toolbar-right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dg-status {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.dg-status.has-changes { color: var(--cf-gold); }
+
+.dg-search {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  width: 180px;
+  transition: border-color 0.2s;
+}
+.dg-search:focus { border-color: var(--cf-gold); outline: none; }
+.dg-search::placeholder { color: var(--text-muted); }
+
+.dg-wrap {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 260px);
+  position: relative;
+}
+
+.dg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 600px;
+}
+
+.dg-table th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1a2540;
+  padding: 0;
+  border-bottom: 2px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  white-space: nowrap;
+  user-select: none;
+}
+.dg-table th:last-child { border-right: none; }
+
+.dg-th-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.dg-th-inner:hover { background: rgba(255,255,255,0.05); }
+
+.dg-col-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.dg-sort-icon { font-size: 0.65rem; color: var(--text-muted); }
+.dg-sort-icon.active { color: var(--cf-gold); }
+
+.dg-filter-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: all 0.15s;
+}
+.dg-filter-btn:hover, .dg-filter-btn.active { color: var(--cf-teal); background: rgba(0,201,177,0.12); }
+
+.dg-filter-dropdown {
+  position: absolute;
+  z-index: 100;
+  background: #1a2540;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  min-width: 200px;
+  max-width: 280px;
+  padding: 8px 0;
+  display: none;
+}
+.dg-filter-dropdown.open { display: block; }
+
+.dg-filter-search {
+  width: calc(100% - 16px);
+  margin: 0 8px 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+}
+.dg-filter-search:focus { outline: none; border-color: var(--cf-teal); }
+.dg-filter-search::placeholder { color: var(--text-muted); }
+
+.dg-filter-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 8px 6px;
+}
+.dg-filter-actions button {
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--card-border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+.dg-filter-actions button:hover { border-color: var(--cf-teal); color: var(--cf-teal); }
+
+.dg-filter-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0 4px;
+}
+
+.dg-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  transition: background 0.1s;
+}
+.dg-filter-item:hover { background: rgba(255,255,255,0.05); }
+.dg-filter-item input[type=checkbox] { accent-color: var(--cf-teal); width: 13px; height: 13px; cursor: pointer; flex-shrink: 0; }
+.dg-filter-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dg-table td {
+  padding: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-right: 1px solid rgba(255,255,255,0.03);
+  vertical-align: middle;
+  position: relative;
+}
+.dg-table td:last-child { border-right: none; }
+.dg-table tr:hover td { background: rgba(255,255,255,0.015); }
+.dg-table tr.dg-dirty td { background: rgba(245,166,35,0.04); }
+.dg-table tr.dg-dirty td:first-child { border-left: 2px solid var(--cf-gold); }
+
+.dg-cell {
+  display: block;
+  padding: 8px 10px;
+  min-height: 36px;
+  cursor: text;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.dg-cell:empty::after { content: '–'; color: var(--text-muted); }
+
+.dg-cell-input {
+  width: 100%;
+  background: rgba(245,166,35,0.08);
+  border: none;
+  border-bottom: 2px solid var(--cf-gold);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  padding: 8px 10px;
+  outline: none;
+  min-height: 36px;
+  box-sizing: border-box;
+}
+
+.dg-cell-select {
+  width: 100%;
+  background: rgba(245,166,35,0.08);
+  border: none;
+  border-bottom: 2px solid var(--cf-gold);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  padding: 8px 10px;
+  outline: none;
+  min-height: 36px;
+  cursor: pointer;
+  appearance: auto;
+}
+.dg-cell-select option { background: #1a2540; }
+
+.dg-row-actions {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.dg-save-btn {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid rgba(74,222,128,0.35);
+  background: rgba(74,222,128,0.1);
+  color: var(--cf-green);
+  font-family: var(--font-body);
+  font-weight: 700;
+  display: none;
+  transition: all 0.15s;
+}
+.dg-save-btn:hover { background: rgba(74,222,128,0.22); }
+.dg-save-btn.visible { display: inline-block; }
+
+.dg-del-btn {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid rgba(255,107,107,0.25);
+  background: rgba(255,107,107,0.08);
+  color: var(--cf-coral);
+  font-family: var(--font-body);
+  opacity: 0;
+  transition: all 0.15s;
+}
+.dg-table tr:hover .dg-del-btn { opacity: 1; }
+.dg-del-btn:hover { background: rgba(255,107,107,0.2); }
+
+.dg-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.dg-new-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--cf-teal);
+  cursor: pointer;
+  border: none;
+  background: rgba(0,201,177,0.06);
+  width: 100%;
+  border-top: 1px solid var(--card-border);
+  font-family: var(--font-body);
+  transition: background 0.15s;
+}
+.dg-new-row-btn:hover { background: rgba(0,201,177,0.12); }
 </style>
 </head>
 <body>
@@ -3304,6 +3620,7 @@ pre, code {
       <button class="admin-tab" onclick="switchAdminTab('tracker')">🚪 Attendance</button>
       <button class="admin-tab" onclick="switchAdminTab('settings-admin')">⚙️ Settings</button>
       <button class="admin-tab" onclick="switchAdminTab('csv-import')">📥 Import CSV</button>
+      <button class="admin-tab" onclick="switchAdminTab('datagrid')">🗂️ Data Grid</button>
     </div>
 
     <!-- OVERVIEW PANEL -->
@@ -4243,6 +4560,46 @@ pre, code {
         <div id="csv-import-result" style="display:none;margin-top:14px;"></div>
       </div>
     </div><!-- /csv-import panel -->
+
+    <!-- =====================================================
+         DATA GRID PANEL
+         ===================================================== -->
+    <div id="admin-panel-datagrid" class="admin-panel">
+
+      <!-- Toolbar -->
+      <div class="dg-toolbar">
+        <div class="dg-table-tabs">
+          <button class="dg-table-tab active" onclick="dgSwitchTable('stage_schedule')" id="dg-tab-stage_schedule">🎤 Schedule</button>
+          <button class="dg-table-tab" onclick="dgSwitchTable('cultural_booths')" id="dg-tab-cultural_booths">🏮 Booths</button>
+          <button class="dg-table-tab" onclick="dgSwitchTable('food_vendors')" id="dg-tab-food_vendors">🍽️ Food</button>
+          <button class="dg-table-tab" onclick="dgSwitchTable('volunteer_profiles')" id="dg-tab-volunteer_profiles">👥 Volunteers</button>
+        </div>
+        <div class="dg-toolbar-right">
+          <span class="dg-status" id="dg-status">Select a table to begin.</span>
+          <input class="dg-search" id="dg-search" placeholder="🔍 Search all columns…" oninput="dgApplyFilters()" autocomplete="off">
+          <button class="btn btn-ghost btn-sm" onclick="dgClearAllFilters()" id="dg-clear-filters" style="display:none;">✕ Clear Filters</button>
+          <button class="btn btn-primary btn-sm" onclick="dgSaveAll()" id="dg-save-all" style="display:none;">💾 Save All Changes</button>
+          <button class="btn btn-ghost btn-sm" onclick="dgRefresh()">↺ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Filter dropdown (shared, repositioned by JS) -->
+      <div id="dg-filter-dropdown" class="dg-filter-dropdown">
+        <input class="dg-filter-search" id="dg-filter-search" placeholder="Search values…" oninput="dgFilterSearch(this.value)">
+        <div class="dg-filter-actions">
+          <button onclick="dgFilterSelectAll()">Select All</button>
+          <button onclick="dgFilterClearAll()">Clear All</button>
+          <button onclick="dgCloseFilter()" style="margin-left:auto;">Apply ✓</button>
+        </div>
+        <div class="dg-filter-list" id="dg-filter-list"></div>
+      </div>
+
+      <!-- Grid container -->
+      <div class="dg-wrap" id="dg-wrap">
+        <div class="dg-empty">Select a table above to begin editing.</div>
+      </div>
+
+    </div><!-- /datagrid panel -->
 
   </div><!-- /page-admin -->
 
@@ -6867,6 +7224,10 @@ function switchAdminTab(tab) {
   // Load public info panel when it opens
   if (tab === 'public-info-admin') {
     loadPublicInfoAdminPanel();
+  }
+  // Load data grid on first open
+  if (tab === 'datagrid') {
+    if (!dgState.currentTable) dgSwitchTable('stage_schedule');
   }
 }
 
@@ -10108,6 +10469,475 @@ function clearCsvImport() {
   document.getElementById('csv-file-input').value = '';
   document.getElementById('csv-import-result').style.display = 'none';
   document.getElementById('csv-import-progress').style.display = 'none';
+}
+
+/* ============================================================
+   DATA GRID — inline-editable spreadsheet
+   ============================================================ */
+const dgState = {
+  currentTable: null,
+  rows: [],          // full dataset from Supabase
+  filtered: [],      // rows after filters applied
+  dirty: {},         // { rowId: { field: newValue, … } }
+  sortCol: null,
+  sortDir: 1,        // 1 = asc, -1 = desc
+  colFilters: {},    // { colKey: Set of allowed values }
+  openFilterCol: null,
+};
+
+/* Schema per table: which columns to show, their labels, edit type */
+const DG_SCHEMA = {
+  stage_schedule: [
+    { key: 'name',             label: 'Performer / Group',  type: 'text' },
+    { key: 'cultural_category',label: 'Cultural Category',  type: 'text' },
+    { key: 'start_time',       label: 'Start Time',         type: 'time' },
+    { key: 'end_time',         label: 'End Time',           type: 'time' },
+    { key: 'stage_location',   label: 'Stage / Location',   type: 'text' },
+    { key: 'section',          label: 'Section',            type: 'select',
+      options: ['main_stage','secondary_stage','grass','cultural','kids'] },
+    { key: 'description',      label: 'Description',        type: 'text' },
+  ],
+  cultural_booths: [
+    { key: 'name',               label: 'Booth Name',         type: 'text' },
+    { key: 'cultural_background',label: 'Cultural Background', type: 'text' },
+    { key: 'category',           label: 'Category',           type: 'text' },
+    { key: 'location',           label: 'Location',           type: 'text' },
+    { key: 'description',        label: 'Description',        type: 'text' },
+    { key: 'is_published',       label: 'Published',          type: 'select',
+      options: ['true','false'] },
+  ],
+  food_vendors: [
+    { key: 'name',             label: 'Vendor Name',      type: 'text' },
+    { key: 'vendor_type',      label: 'Type',             type: 'select',
+      options: ['vendor','truck','pavilion'] },
+    { key: 'cuisine_category', label: 'Cuisine',          type: 'text' },
+    { key: 'location',         label: 'Location',         type: 'text' },
+    { key: 'description',      label: 'Description',      type: 'text' },
+    { key: 'is_published',     label: 'Published',        type: 'select',
+      options: ['true','false'] },
+  ],
+  volunteer_profiles: [
+    { key: 'full_name',    label: 'Name',          type: 'text' },
+    { key: 'email',        label: 'Email',         type: 'text' },
+    { key: 'cell_phone',   label: 'Phone',         type: 'text' },
+    { key: 'role',         label: 'Role',          type: 'select',
+      options: ['volunteer','admin'] },
+    { key: 'role_title',   label: 'Role Title',    type: 'text' },
+    { key: 'zone',         label: 'Zone',          type: 'text' },
+    { key: 'volunteer_source', label: 'Source',    type: 'select',
+      options: ['YA-Youth','YVC-Youth','VA-Adult'] },
+    { key: 'status',       label: 'Status',        type: 'select',
+      options: ['active','inactive'] },
+    { key: 'volunteer_id', label: 'Vol ID',        type: 'readonly' },
+  ],
+};
+
+/* ── Switch active table ─────────────────────────────────── */
+async function dgSwitchTable(tableName) {
+  dgState.currentTable = tableName;
+  dgState.dirty = {};
+  dgState.colFilters = {};
+  dgState.sortCol = null;
+  dgState.openFilterCol = null;
+  document.getElementById('dg-search').value = '';
+
+  // Update sub-tab buttons
+  document.querySelectorAll('.dg-table-tab').forEach(b => b.classList.remove('active'));
+  const activeTab = document.getElementById('dg-tab-' + tableName);
+  if (activeTab) activeTab.classList.add('active');
+
+  dgUpdateSaveAllBtn();
+  dgSetStatus('Loading…');
+  await dgLoad();
+}
+
+/* ── Fetch data from Supabase ────────────────────────────── */
+async function dgLoad() {
+  const t = dgState.currentTable;
+  if (!t || !sb) { dgSetStatus('Supabase not connected.'); return; }
+
+  const orderCol = t === 'stage_schedule' ? 'start_time'
+                 : t === 'volunteer_profiles' ? 'full_name'
+                 : 'name';
+
+  const { data, error } = await sb.from(t).select('*').order(orderCol);
+  if (error) { dgSetStatus('Error: ' + error.message); return; }
+
+  dgState.rows = data || [];
+  dgState.dirty = {};
+  dgApplyFilters();
+  dgSetStatus(dgState.rows.length + ' rows');
+}
+
+/* ── Apply column filters + global search + sort ─────────── */
+function dgApplyFilters() {
+  const search = (document.getElementById('dg-search')?.value || '').toLowerCase();
+  const schema = DG_SCHEMA[dgState.currentTable] || [];
+  const hasColFilters = Object.keys(dgState.colFilters).length > 0;
+
+  let rows = dgState.rows.filter(r => {
+    // Column filters
+    for (const [col, allowed] of Object.entries(dgState.colFilters)) {
+      const val = String(r[col] ?? '');
+      if (!allowed.has(val)) return false;
+    }
+    // Global search
+    if (search) {
+      const haystack = schema.map(c => String(r[c.key] ?? '')).join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  if (dgState.sortCol) {
+    rows = [...rows].sort((a, b) => {
+      const av = String(a[dgState.sortCol] ?? '');
+      const bv = String(b[dgState.sortCol] ?? '');
+      return av.localeCompare(bv) * dgState.sortDir;
+    });
+  }
+
+  dgState.filtered = rows;
+
+  // Show/hide clear-filters button
+  const btn = document.getElementById('dg-clear-filters');
+  if (btn) btn.style.display = (hasColFilters || search) ? '' : 'none';
+
+  dgRender();
+}
+
+/* ── Render the grid ─────────────────────────────────────── */
+function dgRender() {
+  const wrap = document.getElementById('dg-wrap');
+  if (!wrap) return;
+  const schema = DG_SCHEMA[dgState.currentTable];
+  if (!schema) { wrap.innerHTML = '<div class="dg-empty">Unknown table.</div>'; return; }
+
+  const rows = dgState.filtered;
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="dg-empty">No rows match the current filters.</div>';
+    return;
+  }
+
+  let html = '<table class="dg-table"><thead><tr>';
+  schema.forEach(col => {
+    const sortActive = dgState.sortCol === col.key;
+    const sortIcon = sortActive ? (dgState.sortDir === 1 ? '▲' : '▼') : '⇅';
+    const filterActive = !!dgState.colFilters[col.key];
+    html += `<th>
+      <div class="dg-th-inner" onclick="dgSortBy('${col.key}')">
+        <span class="dg-col-label">${col.label}</span>
+        <span class="dg-sort-icon ${sortActive ? 'active' : ''}">${sortIcon}</span>
+        <button class="dg-filter-btn ${filterActive ? 'active' : ''}"
+                onclick="event.stopPropagation();dgOpenFilter('${col.key}',this)"
+                title="Filter">▾</button>
+      </div>
+    </th>`;
+  });
+  html += '<th style="min-width:90px;"></th></tr></thead><tbody>';
+
+  rows.forEach(r => {
+    const isDirty = !!dgState.dirty[r.id];
+    html += `<tr id="dg-row-${r.id}" class="${isDirty ? 'dg-dirty' : ''}">`;
+    schema.forEach(col => {
+      const pendingVal = dgState.dirty[r.id]?.[col.key];
+      const val = pendingVal !== undefined ? pendingVal : (r[col.key] ?? '');
+      const displayVal = escHtml(String(val));
+      html += `<td><div class="dg-cell" onclick="dgActivateCell(this,'${r.id}','${col.key}','${col.type}',${JSON.stringify(col.options||[]).replace(/"/g,'&quot;')})">${displayVal}</div></td>`;
+    });
+    html += `<td><div class="dg-row-actions">
+      <button class="dg-save-btn ${isDirty ? 'visible' : ''}" id="dg-savebtn-${r.id}" onclick="dgSaveRow('${r.id}')">Save</button>
+      <button class="dg-del-btn" onclick="dgDeleteRow('${r.id}')">🗑</button>
+    </div></td></tr>`;
+  });
+
+  html += '</tbody></table>';
+  html += `<button class="dg-new-row-btn" onclick="dgAddNewRow()">＋ Add New Row</button>`;
+  wrap.innerHTML = html;
+}
+
+/* ── Activate a cell for editing ────────────────────────── */
+function dgActivateCell(cellEl, rowId, colKey, colType, options) {
+  if (colType === 'readonly') return;
+  if (cellEl.querySelector('input,select')) return; // already active
+
+  const currentVal = cellEl.textContent === '–' ? '' : cellEl.textContent;
+
+  let input;
+  if (colType === 'select' && options && options.length) {
+    input = document.createElement('select');
+    input.className = 'dg-cell-select';
+    options.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt; o.textContent = opt;
+      if (opt === currentVal) o.selected = true;
+      input.appendChild(o);
+    });
+  } else {
+    input = document.createElement('input');
+    input.className = 'dg-cell-input';
+    input.type = colType === 'time' ? 'time' : 'text';
+    input.value = currentVal;
+  }
+
+  cellEl.innerHTML = '';
+  cellEl.appendChild(input);
+  input.focus();
+  if (input.select) input.select();
+
+  const commit = () => {
+    const newVal = input.value;
+    const oldRow = dgState.rows.find(r => r.id === rowId);
+    const origVal = oldRow ? String(oldRow[colKey] ?? '') : '';
+
+    if (newVal !== origVal) {
+      if (!dgState.dirty[rowId]) dgState.dirty[rowId] = {};
+      dgState.dirty[rowId][colKey] = newVal;
+    } else if (dgState.dirty[rowId]) {
+      delete dgState.dirty[rowId][colKey];
+      if (!Object.keys(dgState.dirty[rowId]).length) delete dgState.dirty[rowId];
+    }
+
+    // Update cell display
+    cellEl.textContent = newVal || '';
+
+    // Update row dirty state
+    const tr = document.getElementById('dg-row-' + rowId);
+    const saveBtn = document.getElementById('dg-savebtn-' + rowId);
+    const isDirty = !!dgState.dirty[rowId];
+    if (tr) tr.className = isDirty ? 'dg-dirty' : '';
+    if (saveBtn) { saveBtn.className = 'dg-save-btn' + (isDirty ? ' visible' : ''); }
+
+    dgUpdateSaveAllBtn();
+  };
+
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { cellEl.textContent = currentVal; }
+    if (e.key === 'Tab') { e.preventDefault(); input.blur(); dgFocusNextCell(cellEl, e.shiftKey); }
+  });
+}
+
+/* Tab-to-next-cell helper */
+function dgFocusNextCell(currentCellEl, reverse) {
+  const allCells = Array.from(document.querySelectorAll('#dg-wrap .dg-cell'));
+  const idx = allCells.indexOf(currentCellEl);
+  const next = allCells[reverse ? idx - 1 : idx + 1];
+  if (next) next.click();
+}
+
+/* ── Save a single row ───────────────────────────────────── */
+async function dgSaveRow(rowId) {
+  const changes = dgState.dirty[rowId];
+  if (!changes || !Object.keys(changes).length) return;
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+
+  const btn = document.getElementById('dg-savebtn-' + rowId);
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+
+  const { error } = await sb.from(dgState.currentTable).update(changes).eq('id', rowId);
+
+  if (error) {
+    showToast('❌ Save failed: ' + error.message, 'error');
+    if (btn) { btn.textContent = 'Save'; btn.disabled = false; }
+  } else {
+    // Merge changes into the in-memory row
+    const row = dgState.rows.find(r => r.id === rowId);
+    if (row) Object.assign(row, changes);
+    delete dgState.dirty[rowId];
+    const tr = document.getElementById('dg-row-' + rowId);
+    if (tr) tr.className = '';
+    if (btn) { btn.className = 'dg-save-btn'; btn.textContent = 'Save'; btn.disabled = false; }
+    dgUpdateSaveAllBtn();
+    showToast('✅ Row saved', 'success');
+  }
+}
+
+/* ── Save all dirty rows ─────────────────────────────────── */
+async function dgSaveAll() {
+  const ids = Object.keys(dgState.dirty);
+  if (!ids.length) return;
+  if (!confirm('Save ' + ids.length + ' changed row(s)?')) return;
+  for (const id of ids) await dgSaveRow(id);
+}
+
+/* ── Delete a row ────────────────────────────────────────── */
+async function dgDeleteRow(rowId) {
+  if (!confirm('Delete this row? This cannot be undone.')) return;
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+  const { error } = await sb.from(dgState.currentTable).delete().eq('id', rowId);
+  if (error) { showToast('❌ Delete failed: ' + error.message, 'error'); return; }
+  dgState.rows = dgState.rows.filter(r => r.id !== rowId);
+  delete dgState.dirty[rowId];
+  dgApplyFilters();
+  showToast('✅ Row deleted', 'success');
+}
+
+/* ── Add a new blank row ─────────────────────────────────── */
+async function dgAddNewRow() {
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+  const schema = DG_SCHEMA[dgState.currentTable] || [];
+  const blank = {};
+  schema.forEach(c => { if (c.type !== 'readonly') blank[c.key] = ''; });
+
+  const { data, error } = await sb.from(dgState.currentTable).insert(blank).select();
+  if (error) { showToast('❌ Could not add row: ' + error.message, 'error'); return; }
+  if (data && data[0]) {
+    dgState.rows.unshift(data[0]);
+    dgApplyFilters();
+    showToast('✅ New row added — click cells to edit', 'success');
+  }
+}
+
+/* ── Sort by column ──────────────────────────────────────── */
+function dgSortBy(colKey) {
+  if (dgState.sortCol === colKey) {
+    dgState.sortDir *= -1;
+  } else {
+    dgState.sortCol = colKey;
+    dgState.sortDir = 1;
+  }
+  dgApplyFilters();
+}
+
+/* ── Column filter dropdown ──────────────────────────────── */
+let _dgFilterCol = null;
+let _dgFilterValues = [];  // all unique values for current col
+let _dgFilterVisible = []; // values shown after filter-search
+
+function dgOpenFilter(colKey, btnEl) {
+  const dd = document.getElementById('dg-filter-dropdown');
+  if (!dd) return;
+
+  // Toggle off if same column
+  if (_dgFilterCol === colKey && dd.classList.contains('open')) {
+    dgCloseFilter(); return;
+  }
+
+  _dgFilterCol = colKey;
+  document.getElementById('dg-filter-search').value = '';
+
+  // Build unique value list from full dataset
+  const allVals = [...new Set(dgState.rows.map(r => String(r[colKey] ?? '')))].sort();
+  _dgFilterValues = allVals;
+
+  dgRenderFilterList(allVals);
+
+  // Position dropdown below the button
+  const rect = btnEl.getBoundingClientRect();
+  const wrapRect = document.getElementById('dg-wrap').getBoundingClientRect();
+  dd.style.left = Math.max(0, rect.left - wrapRect.left) + 'px';
+  dd.style.top  = (rect.bottom - wrapRect.top + 4) + 'px';
+  dd.style.position = 'absolute';
+  document.getElementById('dg-wrap').style.position = 'relative';
+  dd.classList.add('open');
+
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', _dgOutsideClick, { once: true });
+  }, 0);
+}
+
+function _dgOutsideClick(e) {
+  const dd = document.getElementById('dg-filter-dropdown');
+  if (dd && !dd.contains(e.target)) dgCloseFilter();
+}
+
+function dgCloseFilter() {
+  const dd = document.getElementById('dg-filter-dropdown');
+  if (dd) dd.classList.remove('open');
+  _dgFilterCol = null;
+  dgApplyFilters();
+}
+
+function dgFilterSearch(query) {
+  const q = query.toLowerCase();
+  _dgFilterVisible = q ? _dgFilterValues.filter(v => v.toLowerCase().includes(q)) : _dgFilterValues;
+  dgRenderFilterList(_dgFilterVisible);
+}
+
+function dgRenderFilterList(values) {
+  if (!_dgFilterVisible.length) _dgFilterVisible = values;
+  const allowed = dgState.colFilters[_dgFilterCol];
+  const html = values.map(v => {
+    const checked = !allowed || allowed.has(v);
+    return `<label class="dg-filter-item">
+      <input type="checkbox" value="${escHtml(v)}" ${checked ? 'checked' : ''}
+             onchange="dgFilterToggle(this.value, this.checked)">
+      <span>${escHtml(v) || '<em style=\'color:var(--text-muted)\'>blank</em>'}</span>
+    </label>`;
+  }).join('');
+  document.getElementById('dg-filter-list').innerHTML = html || '<div style="padding:8px;color:var(--text-muted);font-size:0.75rem;">No values found.</div>';
+}
+
+function dgFilterToggle(val, checked) {
+  if (!_dgFilterCol) return;
+  // If no filter set yet, start with all values
+  if (!dgState.colFilters[_dgFilterCol]) {
+    dgState.colFilters[_dgFilterCol] = new Set(_dgFilterValues);
+  }
+  if (checked) dgState.colFilters[_dgFilterCol].add(val);
+  else dgState.colFilters[_dgFilterCol].delete(val);
+
+  // If all are checked, remove the filter entirely
+  if (dgState.colFilters[_dgFilterCol].size === _dgFilterValues.length) {
+    delete dgState.colFilters[_dgFilterCol];
+  }
+}
+
+function dgFilterSelectAll() {
+  delete dgState.colFilters[_dgFilterCol];
+  _dgFilterVisible = _dgFilterValues;
+  dgRenderFilterList(_dgFilterValues);
+}
+
+function dgFilterClearAll() {
+  dgState.colFilters[_dgFilterCol] = new Set();
+  _dgFilterVisible = _dgFilterValues;
+  dgRenderFilterList(_dgFilterValues);
+}
+
+/* ── Clear all active filters ────────────────────────────── */
+function dgClearAllFilters() {
+  dgState.colFilters = {};
+  dgState.sortCol = null;
+  document.getElementById('dg-search').value = '';
+  dgApplyFilters();
+}
+
+/* ── Refresh from Supabase ───────────────────────────────── */
+async function dgRefresh() {
+  if (Object.keys(dgState.dirty).length) {
+    if (!confirm('Refreshing will discard unsaved changes. Continue?')) return;
+  }
+  dgState.dirty = {};
+  dgUpdateSaveAllBtn();
+  dgSetStatus('Refreshing…');
+  await dgLoad();
+}
+
+/* ── Helpers ─────────────────────────────────────────────── */
+function dgSetStatus(msg) {
+  const el = document.getElementById('dg-status');
+  if (el) { el.textContent = msg; el.className = 'dg-status'; }
+}
+
+function dgUpdateSaveAllBtn() {
+  const count = Object.keys(dgState.dirty).length;
+  const btn = document.getElementById('dg-save-all');
+  const status = document.getElementById('dg-status');
+  if (btn) btn.style.display = count > 0 ? '' : 'none';
+  if (status) {
+    if (count > 0) {
+      status.textContent = count + ' unsaved change' + (count > 1 ? 's' : '');
+      status.className = 'dg-status has-changes';
+    } else {
+      status.textContent = dgState.rows.length ? dgState.rows.length + ' rows' : 'Select a table to begin.';
+      status.className = 'dg-status';
+    }
+  }
 }
 
 </script>
