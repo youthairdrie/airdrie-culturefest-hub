@@ -3170,40 +3170,40 @@ pre, code {
     <!-- Navigation Pills -->
     <div class="nav-pills-grid">
       <button class="nav-pill pill-stage" onclick="scrollToSection('sec-stage')">
-        <span class="pill-icon">🎤</span>Main Stage
+        <span class="pill-icon">🎤</span><span id="pill-label-main_stage">Main Stage</span>
       </button>
       <button class="nav-pill pill-blue" onclick="scrollToSection('sec-secondary')">
-        <span class="pill-icon">🎵</span>Secondary Stage
+        <span class="pill-icon">🎵</span><span id="pill-label-secondary_stage">Secondary Stage</span>
       </button>
       <button class="nav-pill pill-grass" onclick="scrollToSection('sec-grass')">
-        <span class="pill-icon">🌿</span>Grass Demos
+        <span class="pill-icon">🌿</span><span id="pill-label-grass">Grass Demos</span>
       </button>
       <button class="nav-pill pill-cultural" onclick="scrollToSection('sec-cultural')">
-        <span class="pill-icon">🪇</span>Cultural Activities
+        <span class="pill-icon">🪇</span><span id="pill-label-cultural">Cultural Activities</span>
       </button>
       <button class="nav-pill pill-kids" onclick="scrollToSection('sec-kids')">
-        <span class="pill-icon">🎠</span>Kids Zone
+        <span class="pill-icon">🎠</span><span id="pill-label-kids">Kids Zone</span>
       </button>
       <button class="nav-pill pill-booths" onclick="scrollToSection('sec-booths')">
-        <span class="pill-icon">🏮</span>Cultural Booths
+        <span class="pill-icon">🏮</span><span id="pill-label-booths">Cultural Booths</span>
       </button>
       <button class="nav-pill pill-food" onclick="scrollToSection('sec-food')">
-        <span class="pill-icon">🍽️</span>Food Vendors
+        <span class="pill-icon">🍽️</span><span id="pill-label-food">Food Vendors</span>
       </button>
       <button class="nav-pill pill-trucks" onclick="scrollToSection('sec-trucks')">
-        <span class="pill-icon">🚚</span>Food Trucks
+        <span class="pill-icon">🚚</span><span id="pill-label-trucks">Food Trucks</span>
       </button>
       <button class="nav-pill pill-pavilion" onclick="scrollToSection('sec-pavilion')">
-        <span class="pill-icon">🍲</span>Food Pavilion
+        <span class="pill-icon">🍲</span><span id="pill-label-pavilion">Food Pavilion</span>
       </button>
       <button class="nav-pill pill-announce" onclick="scrollToSection('sec-announce')">
-        <span class="pill-icon">📢</span>Announcements
+        <span class="pill-icon">📢</span><span id="pill-label-announce">Announcements</span>
       </button>
       <button class="nav-pill pill-map" onclick="scrollToSection('sec-festival-map')">
-        <span class="pill-icon">🗺️</span>Festival Map
+        <span class="pill-icon">🗺️</span><span id="pill-label-map">Festival Map</span>
       </button>
       <button class="nav-pill pill-parking" onclick="scrollToSection('sec-parking')">
-        <span class="pill-icon">🅿️</span>Parking
+        <span class="pill-icon">🅿️</span><span id="pill-label-parking">Parking</span>
       </button>
     </div>
 
@@ -3289,7 +3289,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-booths')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🏮</span>
-          <span>Cultural Booths</span>
+          <span id="acc-label-booths">Cultural Booths</span>
           <span class="accordion-count" id="count-booths">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -3304,7 +3304,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-food')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🍽️</span>
-          <span>Food Vendors</span>
+          <span id="acc-label-food">Food Vendors</span>
           <span class="accordion-count" id="count-food">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -3319,7 +3319,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-pavilion')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🍲</span>
-          <span>Food Pavilion</span>
+          <span id="acc-label-pavilion">Food Pavilion</span>
           <span class="accordion-count" id="count-pavilion">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -3334,7 +3334,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-trucks')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🚚</span>
-          <span>Food Trucks</span>
+          <span id="acc-label-trucks">Food Trucks</span>
           <span class="accordion-count" id="count-trucks">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -3349,7 +3349,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-announce')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">📢</span>
-          <span>Public Announcements</span>
+          <span id="acc-label-announce">Public Announcements</span>
           <span class="accordion-count" id="count-announce">–</span>
         </div>
         <span class="accordion-chevron">▼</span>
@@ -3364,7 +3364,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-festival-map')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🗺️</span>
-          <span>Festival Map</span>
+          <span id="acc-label-map">Festival Map</span>
         </div>
         <span class="accordion-chevron">▼</span>
       </button>
@@ -3378,7 +3378,7 @@ pre, code {
       <button class="accordion-header" onclick="toggleAccordion('sec-parking')">
         <div class="accordion-title-wrap">
           <span class="accordion-icon">🅿️</span>
-          <span>Parking</span>
+          <span id="acc-label-parking">Parking</span>
         </div>
         <span class="accordion-chevron">▼</span>
       </button>
@@ -4327,6 +4327,37 @@ pre, code {
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-primary" id="hp-save-btn" onclick="adminSaveHomepage()">💾 Save Home Page</button>
           <div id="hp-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+        </div>
+      </div>
+
+      <!-- ── AREA LABELS ─────────────────────────────────────────── -->
+      <div class="admin-form" style="margin-top:0;">
+        <h4>🏷️ Area Labels &amp; Sponsor Names</h4>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">
+          Rename any area on the public home page — both the navigation button and the section header update instantly.
+          Use this to add sponsor names (e.g. <em>"Mattamy Main Stage"</em>). Leave a field blank to keep the default.
+        </p>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">
+          To reset all labels for a new year, click <strong>Reset to Defaults</strong>.
+        </p>
+
+        <!-- Grid header -->
+        <div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:8px;align-items:center;
+                    padding:6px 10px;background:rgba(255,255,255,0.04);border-radius:var(--radius-sm);
+                    margin-bottom:6px;font-size:0.68rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.06em;color:var(--text-muted);">
+          <span></span>
+          <span>Default Name</span>
+          <span>Custom / Sponsor Name</span>
+        </div>
+
+        <!-- Grid rows — one per area -->
+        <div id="area-labels-grid" style="display:flex;flex-direction:column;gap:4px;"></div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;">
+          <button class="btn btn-primary btn-sm" id="al-save-btn" onclick="adminSaveAreaLabels()">💾 Save Labels</button>
+          <button class="btn btn-ghost btn-sm" onclick="adminResetAreaLabels()">↺ Reset to Defaults</button>
+          <div id="al-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
         </div>
       </div>
     </div>
@@ -5665,6 +5696,7 @@ async function publicQuery(table, filters) {
 async function loadPublicData() {
   if (SUPABASE_URL.includes('YOUR_PROJECT_ID')) return;
   syncPublicSectionLabels();
+  applyAreaLabels(await fetchAreaLabels());
   await Promise.all([
     loadHomepageContent(),
     loadStageSchedule(),
@@ -8952,6 +8984,7 @@ async function loadHomepageAdminForm() {
   set('hp-badge2',       data.badge_2);
   set('hp-badge3',       data.badge_3);
   set('hp-badge4',       data.badge_4);
+  await loadAreaLabelsAdminForm();
 }
 
 async function adminSaveHomepage() {
@@ -10937,6 +10970,129 @@ function dgUpdateSaveAllBtn() {
       status.textContent = dgState.rows.length ? dgState.rows.length + ' rows' : 'Select a table to begin.';
       status.className = 'dg-status';
     }
+  }
+}
+
+/* ============================================================
+   AREA LABELS — sponsor naming for public home page areas
+   ============================================================ */
+
+/* Master definition of all 12 areas */
+const AREA_LABEL_DEFS = [
+  { key: 'main_stage',       icon: '🎤', default: 'Main Stage',            pillId: 'pill-label-main_stage',       accId: 'sec-stage-label' },
+  { key: 'secondary_stage',  icon: '🎵', default: 'Secondary Stage',       pillId: 'pill-label-secondary_stage',  accId: 'sec-secondary-label' },
+  { key: 'grass',            icon: '🌿', default: 'Grass Demos',           pillId: 'pill-label-grass',            accId: 'sec-grass-label' },
+  { key: 'cultural',         icon: '🪇', default: 'Cultural Activities',   pillId: 'pill-label-cultural',         accId: 'sec-cultural-label' },
+  { key: 'kids',             icon: '🎠', default: 'Kids Zone',             pillId: 'pill-label-kids',             accId: 'sec-kids-label' },
+  { key: 'booths',           icon: '🏮', default: 'Cultural Booths',       pillId: 'pill-label-booths',           accId: 'acc-label-booths' },
+  { key: 'food',             icon: '🍽️', default: 'Food Vendors',          pillId: 'pill-label-food',             accId: 'acc-label-food' },
+  { key: 'trucks',           icon: '🚚', default: 'Food Trucks',           pillId: 'pill-label-trucks',           accId: 'acc-label-trucks' },
+  { key: 'pavilion',         icon: '🍲', default: 'Food Pavilion',         pillId: 'pill-label-pavilion',         accId: 'acc-label-pavilion' },
+  { key: 'announce',         icon: '📢', default: 'Announcements',         pillId: 'pill-label-announce',         accId: 'acc-label-announce' },
+  { key: 'map',              icon: '🗺️', default: 'Festival Map',          pillId: 'pill-label-map',              accId: 'acc-label-map' },
+  { key: 'parking',          icon: '🅿️', default: 'Parking',              pillId: 'pill-label-parking',          accId: 'acc-label-parking' },
+];
+
+/* Fetch label overrides from public_info table */
+async function fetchAreaLabels() {
+  if (!sb) return {};
+  try {
+    const { data } = await sb.from('public_info').select('setting_key, setting_value')
+      .like('setting_key', 'label_%');
+    const map = {};
+    if (data) data.forEach(r => { map[r.setting_key.replace('label_', '')] = r.setting_value; });
+    return map;
+  } catch(e) { return {}; }
+}
+
+/* Apply label overrides to pill buttons and accordion headers */
+function applyAreaLabels(labelMap) {
+  if (!labelMap) return;
+  AREA_LABEL_DEFS.forEach(def => {
+    const label = (labelMap[def.key] && labelMap[def.key].trim()) ? labelMap[def.key].trim() : def.default;
+    // Nav pill
+    const pillEl = document.getElementById(def.pillId);
+    if (pillEl) pillEl.textContent = label;
+    // Accordion header
+    const accEl = document.getElementById(def.accId);
+    if (accEl) accEl.textContent = label;
+  });
+}
+
+/* Render the admin grid rows */
+async function loadAreaLabelsAdminForm() {
+  const grid = document.getElementById('area-labels-grid');
+  if (!grid) return;
+  const labelMap = await fetchAreaLabels();
+
+  grid.innerHTML = AREA_LABEL_DEFS.map(def => {
+    const current = (labelMap[def.key] && labelMap[def.key].trim()) ? labelMap[def.key].trim() : '';
+    return `<div style="display:grid;grid-template-columns:2rem 1fr 1fr;gap:8px;align-items:center;
+                        padding:7px 10px;background:rgba(255,255,255,0.02);border:1px solid var(--card-border);
+                        border-radius:var(--radius-sm);">
+      <span style="font-size:1.1rem;text-align:center;">${def.icon}</span>
+      <span style="font-size:0.82rem;color:var(--text-secondary);font-weight:500;">${def.default}</span>
+      <input type="text"
+             class="input-field"
+             id="al-input-${def.key}"
+             value="${escHtml(current)}"
+             placeholder="${def.default}"
+             style="padding:6px 10px;font-size:0.82rem;">
+    </div>`;
+  }).join('');
+}
+
+/* Save all label overrides to public_info */
+async function adminSaveAreaLabels() {
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+  const fb = document.getElementById('al-feedback');
+  fb.textContent = 'Saving…';
+  setBtn('al-save-btn', true, 'Saving…');
+
+  const upserts = AREA_LABEL_DEFS.map(def => {
+    const val = (document.getElementById('al-input-' + def.key)?.value || '').trim();
+    return { setting_key: 'label_' + def.key, setting_value: val };
+  });
+
+  const { error } = await sb.from('public_info')
+    .upsert(upserts, { onConflict: 'setting_key' });
+
+  setBtn('al-save-btn', false);
+  if (error) {
+    fb.style.color = 'var(--cf-coral)';
+    fb.textContent = '❌ ' + error.message;
+  } else {
+    fb.style.color = 'var(--cf-green)';
+    fb.textContent = '✅ Labels saved!';
+    // Apply immediately to the live public page
+    const labelMap = {};
+    AREA_LABEL_DEFS.forEach(def => {
+      labelMap[def.key] = (document.getElementById('al-input-' + def.key)?.value || '').trim();
+    });
+    applyAreaLabels(labelMap);
+    setTimeout(() => { if (fb) fb.textContent = ''; }, 3000);
+  }
+}
+
+/* Reset all labels to defaults */
+async function adminResetAreaLabels() {
+  if (!confirm('Reset all area labels to their defaults? This will remove all sponsor names.')) return;
+  if (!sb) { showToast('Supabase not connected', 'error'); return; }
+
+  const keys = AREA_LABEL_DEFS.map(def => 'label_' + def.key);
+  const { error } = await sb.from('public_info').delete().in('setting_key', keys);
+
+  if (error) {
+    showToast('❌ Reset failed: ' + error.message, 'error');
+  } else {
+    showToast('✅ Labels reset to defaults', 'success');
+    // Clear all inputs
+    AREA_LABEL_DEFS.forEach(def => {
+      const el = document.getElementById('al-input-' + def.key);
+      if (el) el.value = '';
+    });
+    // Revert live page to defaults
+    applyAreaLabels({});
   }
 }
 
