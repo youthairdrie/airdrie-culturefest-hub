@@ -5859,40 +5859,6 @@ async function adminSaveAnnouncement() {
   else { showFeedback('ann-feedback', '✅ Posted!', true); clearAnnouncementForm(); await loadAdminAnnouncementsTable(); }
 }
 
-  if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
-
-  setBtn('ann-save-btn', true, 'Posting…');
-
-  // Upload new image if provided
-  if (imageFile) {
-    try {
-      const ext  = imageFile.name.split('.').pop().toLowerCase();
-      const path = `announcements/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await sb.storage
-        .from('culturefest-public')
-        .upload(path, imageFile, { contentType: imageFile.type, upsert: false });
-      if (upErr) throw upErr;
-      const { data: urlData } = sb.storage.from('culturefest-public').getPublicUrl(path);
-      row.image_url = urlData.publicUrl;
-    } catch(e) {
-      setBtn('ann-save-btn', false);
-      showFeedback('ann-feedback', '❌ Image upload failed: ' + (e.message || 'Unknown error'), false);
-      return;
-    }
-  } else if (existingUrl) {
-    row.image_url = existingUrl; // keep existing image on edit
-  }
-  // If no image and no existing, image_url stays undefined (null in DB)
-
-  const { error } = id
-    ? await sb.from('announcements').update(row).eq('id', id)
-    : await sb.from('announcements').insert(row);
-  setBtn('ann-save-btn', false);
-
-  if (error) { console.log('[ERROR] adminSaveAnnouncement error:', error.message); showFeedback('ann-feedback', error.message, false); }
-  else { showFeedback('ann-feedback', '✅ Posted!', true); clearAnnouncementForm(); await loadAdminAnnouncementsTable(); }
-}
-
 /* Fix #4: adminDeleteRow — standardized delete helper.
    reloadFn must be a callable async function reference (not a string).
    All callers already pass function references correctly. */
