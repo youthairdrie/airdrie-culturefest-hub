@@ -6380,9 +6380,11 @@ function adminEditSchedule(r) {
   document.getElementById('sched-start').value     = r.start_time ? r.start_time.slice(0,5) : '';
   document.getElementById('sched-end').value       = r.end_time   ? r.end_time.slice(0,5)   : '';
   document.getElementById('sched-stage').value     = r.stage_location || '';
-  buildSectionDropdown(r.section || 'main_stage'); // rebuild dropdown and pre-select saved section
   document.getElementById('sched-desc').value      = r.description || '';
+  // Switch tab first, THEN set the section dropdown so the tab's own
+  // buildSectionDropdown() call does not overwrite the pre-selected value.
   switchAdminTab('schedule');
+  buildSectionDropdown(r.section || 'main_stage');
   document.getElementById('sched-name').focus();
 }
 
@@ -6849,9 +6851,13 @@ function switchAdminTab(tab) {
   if (tab === 'shifts-admin' && _allCoordinators.length) {
     populateCoordDropdown('');
   }
-  // Rebuild section dropdown + manager list when Schedule tab opens
+  // Rebuild section dropdown + manager list when Schedule tab opens.
+  // Preserve any value already set (e.g. by adminEditSchedule) so that
+  // pre-populating an edit form is not overwritten by the rebuild.
   if (tab === 'schedule') {
-    buildSectionDropdown();
+    const sel = document.getElementById('sched-section');
+    const preservedValue = sel ? sel.value : null;
+    buildSectionDropdown(preservedValue || undefined);
     renderSectionsList();
   }
   // Load Supabase attendance data when Attendance tab opens
