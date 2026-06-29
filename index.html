@@ -2601,6 +2601,164 @@ pre, code {
 }
 .ann-link-btn:hover { background: rgba(56,189,248,0.18); }
 
+/* ============================================================
+   RICH TEXT EDITOR (announcement body)
+   ============================================================ */
+.rte-wrap {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.rte-wrap:focus-within {
+  border-color: var(--cf-gold);
+  background: rgba(255,255,255,0.07);
+}
+
+/* Toolbar */
+.rte-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.rte-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.rte-btn:hover  { background: rgba(255,255,255,0.1); color: var(--text-primary); border-color: var(--card-border); }
+.rte-btn.active { background: rgba(245,166,35,0.15); color: var(--cf-gold); border-color: rgba(245,166,35,0.3); }
+.rte-btn-b  { font-style: normal; font-weight: 900; letter-spacing: -0.02em; }
+.rte-btn-i  { font-style: italic; }
+.rte-btn-u  { text-decoration: underline; }
+.rte-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--card-border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Editable body area */
+.rte-body {
+  min-height: 110px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  line-height: 1.6;
+  outline: none;
+  word-break: break-word;
+  -webkit-overflow-scrolling: touch;
+}
+/* Placeholder via data-attr */
+.rte-body:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+/* Formatting inside the editor */
+.rte-body strong, .rte-body b { font-weight: 700; }
+.rte-body em, .rte-body i     { font-style: italic; }
+.rte-body u                   { text-decoration: underline; }
+.rte-body ul { list-style: disc; padding-left: 1.4em; margin: 4px 0; }
+.rte-body ol { list-style: decimal; padding-left: 1.4em; margin: 4px 0; }
+.rte-body li { margin-bottom: 2px; }
+.rte-body a  { color: var(--cf-blue); text-decoration: underline; }
+.rte-body a:hover { color: var(--cf-teal); }
+.rte-body p  { margin: 0 0 6px; }
+.rte-body p:last-child { margin-bottom: 0; }
+
+/* ── Link insert modal ────────────────────────────────────── */
+#rte-link-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9600;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#rte-link-modal.open { display: flex; }
+
+#rte-link-box {
+  background: var(--bg-card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+#rte-link-box h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+#rte-link-box .form-group { margin-bottom: 12px; }
+#rte-link-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   RICH TEXT DISPLAY — announcement-body HTML rendering
+   (plain text falls back correctly; no escaping applied)
+   ============================================================ */
+.announcement-body a {
+  color: var(--cf-blue);
+  text-decoration: underline;
+  word-break: break-word;
+}
+.announcement-body a:hover { color: var(--cf-teal); }
+.announcement-body strong,
+.announcement-body b       { font-weight: 700; }
+.announcement-body em,
+.announcement-body i       { font-style: italic; }
+.announcement-body u       { text-decoration: underline; }
+.announcement-body ul {
+  list-style: disc;
+  padding-left: 1.3em;
+  margin: 4px 0;
+}
+.announcement-body ol {
+  list-style: decimal;
+  padding-left: 1.3em;
+  margin: 4px 0;
+}
+.announcement-body li { margin-bottom: 2px; }
+.announcement-body p  { margin: 0 0 4px; }
+.announcement-body p:last-child { margin-bottom: 0; }
+
 /* ─── VERY SMALL SCREENS (iPhone SE: 375px) ───────────────── */
 @media (max-width: 390px) {
   .hero-title { font-size: 1.4rem; }
@@ -3369,7 +3527,30 @@ pre, code {
         </div>
         <div class="form-group">
           <label class="input-label">Message</label>
-          <textarea class="input-field" id="ann-body" rows="3" placeholder="Write your announcement here..."></textarea>
+          <!-- Rich text editor — contenteditable div backed by hidden textarea -->
+          <div class="rte-wrap">
+            <div class="rte-toolbar" id="ann-rte-toolbar">
+              <button type="button" class="rte-btn rte-btn-b" title="Bold"        data-cmd="bold"        onmousedown="annRte.cmd(event,'bold')">B</button>
+              <button type="button" class="rte-btn rte-btn-i" title="Italic"      data-cmd="italic"      onmousedown="annRte.cmd(event,'italic')">I</button>
+              <button type="button" class="rte-btn rte-btn-u" title="Underline"   data-cmd="underline"   onmousedown="annRte.cmd(event,'underline')">U</button>
+              <div class="rte-divider"></div>
+              <button type="button" class="rte-btn" title="Bullet list"           data-cmd="insertUnorderedList" onmousedown="annRte.cmd(event,'insertUnorderedList')">• List</button>
+              <button type="button" class="rte-btn" title="Numbered list"         data-cmd="insertOrderedList"   onmousedown="annRte.cmd(event,'insertOrderedList')">1. List</button>
+              <div class="rte-divider"></div>
+              <button type="button" class="rte-btn" title="Insert link"           onmousedown="annRte.openLink(event)">🔗 Link</button>
+              <button type="button" class="rte-btn" title="Remove formatting"     onmousedown="annRte.cmd(event,'removeFormat')">🧹 Clear</button>
+            </div>
+            <div id="ann-body-editor"
+                 class="rte-body"
+                 contenteditable="true"
+                 data-placeholder="Write your announcement here…"
+                 oninput="annRte.onInput()"
+                 onkeyup="annRte.updateToolbar()"
+                 onmouseup="annRte.updateToolbar()"
+                 ></div>
+          </div>
+          <!-- Hidden field keeps the sanitized HTML value for the save function -->
+          <textarea id="ann-body" style="display:none;" aria-hidden="true"></textarea>
         </div>
         <div class="form-group">
           <label class="input-label">Image (optional — .jpg, .jpeg, .png, .webp)</label>
@@ -3380,17 +3561,7 @@ pre, code {
           </div>
           <input type="hidden" id="ann-existing-image-url">
         </div>
-        <div class="form-row form-row-2">
-          <div class="form-group">
-            <label class="input-label">Link Text (optional)</label>
-            <input type="text" class="input-field" id="ann-link-text" placeholder="e.g. View full details">
-          </div>
-          <div class="form-group">
-            <label class="input-label">Link URL (optional)</label>
-            <input type="url" class="input-field" id="ann-link-url" placeholder="https://...">
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px;margin-top:4px;">
           <button class="btn btn-primary" id="ann-save-btn" onclick="adminSaveAnnouncement()">Post Announcement</button>
           <button class="btn btn-ghost btn-sm" onclick="clearAnnouncementForm()">Clear</button>
         </div>
@@ -4239,6 +4410,29 @@ pre, code {
   </div><!-- /onboarding-overlay -->
 
 </main><!-- /main-content -->
+
+<!-- ============================================================
+     RTE LINK MODAL
+     ============================================================ -->
+<div id="rte-link-modal" role="dialog" aria-modal="true" aria-labelledby="rte-link-title">
+  <div id="rte-link-box">
+    <h3 id="rte-link-title">🔗 Insert Link</h3>
+    <div class="form-group">
+      <label class="input-label">Link Text</label>
+      <input type="text" class="input-field" id="rte-link-text" placeholder="e.g. Parking Information">
+    </div>
+    <div class="form-group">
+      <label class="input-label">URL</label>
+      <input type="url" class="input-field" id="rte-link-url" placeholder="https://"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();annRte.confirmLink();}">
+    </div>
+    <div id="rte-link-actions">
+      <button class="btn btn-primary" onclick="annRte.confirmLink()">Insert Link</button>
+      <button class="btn btn-ghost btn-sm" onclick="annRte.closeLink()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="rte-link-remove" style="display:none;" onclick="annRte.removeLink()">Remove Link</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============================================================
      MAP LIGHTBOX (full-screen pinch-to-zoom)
@@ -5413,17 +5607,34 @@ function renderAnnouncement(ann) {
            style="width:100%;max-width:100%;border-radius:var(--radius-sm);margin-bottom:10px;display:block;"
            onerror="this.style.display='none'">`
     : '';
-  // Link button — only shown when both link_url and link_text are present; link_url alone also works
+
+  // Body: if it looks like HTML (contains a tag) render it sanitized;
+  // otherwise treat as plain text (backward compat with old plain-text records).
+  const rawBody = ann.body || ann.message || '';
+  let bodyHtml;
+  if (/<[a-z][\s\S]*>/i.test(rawBody)) {
+    // Rich HTML — sanitize then render
+    bodyHtml = annRte.sanitize(rawBody);
+    // Ensure every <a> opens in a new tab with safe rel (sanitizer may not add these)
+    bodyHtml = bodyHtml.replace(/<a\s/gi, '<a target="_blank" rel="noopener noreferrer" ');
+  } else {
+    // Plain text — escape and convert newlines to <br>
+    bodyHtml = escHtml(rawBody).replace(/\n/g, '<br>');
+  }
+
+  // Legacy link button — still rendered if the record has link_url set
+  // (for announcements posted before the rich text editor)
   const linkHtml = ann.link_url
     ? `<a class="ann-link-btn" href="${escHtml(ann.link_url)}" target="_blank" rel="noopener noreferrer">
          🔗 ${escHtml(ann.link_text || 'Learn more')}
        </a>`
     : '';
+
   return `
     <div class="announcement-item">
       ${imgHtml}
       <div class="announcement-title">📢 ${escHtml(ann.title || 'Announcement')}</div>
-      <div class="announcement-body">${escHtml(ann.body || ann.message || '')}</div>
+      <div class="announcement-body">${bodyHtml}</div>
       ${linkHtml}
       ${time ? `<div class="announcement-time">${time}</div>` : ''}
     </div>`;
@@ -5807,20 +6018,298 @@ async function adminSaveFood() {
 
 
 
+/* ============================================================
+   RICH TEXT EDITOR ENGINE — annRte
+   Uses document.execCommand for formatting (universally supported),
+   a custom link modal to capture selection before focus is lost,
+   and a strict HTML sanitizer before saving.
+   ============================================================ */
+const annRte = (function() {
+
+  /* ── Internal state ─────────────────────────────────────── */
+  var _savedRange = null; // selection range saved before modal steals focus
+
+  /* ── Helpers ────────────────────────────────────────────── */
+  function _editor() { return document.getElementById('ann-body-editor'); }
+
+  function _saveRange() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      _savedRange = sel.getRangeAt(0).cloneRange();
+    } else {
+      _savedRange = null;
+    }
+  }
+
+  function _restoreRange() {
+    const editor = _editor();
+    if (!editor) return;
+    editor.focus();
+    if (_savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(_savedRange);
+    }
+  }
+
+  function _getSelectedText() {
+    const sel = window.getSelection();
+    return sel ? sel.toString() : '';
+  }
+
+  /* ── Sanitizer ──────────────────────────────────────────── */
+  // Allowed tags and their allowed attributes
+  var ALLOWED = {
+    p: [], br: [], strong: [], b: [], em: [], i: [], u: [],
+    ul: [], ol: [], li: [],
+    a: ['href', 'target', 'rel'],
+  };
+
+  function sanitize(html) {
+    // Parse into a throwaway document so we get a real DOM
+    var doc = (new DOMParser()).parseFromString('<body>' + html + '</body>', 'text/html');
+    _sanitizeNode(doc.body);
+    return doc.body.innerHTML;
+  }
+
+  function _sanitizeNode(node) {
+    var children = Array.from(node.childNodes);
+    children.forEach(function(child) {
+      if (child.nodeType === 3) return; // text node — keep as-is
+      if (child.nodeType !== 1) { node.removeChild(child); return; }
+
+      var tag = child.tagName.toLowerCase();
+      if (!ALLOWED[tag]) {
+        // Replace disallowed element with its text content
+        var text = document.createTextNode(child.textContent || '');
+        node.replaceChild(text, child);
+        return;
+      }
+
+      // Strip disallowed attributes
+      var allowedAttrs = ALLOWED[tag];
+      Array.from(child.attributes).forEach(function(attr) {
+        if (!allowedAttrs.includes(attr.name)) {
+          child.removeAttribute(attr.name);
+          return;
+        }
+        // For href: only allow http/https/mailto
+        if (attr.name === 'href') {
+          var val = attr.value.trim().toLowerCase();
+          if (!/^(https?:|mailto:)/.test(val)) {
+            child.removeAttribute('href');
+          }
+        }
+      });
+
+      // For <a>: ensure safe attributes
+      if (tag === 'a') {
+        child.setAttribute('target', '_blank');
+        child.setAttribute('rel', 'noopener noreferrer');
+      }
+
+      // Recurse
+      _sanitizeNode(child);
+    });
+  }
+
+  /* ── execCommand wrapper ────────────────────────────────── */
+  function cmd(event, command) {
+    event.preventDefault(); // stop toolbar click from blurring editor
+    _editor() && _editor().focus();
+    document.execCommand(command, false, null);
+    updateToolbar();
+  }
+
+  /* ── Toolbar active-state sync ──────────────────────────── */
+  function updateToolbar() {
+    var toolbar = document.getElementById('ann-rte-toolbar');
+    if (!toolbar) return;
+    var cmds = { bold: 'bold', italic: 'italic', underline: 'underline',
+                 insertUnorderedList: 'insertUnorderedList',
+                 insertOrderedList: 'insertOrderedList' };
+    toolbar.querySelectorAll('[data-cmd]').forEach(function(btn) {
+      var c = btn.dataset.cmd;
+      try {
+        btn.classList.toggle('active', !!document.queryCommandState(c));
+      } catch(e) { /* some browsers throw on unknown commands */ }
+    });
+  }
+
+  /* ── oninput handler ────────────────────────────────────── */
+  function onInput() {
+    updateToolbar();
+    // Sync hidden textarea (kept so the dirty-form watcher still fires)
+    var ta = document.getElementById('ann-body');
+    if (ta) ta.value = _editor() ? _editor().innerHTML : '';
+  }
+
+  /* ── Link modal ─────────────────────────────────────────── */
+  function openLink(event) {
+    event.preventDefault();
+    _saveRange(); // capture selection before modal opens
+
+    var selText = _getSelectedText();
+
+    // Pre-fill text field with selected text
+    var textEl = document.getElementById('rte-link-text');
+    var urlEl  = document.getElementById('rte-link-url');
+    var removeBtn = document.getElementById('rte-link-remove');
+    if (textEl) textEl.value = selText;
+    if (urlEl)  urlEl.value  = '';
+
+    // Check if cursor is inside an existing <a>
+    var existingA = _getAnchorAtSelection();
+    if (existingA) {
+      if (textEl) textEl.value = existingA.textContent;
+      if (urlEl)  urlEl.value  = existingA.getAttribute('href') || '';
+      if (removeBtn) removeBtn.style.display = '';
+    } else {
+      if (removeBtn) removeBtn.style.display = 'none';
+    }
+
+    document.getElementById('rte-link-modal').classList.add('open');
+    // Focus URL field if text already filled, otherwise text field
+    setTimeout(function() {
+      if (textEl && !textEl.value) textEl.focus();
+      else if (urlEl) urlEl.focus();
+    }, 80);
+  }
+
+  function closeLink() {
+    document.getElementById('rte-link-modal').classList.remove('open');
+    _restoreRange();
+  }
+
+  function confirmLink() {
+    var text = (document.getElementById('rte-link-text').value || '').trim();
+    var url  = (document.getElementById('rte-link-url').value  || '').trim();
+
+    if (!url) { document.getElementById('rte-link-url').focus(); return; }
+    // Ensure protocol
+    if (!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) url = 'https://' + url;
+
+    document.getElementById('rte-link-modal').classList.remove('open');
+    _restoreRange();
+
+    var editor = _editor();
+    if (!editor) return;
+
+    var sel = window.getSelection();
+
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      // Wrap existing selection
+      document.execCommand('createLink', false, url);
+      // Find the newly created anchor and set its text if provided
+      var a = _getAnchorAtSelection();
+      if (a) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+        if (text) a.textContent = text;
+      }
+    } else {
+      // No selection — insert the link text as a new link at cursor
+      if (!text) text = url;
+      var linkHtml = '<a href="' + _escAttr(url) + '" target="_blank" rel="noopener noreferrer">' + _escHtmlInner(text) + '</a>';
+      document.execCommand('insertHTML', false, linkHtml);
+    }
+
+    updateToolbar();
+    onInput();
+  }
+
+  function removeLink() {
+    document.getElementById('rte-link-modal').classList.remove('open');
+    _restoreRange();
+    var a = _getAnchorAtSelection();
+    if (a) {
+      // Replace the <a> with its text content
+      var parent = a.parentNode;
+      var text = document.createTextNode(a.textContent);
+      parent.replaceChild(text, a);
+    } else {
+      document.execCommand('unlink', false, null);
+    }
+    updateToolbar();
+    onInput();
+  }
+
+  /* ── Helpers ────────────────────────────────────────────── */
+  function _getAnchorAtSelection() {
+    var sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return null;
+    var node = sel.getRangeAt(0).startContainer;
+    while (node && node !== _editor()) {
+      if (node.nodeType === 1 && node.tagName === 'A') return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function _escAttr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function _escHtmlInner(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Load content into editor (for edit flows) ──────────── */
+  function setHTML(html) {
+    var editor = _editor();
+    if (!editor) return;
+    // If plain text (no tags), set as text node so it renders as-is
+    if (html && !/<[a-z][\s\S]*>/i.test(html)) {
+      editor.textContent = html;
+    } else {
+      editor.innerHTML = sanitize(html || '');
+    }
+    updateToolbar();
+  }
+
+  function getHTML() {
+    var editor = _editor();
+    return editor ? sanitize(editor.innerHTML) : '';
+  }
+
+  /* ── Close modal on backdrop click ─────────────────────── */
+  document.addEventListener('click', function(e) {
+    var modal = document.getElementById('rte-link-modal');
+    if (modal && modal.classList.contains('open') && e.target === modal) {
+      closeLink();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') &&
+        document.getElementById('rte-link-modal') &&
+        document.getElementById('rte-link-modal').classList.contains('open')) {
+      closeLink();
+    }
+  });
+
+  return { cmd, updateToolbar, onInput, openLink, closeLink, confirmLink, removeLink, sanitize, setHTML, getHTML };
+})();
+
 async function adminSaveAnnouncement() {
   const id  = document.getElementById('ann-edit-id').value;
+
+  // Read sanitized HTML from the rich text editor
+  const rawHtml  = document.getElementById('ann-body-editor').innerHTML || '';
+  const bodyHtml = annRte.sanitize(rawHtml).trim();
+
   const row = {
-    title:       document.getElementById('ann-title').value.trim(),
-    audience:    document.getElementById('ann-audience').value,
-    body:        document.getElementById('ann-body').value.trim(),
-    is_published:true,
-    link_text:   document.getElementById('ann-link-text').value.trim() || null,
-    link_url:    document.getElementById('ann-link-url').value.trim()  || null,
+    title:        document.getElementById('ann-title').value.trim(),
+    audience:     document.getElementById('ann-audience').value,
+    body:         bodyHtml,
+    is_published: true,
+    // link_text / link_url are kept in DB schema for backward compat but
+    // no longer set from this form — links live inside the rich text body now
   };
   if (!row.title || !row.body) { showFeedback('ann-feedback', 'Title and message are required.', false); return; }
 
   // Handle image
-  const imageFile  = document.getElementById('ann-image').files[0];
+  const imageFile   = document.getElementById('ann-image').files[0];
   const existingUrl = document.getElementById('ann-existing-image-url').value;
 
   if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
@@ -5844,9 +6333,8 @@ async function adminSaveAnnouncement() {
       return;
     }
   } else if (existingUrl) {
-    row.image_url = existingUrl; // keep existing image on edit
+    row.image_url = existingUrl;
   }
-  // If no image and no existing, image_url stays undefined (null in DB)
 
   const { error } = id
     ? await sb.from('announcements').update(row).eq('id', id)
@@ -5935,14 +6423,22 @@ function clearFoodForm() {
   clearAdminFormDirty();
 }
 function clearAnnouncementForm() {
-  ['ann-edit-id','ann-title','ann-body','ann-existing-image-url','ann-link-text','ann-link-url'].forEach(id => {
+  ['ann-edit-id','ann-title','ann-existing-image-url'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  // Clear rich text editor
+  const editor = document.getElementById('ann-body-editor');
+  if (editor) editor.innerHTML = '';
+  // Clear hidden textarea too
+  const ta = document.getElementById('ann-body');
+  if (ta) ta.value = '';
+  // Clear image
   const imgInput = document.getElementById('ann-image');
   if (imgInput) imgInput.value = '';
   const preview = document.getElementById('ann-image-preview');
   if (preview) preview.style.display = 'none';
   document.getElementById('ann-feedback').textContent = '';
+  annRte.updateToolbar();
   clearAdminFormDirty();
 }
 
