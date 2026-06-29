@@ -671,6 +671,8 @@ select.input-field option:focus {
 .nav-pill.pill-trucks    { --pill-color: var(--cf-orange); }
 .nav-pill.pill-announce  { --pill-color: var(--cf-blue); }
 .nav-pill.pill-pavilion  { --pill-color: var(--cf-teal); }
+.nav-pill.pill-map       { --pill-color: var(--cf-teal); }
+.nav-pill.pill-parking   { --pill-color: var(--cf-blue); }
 
 /* ============================================================
    ACCORDION SECTIONS
@@ -2519,6 +2521,12 @@ pre, code {
       <button class="nav-pill pill-announce" onclick="scrollToSection('sec-announce')">
         <span class="pill-icon">📢</span>Announcements
       </button>
+      <button class="nav-pill pill-map" onclick="scrollToSection('sec-festival-map')">
+        <span class="pill-icon">🗺️</span>Festival Map
+      </button>
+      <button class="nav-pill pill-parking" onclick="scrollToSection('sec-parking')">
+        <span class="pill-icon">🅿️</span>Parking
+      </button>
     </div>
 
     <!-- ===================== ACCORDION SECTIONS ===================== -->
@@ -2670,6 +2678,34 @@ pre, code {
       </button>
       <div class="accordion-body" id="body-announce">
         <div class="loading-state"><div class="spinner"></div> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Festival Map -->
+    <div class="section-accordion" id="sec-festival-map" style="--section-color: var(--cf-teal)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-festival-map')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🗺️</span>
+          <span>Festival Map</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-festival-map">
+        <div class="loading-state"><div class="spinner"></div> Loading map...</div>
+      </div>
+    </div>
+
+    <!-- Parking -->
+    <div class="section-accordion" id="sec-parking" style="--section-color: var(--cf-blue)">
+      <button class="accordion-header" onclick="toggleAccordion('sec-parking')">
+        <div class="accordion-title-wrap">
+          <span class="accordion-icon">🅿️</span>
+          <span>Parking</span>
+        </div>
+        <span class="accordion-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-parking">
+        <div class="loading-state"><div class="spinner"></div> Loading parking info...</div>
       </div>
     </div>
 
@@ -2899,6 +2935,7 @@ pre, code {
       <button class="admin-tab" onclick="switchAdminTab('designations-admin')">🏷️ Designations</button>
       <button class="admin-tab" onclick="switchAdminTab('announcements-admin')">📢 Announcements</button>
       <button class="admin-tab" onclick="switchAdminTab('homepage-admin')">🏠 Home Page</button>
+      <button class="admin-tab" onclick="switchAdminTab('public-info-admin')">📌 Public Info</button>
       <button class="admin-tab" onclick="switchAdminTab('checklist-admin')">✅ Checklist</button>
       <button class="admin-tab" onclick="switchAdminTab('contacts-admin')">📞 Contacts</button>
       <button class="admin-tab" onclick="switchAdminTab('shifts-admin')">📋 Volunteer Shifts</button>
@@ -3136,6 +3173,15 @@ pre, code {
         <div class="form-group">
           <label class="input-label">Message</label>
           <textarea class="input-field" id="ann-body" rows="3" placeholder="Write your announcement here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Image (optional — .jpg, .jpeg, .png, .webp)</label>
+          <input type="file" class="input-field" id="ann-image" accept=".jpg,.jpeg,.png,.webp" style="padding:10px 12px;">
+          <div id="ann-image-preview" style="margin-top:8px;display:none;">
+            <img id="ann-image-preview-img" src="" alt="Preview" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--card-border);">
+            <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="clearAnnouncementImage()">🗑 Remove Image</button>
+          </div>
+          <input type="hidden" id="ann-existing-image-url">
         </div>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-primary" id="ann-save-btn" onclick="adminSaveAnnouncement()">Post Announcement</button>
@@ -3579,6 +3625,48 @@ pre, code {
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-primary" id="hp-save-btn" onclick="adminSaveHomepage()">💾 Save Home Page</button>
           <div id="hp-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PUBLIC INFO PANEL (Festival Map + Parking)
+         ═══════════════════════════════════════════════════════ -->
+    <div id="admin-panel-public-info-admin" class="admin-panel">
+      <!-- Festival Map -->
+      <div class="admin-form">
+        <h4>🗺️ Festival Map</h4>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">Upload a JPG image of the festival map. Public visitors will see this in the Festival Map section.</p>
+        <div class="form-group">
+          <label class="input-label">Map Image (.jpg / .jpeg only)</label>
+          <input type="file" class="input-field" id="map-image-file" accept=".jpg,.jpeg" style="padding:10px 12px;">
+        </div>
+        <div id="map-current-preview" style="margin-bottom:14px;display:none;">
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Current Map</div>
+          <img id="map-current-img" src="" alt="Festival Map" style="max-width:100%;max-height:300px;border-radius:var(--radius-sm);border:1px solid var(--card-border);">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="map-save-btn" onclick="adminSaveFestivalMap()">⬆️ Upload Map</button>
+          <button class="btn btn-danger btn-sm" id="map-delete-btn" onclick="adminDeleteFestivalMap()" style="display:none;">🗑 Remove Map</button>
+          <div id="map-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--card-border);margin:8px 0 4px;"></div>
+
+      <!-- Parking Info -->
+      <div class="admin-form">
+        <h4>🅿️ Parking Information</h4>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;">Enter parking details for festival visitors. Supports line breaks.</p>
+        <div class="form-group">
+          <label class="input-label">Parking Details</label>
+          <textarea class="input-field" id="parking-text" rows="6" placeholder="e.g. Free parking is available at the field east of the main entrance..."></textarea>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="parking-save-btn" onclick="adminSaveParking()">💾 Save Parking Info</button>
+          <div id="parking-feedback" style="font-size:0.78rem;color:var(--cf-green);min-height:16px;"></div>
         </div>
       </div>
     </div>
@@ -4811,6 +4899,8 @@ async function loadPublicData() {
     loadFoodTrucks(),
     loadFoodPavilion(),
     loadPublicAnnouncements(),
+    loadFestivalMap(),
+    loadParkingInfo(),
   ]).catch(err => console.log('[ERROR] loadPublicData:', err?.message || String(err)));
 }
 
@@ -4964,6 +5054,48 @@ async function loadPublicAnnouncements() {
   }
 }
 
+async function loadFestivalMap() {
+  const body = document.getElementById('body-festival-map');
+  if (!body) return;
+  try {
+    const data = await publicQuery('public_info', { setting_key: 'eq.festival_map_url' });
+    const row = data && data[0];
+    if (row && row.setting_value) {
+      body.innerHTML = `<div style="padding:8px 0;">
+        <img src="${escHtml(row.setting_value)}" alt="Festival Map"
+             style="width:100%;max-width:100%;border-radius:var(--radius-sm);display:block;"
+             onerror="this.parentElement.innerHTML='<p style=&quot;color:var(--text-muted);font-size:0.85rem;&quot;>Map image could not be loaded.</p>'">
+      </div>`;
+    } else {
+      body.innerHTML = renderEmpty('No festival map uploaded yet. Check back soon!');
+    }
+  } catch(e) {
+    body.innerHTML = renderEmpty('Festival map coming soon.');
+    console.log('[ERROR] loadFestivalMap:', e?.message || String(e));
+  }
+}
+
+async function loadParkingInfo() {
+  const body = document.getElementById('body-parking');
+  if (!body) return;
+  try {
+    const data = await publicQuery('public_info', { setting_key: 'eq.parking_info' });
+    const row = data && data[0];
+    if (row && row.setting_value && row.setting_value.trim()) {
+      const html = row.setting_value
+        .split('\n')
+        .map(line => line.trim() ? `<p style="margin-bottom:10px;font-size:0.9rem;color:var(--text-secondary);line-height:1.65;">${escHtml(line)}</p>` : '<br>')
+        .join('');
+      body.innerHTML = `<div style="padding:8px 0;">${html}</div>`;
+    } else {
+      body.innerHTML = renderEmpty('Parking information coming soon.');
+    }
+  } catch(e) {
+    body.innerHTML = renderEmpty('Parking information coming soon.');
+    console.log('[ERROR] loadParkingInfo:', e?.message || String(e));
+  }
+}
+
 /* ============================================================
    RENDERERS — PUBLIC
    ============================================================ */
@@ -5010,8 +5142,14 @@ function renderVendorCard(vendor) {
 
 function renderAnnouncement(ann) {
   const time = ann.created_at ? new Date(ann.created_at).toLocaleString('en-CA', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : '';
+  const imgHtml = ann.image_url
+    ? `<img src="${escHtml(ann.image_url)}" alt="Announcement image"
+           style="width:100%;max-width:100%;border-radius:var(--radius-sm);margin-bottom:10px;display:block;"
+           onerror="this.style.display='none'">`
+    : '';
   return `
     <div class="announcement-item">
+      ${imgHtml}
       <div class="announcement-title">📢 ${escHtml(ann.title || 'Announcement')}</div>
       <div class="announcement-body">${escHtml(ann.body || ann.message || '')}</div>
       ${time ? `<div class="announcement-time">${time}</div>` : ''}
@@ -5405,9 +5543,36 @@ async function adminSaveAnnouncement() {
     is_published:true,
   };
   if (!row.title || !row.body) { showFeedback('ann-feedback', 'Title and message are required.', false); return; }
+
+  // Handle image
+  const imageFile = document.getElementById('ann-image').files[0];
+  const existingUrl = document.getElementById('ann-existing-image-url').value;
+
   if (!sb) { showFeedback('ann-feedback', '✅ Posted (demo)', true); clearAnnouncementForm(); return; }
 
   setBtn('ann-save-btn', true, 'Posting…');
+
+  // Upload new image if provided
+  if (imageFile) {
+    try {
+      const ext  = imageFile.name.split('.').pop().toLowerCase();
+      const path = `announcements/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await sb.storage
+        .from('culturefest-public')
+        .upload(path, imageFile, { contentType: imageFile.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: urlData } = sb.storage.from('culturefest-public').getPublicUrl(path);
+      row.image_url = urlData.publicUrl;
+    } catch(e) {
+      setBtn('ann-save-btn', false);
+      showFeedback('ann-feedback', '❌ Image upload failed: ' + (e.message || 'Unknown error'), false);
+      return;
+    }
+  } else if (existingUrl) {
+    row.image_url = existingUrl; // keep existing image on edit
+  }
+  // If no image and no existing, image_url stays undefined (null in DB)
+
   const { error } = id
     ? await sb.from('announcements').update(row).eq('id', id)
     : await sb.from('announcements').insert(row);
@@ -5495,9 +5660,131 @@ function clearFoodForm() {
   clearAdminFormDirty();
 }
 function clearAnnouncementForm() {
-  ['ann-edit-id','ann-title','ann-body'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['ann-edit-id','ann-title','ann-body','ann-existing-image-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const imgInput = document.getElementById('ann-image');
+  if (imgInput) imgInput.value = '';
+  const preview = document.getElementById('ann-image-preview');
+  if (preview) preview.style.display = 'none';
   document.getElementById('ann-feedback').textContent = '';
   clearAdminFormDirty();
+}
+
+function clearAnnouncementImage() {
+  const imgInput = document.getElementById('ann-image');
+  if (imgInput) imgInput.value = '';
+  document.getElementById('ann-existing-image-url').value = '';
+  const preview = document.getElementById('ann-image-preview');
+  if (preview) preview.style.display = 'none';
+}
+
+/* Ann image preview on file select */
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'ann-image') {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('ann-image-preview');
+    const img     = document.getElementById('ann-image-preview-img');
+    if (preview && img) {
+      img.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+  }
+});
+
+/* ============================================================
+   ADMIN — PUBLIC INFO (Festival Map + Parking)
+   ============================================================ */
+async function loadPublicInfoAdminPanel() {
+  if (!sb) return;
+  try {
+    const { data } = await sb.from('public_info').select('*');
+    if (!data) return;
+
+    // Festival map
+    const mapRow = data.find(r => r.setting_key === 'festival_map_url');
+    if (mapRow && mapRow.setting_value) {
+      const img = document.getElementById('map-current-img');
+      const wrap = document.getElementById('map-current-preview');
+      if (img) img.src = mapRow.setting_value;
+      if (wrap) wrap.style.display = 'block';
+      const delBtn = document.getElementById('map-delete-btn');
+      if (delBtn) delBtn.style.display = '';
+    }
+
+    // Parking
+    const parkRow = data.find(r => r.setting_key === 'parking_info');
+    if (parkRow && parkRow.setting_value) {
+      const ta = document.getElementById('parking-text');
+      if (ta) ta.value = parkRow.setting_value;
+    }
+  } catch(e) {
+    console.log('[ERROR] loadPublicInfoAdminPanel:', e?.message || String(e));
+  }
+}
+
+async function adminSaveFestivalMap() {
+  const file = document.getElementById('map-image-file').files[0];
+  if (!file) { showFeedback('map-feedback', 'Please select a JPG image.', false); return; }
+  if (!sb) { showFeedback('map-feedback', '✅ Saved (demo)', true); return; }
+
+  setBtn('map-save-btn', true, 'Uploading…');
+  try {
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const path = `festival-map/map_${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage
+      .from('culturefest-public')
+      .upload(path, file, { contentType: file.type, upsert: true });
+    if (upErr) throw upErr;
+
+    const { data: urlData } = sb.storage.from('culturefest-public').getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+
+    // Upsert into public_info
+    const { error: dbErr } = await sb.from('public_info')
+      .upsert({ setting_key: 'festival_map_url', setting_value: publicUrl }, { onConflict: 'setting_key' });
+    if (dbErr) throw dbErr;
+
+    // Update preview
+    const img  = document.getElementById('map-current-img');
+    const wrap = document.getElementById('map-current-preview');
+    if (img) img.src = publicUrl;
+    if (wrap) wrap.style.display = 'block';
+    document.getElementById('map-delete-btn').style.display = '';
+
+    showFeedback('map-feedback', '✅ Map uploaded!', true);
+    document.getElementById('map-image-file').value = '';
+    // Refresh public section
+    loadFestivalMap();
+  } catch(e) {
+    showFeedback('map-feedback', '❌ ' + (e.message || 'Upload failed'), false);
+  }
+  setBtn('map-save-btn', false);
+}
+
+async function adminDeleteFestivalMap() {
+  if (!confirm('Remove the festival map? This will hide it from public visitors.')) return;
+  if (!sb) return;
+  const { error } = await sb.from('public_info')
+    .update({ setting_value: '' })
+    .eq('setting_key', 'festival_map_url');
+  if (error) { showFeedback('map-feedback', '❌ ' + error.message, false); return; }
+  document.getElementById('map-current-preview').style.display = 'none';
+  document.getElementById('map-delete-btn').style.display = 'none';
+  showFeedback('map-feedback', '✅ Map removed.', true);
+  loadFestivalMap();
+}
+
+async function adminSaveParking() {
+  const text = document.getElementById('parking-text').value.trim();
+  if (!sb) { showFeedback('parking-feedback', '✅ Saved (demo)', true); return; }
+
+  setBtn('parking-save-btn', true, 'Saving…');
+  const { error } = await sb.from('public_info')
+    .upsert({ setting_key: 'parking_info', setting_value: text }, { onConflict: 'setting_key' });
+  setBtn('parking-save-btn', false);
+
+  if (error) { showFeedback('parking-feedback', '❌ ' + error.message, false); }
+  else { showFeedback('parking-feedback', '✅ Parking info saved!', true); loadParkingInfo(); }
 }
 
 /* Fix #7: Track unsaved changes in admin forms.
@@ -5551,6 +5838,10 @@ function switchAdminTab(tab) {
   // Load Supabase attendance data when Attendance tab opens
   if (tab === 'tracker') {
     loadAttendanceDashboard();
+  }
+  // Load public info panel when it opens
+  if (tab === 'public-info-admin') {
+    loadPublicInfoAdminPanel();
   }
 }
 
