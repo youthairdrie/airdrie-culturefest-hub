@@ -504,6 +504,17 @@ select.input-field option:focus {
   border-color: rgba(245,166,35,0.25);
 }
 
+#pwa-install-btn {
+  color: var(--cf-teal);
+  border-color: rgba(0,201,177,0.3);
+  background: rgba(0,201,177,0.07);
+}
+#pwa-install-btn:hover {
+  color: var(--cf-teal);
+  background: rgba(0,201,177,0.14);
+  border-color: rgba(0,201,177,0.5);
+}
+
 /* ============================================================
    MAIN CONTENT AREA
    ============================================================ */
@@ -3117,6 +3128,7 @@ pre, code {
       <button class="nav-tab hidden" id="vol-tab" onclick="showPage('volunteer')">🙌 Volunteer</button>
       <button class="nav-tab hidden" id="admin-tab" onclick="showPage('admin')">⚙️ Admin</button>
       <button class="nav-tab" id="login-tab" onclick="showPage('vol-login')">🔑 Sign In</button>
+      <button class="nav-tab hidden" id="pwa-install-btn" onclick="triggerPwaInstall()" title="Add to Home Screen">📲 Install</button>
     </nav>
 
     <!-- User chip (shown when logged in) -->
@@ -4850,6 +4862,64 @@ pre, code {
      ============================================================ -->
 <script>
 /* ============================================================
+   PWA INSTALL PROMPT + SERVICE WORKER CLEANUP
+   ============================================================
+   Captures the browser's beforeinstallprompt event so we can
+   trigger it from our own nav button instead of the browser's
+   default UI. Also unregisters any stale service workers that
+   may be serving an old cached version of the app.
+   ============================================================ */
+
+// Unregister stale service workers so users always get the
+// latest version of the app instead of a cached old state.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => reg.unregister());
+  });
+}
+
+let _pwaInstallPrompt = null; // holds the deferred BeforeInstallPromptEvent
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault(); // stop the browser's default mini-infobar
+  _pwaInstallPrompt = e;
+  // Show our Install nav button
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.classList.remove('hidden');
+});
+
+// If the user installs the app, hide our button
+window.addEventListener('appinstalled', () => {
+  _pwaInstallPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if (btn) btn.classList.add('hidden');
+});
+
+function triggerPwaInstall() {
+  if (!_pwaInstallPrompt) {
+    // Fallback: show instructions for browsers that don't fire beforeinstallprompt
+    // (e.g. iOS Safari — use Share → Add to Home Screen)
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIos) {
+      showToast('📲 Tap the Share button then "Add to Home Screen"', 'info');
+    } else {
+      showToast('📲 Use your browser menu → "Install app" or "Add to Home Screen"', 'info');
+    }
+    return;
+  }
+  _pwaInstallPrompt.prompt();
+  _pwaInstallPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      showToast('✅ CultureFest added to your Home Screen!', 'success');
+    }
+    _pwaInstallPrompt = null;
+    const btn = document.getElementById('pwa-install-btn');
+    if (btn) btn.classList.add('hidden');
+  });
+}
+
+
+/* ============================================================
    SUPABASE CONFIGURATION
    ============================================================
    IMPORTANT: Replace the values below with your actual Supabase
@@ -4926,8 +4996,7 @@ let _adminFormDirty = false;
 
 /* ── Tracker state (Fix #8) ─────────────────────────────────────
    LOCAL-ONLY: persisted to localStorage but NOT to Supabase.
-   Attendance counts are now stored in Supabase (attendance_count_entries table).
-   ──────────────────────────────────────────────────────────────── */
+   Attendance counts are now stored in Supabase (attendance_count_entries table). */
 // Attendance state (Supabase-backed — no local state needed)
 let _attLocations = []; // cache of attendance_locations rows
 
@@ -5669,8 +5738,7 @@ function addSection() {
    This avoids the Supabase JS client's internal postMessage/cache
    layer which throws DataCloneError on some browsers, and also
    avoids the "Failed to fetch" CORS issue by sending the correct
-   headers that Supabase's PostgREST requires.
-   ─────────────────────────────────────────────────────────────── */
+   headers that Supabase's PostgREST requires. */
 async function publicQuery(table, filters) {
   const url = new URL(SUPABASE_URL + '/rest/v1/' + table);
   url.searchParams.set('select', '*');
